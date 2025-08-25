@@ -58,7 +58,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/your-username/E-card.git
+    git clone https://github.com/Ehasan07/E-card.git
     cd E-card
     ```
 
@@ -67,6 +67,7 @@ Follow these instructions to get a copy of the project up and running on your lo
     python -m venv venv
     source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
     ```
+    *(Note: The `venv/` directory is ignored by Git and will not be present in the cloned repository. You need to create it locally.)*
 
 3.  **Install the dependencies:**
     ```bash
@@ -78,13 +79,20 @@ Follow these instructions to get a copy of the project up and running on your lo
     python manage.py makemigrations
     python manage.py migrate
     ```
+    *(Note: The `db.sqlite3` file is ignored by Git. This command will create a new database file locally.)*
 
-5.  **Create a superuser to access the admin dashboard:**
+5.  **Collect static files:**
+    ```bash
+    python manage.py collectstatic
+    ```
+    *(Note: The `staticfiles/` directory is ignored by Git. This command will collect all static files into this directory locally.)*
+
+6.  **Create a superuser to access the admin dashboard:**
     ```bash
     python manage.py createsuperuser
     ```
 
-6.  **Run the development server:**
+7.  **Run the development server:**
     ```bash
     python manage.py runserver
     ```
@@ -103,7 +111,7 @@ The application will be available at `http://127.0.0.1:8000/`.
 
 ### Admin Flow
 
-1.  **Login:** Log in to the admin dashboard using your superuser credentials.
+1.  **Admin Login:** Navigate to `/my-admin/login/` and log in using your superuser credentials.
 2.  **View Statistics:** See the total number of users and e-cards on the platform.
 3.  **Manage E-Cards:** View a list of all e-cards and delete any that are inappropriate or no longer needed.
 
@@ -130,14 +138,16 @@ E-card/
 │   ├── settings.py
 │   ├── urls.py
 │   └── wsgi.py
-├── media/
+├── media/                  *(Ignored by Git - user-uploaded files)*
 │   ├── avatars/
 │   └── qrcodes/
-├── staticfiles/
-├── venv/
-├── db.sqlite3
+├── staticfiles/            *(Ignored by Git - collected static assets)*
+├── venv/                   *(Ignored by Git - virtual environment)*
+├── db.sqlite3              *(Ignored by Git - SQLite database file)*
 ├── manage.py
-└── requirements.txt
+├── requirements.txt
+├── .gitignore              *(New file to specify ignored files)*
+└── FEATURES.md
 ```
 
 *   **`cards/`**: The core Django app that contains the main logic for the e-card functionality.
@@ -149,9 +159,12 @@ E-card/
 *   **`ecard_project/`**: The main Django project directory.
     *   **`settings.py`**: Contains the project settings, such as database configuration and installed apps.
     *   **`urls.py`**: The root URL configuration for the project.
-*   **`media/`**: The directory where user-uploaded files (avatars and QR codes) are stored.
-*   **`manage.py`**: A command-line utility for interacting with the Django project.
+*   **`media/`**: The directory where user-uploaded content (avatars, QR codes) is stored. This directory is now ignored by Git.
+*   **`staticfiles/`**: The directory where Django collects static files. This directory is now ignored by Git.
+*   **`venv/`**: The Python virtual environment. This directory is now ignored by Git.
+*   **`manage.py`**: Django's command-line utility.
 *   **`requirements.txt`**: A list of the Python packages required for the project.
+*   **`.gitignore`**: A new file that specifies which files and directories Git should ignore.
 
 ## Database Models
 
@@ -198,4 +211,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.Updated E-card project description
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
