@@ -1,0 +1,124 @@
+{% extends 'cards/base.html' %}
+
+{% block title %}Create New Card{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center">
+    <div id="card-creator-modal" class="w-full max-w-2xl p-8 space-y-6 glassmorphism rounded-2xl shadow-lg relative">
+        <form method="post" id="card-form">
+            {% csrf_token %}
+
+            <!-- Step 1: Content -->
+            <div id="step-1" class="step">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Step 1: Add Your Message</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label for="id_title" class="block text-sm font-medium text-gray-700">Title</label>
+                        {{ form.title }}
+                    </div>
+                    <div>
+                        <label for="id_recipient_name" class="block text-sm font-medium text-gray-700">Recipient's Name</label>
+                        {{ form.recipient_name }}
+                    </div>
+                    <div>
+                        <label for="id_message" class="block text-sm font-medium text-gray-700">Message</label>
+                        {{ form.message }}
+                    </div>
+                </div>
+                <button type="button" onclick="nextStep(2)" class="mt-6 w-full accent-gradient text-white font-bold py-3 px-4 rounded-lg">Next: Design</button>
+            </div>
+
+            <!-- Step 2: Design -->
+            <div id="step-2" class="step hidden">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Step 2: Choose a Style</h2>
+                <div class="grid grid-cols-3 gap-4">
+                    <!-- Background Options -->
+                    <div class="col-span-3 font-bold">Background Gradient:</div>
+                    <label class="cursor-pointer"><input type="radio" name="background" value="linear-gradient(to right, #ff7e5f, #feb47b)" class="hidden" checked><div class="p-4 rounded-lg h-24 bg-gradient-to-r from-pink-500 to-yellow-500"></div></label>
+                    <label class="cursor-pointer"><input type="radio" name="background" value="linear-gradient(to right, #00c6ff, #0072ff)" class="hidden"><div class="p-4 rounded-lg h-24 bg-gradient-to-r from-blue-400 to-blue-600"></div></label>
+                    <label class="cursor-pointer"><input type="radio" name="background" value="linear-gradient(to right, #76b852, #8dc26f)" class="hidden"><div class="p-4 rounded-lg h-24 bg-gradient-to-r from-green-400 to-green-600"></div></label>
+                    
+                    <!-- Font Family Options -->
+                    <div class="col-span-3 font-bold">Font:</div>
+                    <label class="cursor-pointer"><input type="radio" name="font_family" value="'Poppins', sans-serif" class="hidden" checked><div class="p-4 rounded-lg text-center border-2 border-gray-300" style="font-family: 'Poppins', sans-serif;">Poppins</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="font_family" value="'Inter', sans-serif" class="hidden"><div class="p-4 rounded-lg text-center border-2 border-gray-300" style="font-family: 'Inter', sans-serif;">Inter</div></label>
+                    <label class="cursor-pointer"><input type="radio" name="font_family" value="'Georgia', serif" class="hidden"><div class="p-4 rounded-lg text-center border-2 border-gray-300" style="font-family: 'Georgia', serif;">Georgia</div></label>
+
+                    <!-- Font Color Options -->
+                    <div class="col-span-3 font-bold">Font Color:</div>
+                    <label class="cursor-pointer"><input type="radio" name="font_color" value="#ffffff" class="hidden" checked><div class="p-4 rounded-lg h-12 w-12 bg-white border-2"></div></label>
+                    <label class="cursor-pointer"><input type="radio" name="font_color" value="#000000" class="hidden"><div class="p-4 rounded-lg h-12 w-12 bg-black"></div></label>
+                </div>
+                <div class="flex justify-between mt-6">
+                    <button type="button" onclick="prevStep(1)" class="w-1/2 mr-2 bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg">Back</button>
+                    <button type="button" onclick="nextStep(3)" class="w-1/2 ml-2 accent-gradient text-white font-bold py-3 px-4 rounded-lg">Next: Preview</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Preview & Confirm -->
+            <div id="step-3" class="step hidden">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Step 3: Preview & Confirm</h2>
+                <div id="card-preview" class="w-full h-64 rounded-2xl p-6 shadow-lg mb-6 flex flex-col justify-center items-center text-center">
+                    <h3 id="preview-title" class="text-2xl font-bold"></h3>
+                    <p id="preview-recipient" class="text-lg"></p>
+                    <p id="preview-message" class="text-md"></p>
+                </div>
+                <input type="hidden" name="card_style_json" id="id_card_style_json">
+                <div class="flex justify-between mt-6">
+                    <button type="button" onclick="prevStep(2)" class="w-1/2 mr-2 bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg">Back</button>
+                    <button type="submit" class="w-1/2 ml-2 accent-gradient text-white font-bold py-3 px-4 rounded-lg">Create Card</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let currentStep = 1;
+
+    function showStep(step) {
+        document.querySelectorAll('.step').forEach(s => s.classList.add('hidden'));
+        document.getElementById(`step-${step}`).classList.remove('hidden');
+    }
+
+    function nextStep(step) {
+        if (step === 3) {
+            updatePreview();
+        }
+        currentStep = step;
+        showStep(currentStep);
+    }
+
+    function prevStep(step) {
+        currentStep = step;
+        showStep(currentStep);
+    }
+
+    function updatePreview() {
+        const title = document.getElementById('id_title').value;
+        const recipient = document.getElementById('id_recipient_name').value;
+        const message = document.getElementById('id_message').value;
+        const background = document.querySelector('input[name="background"]:checked').value;
+        const fontFamily = document.querySelector('input[name="font_family"]:checked').value;
+        const fontColor = document.querySelector('input[name="font_color"]:checked').value;
+
+        document.getElementById('preview-title').innerText = title;
+        document.getElementById('preview-recipient').innerText = `To: ${recipient}`;
+        document.getElementById('preview-message').innerText = message;
+        
+        const preview = document.getElementById('card-preview');
+        preview.style.background = background;
+        preview.style.fontFamily = fontFamily;
+        preview.style.color = fontColor;
+
+        const cardStyle = {
+            background: background,
+            font_family: fontFamily,
+            font_color: fontColor
+        };
+        document.getElementById('id_card_style_json').value = JSON.stringify(cardStyle);
+    }
+
+    showStep(currentStep);
+</script>
+{% endblock %}

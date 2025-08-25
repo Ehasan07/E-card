@@ -1,0 +1,5 @@
+Django==5.2.4
+Pillow==11.3.0
+qrcode==7.4.2
+sqlparse==0.5.3
+django-qr-code

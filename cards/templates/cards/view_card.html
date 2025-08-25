@@ -1,0 +1,107 @@
+{% extends 'cards/base.html' %}
+{% load static %}
+
+{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }}'s E-Card{% endblock %}
+
+{% block content %}
+<style>
+    .social-icon-bg {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+    }
+</style>
+<div class="min-h-screen flex items-center justify-center px-4 py-10 animate-fade-in-down">
+    <div class="w-full max-w-5xl glassmorphism rounded-2xl p-8 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-8" style="background: {{ card.card_data.background_style }}; color: {{ card.text_color }};">
+        <!-- Left Column: E-Card Information -->
+        <div class="flex flex-col items-center text-center p-6 glassmorphism rounded-2xl animate-slide-up">
+            {% if card.avatar %}
+            <img src="{{ card.avatar.url }}" alt="Avatar" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md mb-4">
+            {% else %}
+            <div class="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center mb-4">
+                <i data-lucide="user" class="w-16 h-16 text-gray-600"></i>
+            </div>
+            {% endif %}
+            
+            <h1 class="text-3xl font-bold mb-2">{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h1>
+            <p class="text-lg opacity-90">{{ card.card_data.jobTitle }}</p>
+            <p class="text-md opacity-80 mb-4">{{ card.card_data.company }}</p>
+
+            <div class="space-y-2 w-full text-left opacity-90">
+                {% if card.card_data.email %}<p><i data-lucide="mail" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.email }}</p>{% endif %}
+                {% if card.card_data.phone %}<p><i data-lucide="phone" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.phone }}</p>{% endif %}
+                {% if card.card_data.website %}<p><i data-lucide="globe" class="inline-block w-5 h-5 mr-2"></i> <a href="{{ card.card_data.website }}" target="_blank" class="hover:underline" style="color: {{ card.text_color }};">{{ card.card_data.website }}</a></p>{% endif %}
+                {% if card.card_data.address %}<p><i data-lucide="map-pin" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.address }}</p>{% endif %}
+                {% if card.card_data.birthday %}<p><i data-lucide="cake" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.birthday }}</p>{% endif %}
+                {% if card.card_data.notes %}<p class="text-sm italic mt-4">"{{ card.card_data.notes }}"</p>{% endif %}
+            </div>
+
+            <div class="social-icons mt-6 flex justify-center space-x-4 w-full">
+                {% if card.card_data.facebook %}<a href="{{ card.card_data.facebook }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #1877F2;"><i data-lucide="facebook" class="w-7 h-7"></i></a>{% endif %}
+                {% if card.card_data.whatsapp %}<a href="{{ card.card_data.whatsapp }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #25D366;"><i data-lucide="message-circle" class="w-7 h-7"></i></a>{% endif %}
+                {% if card.card_data.youtube %}<a href="{{ card.card_data.youtube }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #FF0000;"><i data-lucide="youtube" class="w-7 h-7"></i></a>{% endif %}
+                {% if card.card_data.instagram %}<a href="{{ card.card_data.instagram }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #E4405F;"><i data-lucide="instagram" class="w-7 h-7"></i></a>{% endif %}
+                {% if card.card_data.twitter %}<a href="{{ card.card_data.twitter }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #1DA1F2;"><i data-lucide="twitter" class="w-7 h-7"></i></a>{% endif %}
+                {% if card.card_data.linkedin %}<a href="{{ card.card_data.linkedin }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #0A66C2;"><i data-lucide="linkedin" class="w-7 h-7"></i></a>{% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: QR Code and Sharing Options -->
+        <div class="flex flex-col items-center justify-center p-6 glassmorphism rounded-2xl animate-slide-up" style="animation-delay: 0.2s;">
+            <h3 class="text-2xl font-bold mb-4" style="color: {{ card.text_color }};">Scan to Connect!</h3>
+            <div id="qrcode" class="p-3 border-4 border-white rounded-lg shadow-xl bg-white mb-6">
+                {% if card.qr_code %}
+                <img id="qrCodeImg" src="{{ card.qr_code.url }}" alt="QR Code">
+                {% endif %}
+            </div>
+            
+            <button id="downloadQrCode" class="accent-gradient text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center mb-4">
+                <i data-lucide="download" class="w-5 h-5 mr-2"></i> Download QR Code
+            </button>
+
+            <div class="flex flex-wrap justify-center gap-3 w-full">
+                <a href="{% url 'dashboard' %}" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
+                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Back to Dashboard
+                </a>
+                <a href="{% url 'edit_card' card.unique_slug %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center">
+                    <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Edit Card
+                </a>
+                <button id="copyLink" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
+                    <i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy Link
+                </button>
+                <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center">
+                    <i data-lucide="whatsapp" class="w-4 h-4 mr-2"></i> WhatsApp
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
+                    <i data-lucide="facebook" class="w-4 h-4 mr-2"></i> Facebook
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('downloadQrCode').addEventListener('click', function() {
+        const qrCodeImg = document.getElementById('qrCodeImg');
+        if (qrCodeImg) {
+            const link = document.createElement('a');
+            link.href = qrCodeImg.src;
+            link.download = 'e-card-qrcode.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    });
+
+    document.getElementById('copyLink').addEventListener('click', function() {
+        navigator.clipboard.writeText(window.location.href).then(function() {
+            alert('E-Card link copied to clipboard!');
+        }, function(err) {
+            console.error('Could not copy text: ', err);
+        });
+    });
+</script>
+{% endblock %}

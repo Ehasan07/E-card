@@ -1,0 +1,55 @@
+{% extends 'cards/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-10">
+    <h1 class="text-4xl font-bold mb-4 text-gray-800 animate-fade-in-down">Welcome back, {{ user.username }}!</h1>
+    <p class="text-lg text-gray-600 mb-8 animate-fade-in-up">Manage your digital e-cards here. Create, view, and share your professional presence with ease. Ready to make another one?</p>
+
+    <div class="mb-10 text-center animate-fade-in-up" style="animation-delay: 0.2s;">
+        <a href="{% url 'create_card' %}" class="accent-gradient text-white font-bold py-4 px-8 rounded-full text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-flex items-center justify-center">
+            <i data-lucide="plus-circle" class="w-6 h-6 mr-3"></i> Create New E-Card
+        </a>
+    </div>
+
+    {% if cards %}
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Your Existing E-Cards</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {% for card in cards %}
+        <div class="glassmorphism rounded-2xl p-6 flex flex-col justify-between border border-transparent hover:border-indigo-400 transition-all duration-300 ease-in-out animate-slide-up transform hover:-translate-y-1 hover:shadow-2xl"
+             style="animation-delay: {{ card.animation_delay }}; background: {{ card.background_gradient }};">
+            <div>
+                <h3 class="text-2xl font-bold mb-2 text-white">{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h3>
+                <p class="text-white mb-4">{{ card.card_data.jobTitle }} at {{ card.card_data.company }}</p>
+                <p class="text-white text-sm">Created: {{ card.created_at|date:"M d, Y" }}</p>
+            </div>
+            <div class="flex justify-end space-x-3 mt-4">
+                <a href="{% url 'view_card' card.unique_slug %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white accent-gradient hover:shadow-md transition-all duration-200">
+                    <i data-lucide="eye" class="w-4 h-4 mr-2"></i> View
+                </a>
+                <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 hover:text-red-700 transition-all duration-200">
+                    <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Delete
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glassmorphism rounded-2xl p-8 text-center animate-fade-in-up">
+        <i data-lucide="info" class="w-16 h-16 text-gray-500 mx-auto mb-4"></i>
+        <h2 class="text-2xl font-bold text-gray-800 mb-3">No E-Cards Yet!</h2>
+        <p class="text-gray-600 mb-6">It looks like you haven't created any digital e-cards. Let's get started!</p>
+        <a href="{% url 'create_card' %}" class="accent-gradient text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out inline-flex items-center justify-center">
+            <i data-lucide="plus" class="w-5 h-5 mr-2"></i> Create Your First E-Card
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="fixed bottom-10 right-10">
+        <a href="{% url 'create_card' %}" class="accent-gradient text-white rounded-full p-4 shadow-lg hover:shadow-2xl transform hover:scale-110 transition-all duration-300 ease-in-out flex items-center justify-center">
+            <i data-lucide="plus" class="w-8 h-8"></i>
+        </a>
+    </div>
+</div>
+{% endblock %}

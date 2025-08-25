@@ -1,0 +1,34 @@
+{% extends 'cards/base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
+
+<div class="min-h-screen flex items-center justify-center">
+    <div class="w-full max-w-md p-8 space-y-6 glassmorphism rounded-2xl shadow-lg">
+        <h2 class="text-3xl font-bold text-center text-gray-800">Create Your Account</h2>
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            {{ user_form.as_p }}
+            <div class="phone-field">
+                {{ profile_form.phone_number }}
+            </div>
+            <button type="submit" class="w-full accent-gradient text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
+                Register
+            </button>
+        </form>
+        <p class="text-center text-gray-600">Already have an account? <a href="{% url 'login' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Log in</a></p>
+        <p class="text-center text-gray-600">Are you an administrator? <a href="{% url 'admin_login' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Admin Login</a></p>
+    </div>
+</div>
+
+<script>
+    const phoneInputField = document.querySelector("#id_phone_number");
+    const phoneInput = window.intlTelInput(phoneInputField, {
+        initialCountry: "bd",
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
+    });
+</script>
+{% endblock %}
