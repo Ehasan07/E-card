@@ -4,7 +4,10 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-10">
-    <h1 class="text-4xl font-bold mb-4 text-gray-800 animate-fade-in-down">Welcome back, {{ user.username }}!</h1>
+        <div class="flex justify-between items-center mb-4 animate-fade-in-down">
+        <h1 class="text-4xl font-bold text-gray-800">Welcome back, {{ user.username }}!</h1>
+        <a href="{% url 'logout' %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">Logout</a>
+    </div>
     <p class="text-lg text-gray-600 mb-8 animate-fade-in-up">Manage your digital e-cards here. Create, view, and share your professional presence with ease. Ready to make another one?</p>
 
     <div class="mb-10 text-center animate-fade-in-up" style="animation-delay: 0.2s;">

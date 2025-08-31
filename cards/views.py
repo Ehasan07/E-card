@@ -190,18 +190,14 @@ def admin_login_view(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None and user.is_superuser:
+            user = form.get_user()
+            if user.is_superuser:
                 login(request, user)
                 return redirect('admin_dashboard')
             else:
-                # If user is not a superuser or authentication fails
-                form.add_error(None, "Invalid login credentials or you are not an administrator.")
-        
+                form.add_error(None, "You do not have permission to access the admin dashboard.")
     else:
-        form = AuthenticationForm()
+        form = AuthenticationForm(request)
     return render(request, 'cards/admin_login.html', {'form': form})
 
 @user_passes_test(lambda u: u.is_superuser)

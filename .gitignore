@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage/
+*.mo
+*.pot
+*.log
+.installed.cfg
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints
+
+# Django
+*.sqlite3
+*.sqlite3-journal
+media/
+staticfiles/
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# OS generated files
+.DS_Store
+.Trashes
+ehthumbs.db
+Thumbs.db
