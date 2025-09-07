@@ -1,288 +1,113 @@
 {% extends 'cards/base.html' %}
 
-{% block title %}Create Your Digital E-Card{% endblock %}
+{% block title %}{% if card %}Edit E-Card{% else %}Create E-Card{% endif %}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4 py-10 animate-fade-in-down">
-    <div class="w-full max-w-6xl p-8 space-y-6 glassmorphism rounded-2xl shadow-lg">
-        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6">Create Your Digital E-Card</h2>
-        <p class="text-center text-gray-600 mb-8">Personalize your professional presence with a live preview.</p>
+<div class="min-h-screen flex items-center justify-center px-4 py-10">
+    <div class="w-full max-w-3xl glassmorphism rounded-2xl p-8 shadow-lg">
+        <h1 class="text-3xl font-bold text-center mb-6">{% if card %}Edit Your E-Card{% else %}Create Your E-Card{% endif %}</h1>
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            <form id="ecardForm" method="post" action="" enctype="multipart/form-data" class="space-y-4">
-                {% csrf_token %}
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="text" name="firstName" placeholder="First Name" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
-                    <input type="text" name="lastName" placeholder="Last Name" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Personal Information -->
+                <div>
+                    <label class="block text-sm font-medium mb-1">First Name</label>
+                    {{ form.firstName }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Last Name</label>
+                    {{ form.lastName }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Job Title</label>
+                    {{ form.jobTitle }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Company</label>
+                    {{ form.company }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email</label>
+                    {{ form.email }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Phone</label>
+                    {{ form.phone }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1">Address</label>
+                    {{ form.address }}
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium mb-1">Website</label>
+                    {{ form.website }}
+                </div>
+                 <div>
+                    <label class="block text-sm font-medium mb-1">Birthday</label>
+                    {{ form.birthday }}
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium mb-1">Notes</label>
+                    {{ form.notes }}
                 </div>
 
-                <label for="avatarInput" class="block text-sm font-medium text-gray-700">Profile Picture (Optional)</label>
-                <input type="file" name="avatar" id="avatarInput" accept="image/*" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                
-                <input type="text" name="company" placeholder="Company" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                <input type="text" name="jobTitle" placeholder="Job Title" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                <input type="email" name="email" placeholder="Email" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
-                <input type="tel" name="phone" placeholder="Phone" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required />
-                <input type="text" name="address" placeholder="Address" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                
-                <label for="birthday" class="block text-sm font-medium text-gray-700">Birthday (Optional)</label>
-                <input type="date" name="birthday" id="birthday" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                
-                <input type="url" name="website" placeholder="Website URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-
-                <textarea name="notes" placeholder="Notes" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 h-24"></textarea>
-
-                <h3 class="text-xl font-bold text-gray-800">Social Media Links</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <input type="url" name="facebook" placeholder="Facebook URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <input type="url" name="whatsapp" placeholder="WhatsApp URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <input type="url" name="youtube" placeholder="YouTube URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <input type="url" name="instagram" placeholder="Instagram URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <input type="url" name="twitter" placeholder="Twitter/X URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-                    <input type="url" name="linkedin" placeholder="LinkedIn URL" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+                <!-- Social Media -->
+                <h3 class="md:col-span-2 text-xl font-semibold mt-4">Social Media Links</h3>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Facebook</label>
+                    {{ form.facebook }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">WhatsApp</label>
+                    {{ form.whatsapp }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">YouTube</label>
+                    {{ form.youtube }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Instagram</label>
+                    {{ form.instagram }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Twitter</label>
+                    {{ form.twitter }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">LinkedIn</label>
+                    {{ form.linkedin }}
                 </div>
 
-                <h3 class="text-xl font-bold text-gray-800">Card Design</h3>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%)" class="hidden" checked>
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);">Default</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #4facfe 0%, #00f2fe 100%)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);">Sky Blue</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #a18cd1 0%, #fbc2eb 100%)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #a18cd1 0%, #fbc2eb 100%);">Lavender</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #fddb92 0%, #d1fdff 100%)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-gray-800 font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #fddb92 0%, #d1fdff 100%);">Sunrise</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #c33764 0%, #1d2671 100%)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #c33764 0%, #1d2671 100%);">Deep Ocean</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #348F50, #56B4D3)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #348F50, #56B4D3);">Emerald Water</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #673AB7, #512DA8)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #673AB7, #512DA8);">Purple Bliss</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #FF512F, #F09819)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #FF512F, #F09819);">Sunset</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #232526, #414345)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #232526, #414345);">Graphite</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #2E3192, #1BFFFF)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #2E3192, #1BFFFF);">Ocean Blue</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="linear-gradient(to right, #D31027, #EA384D)" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-white font-bold shadow-md transition-all duration-200 hover:scale-105" style="background: linear-gradient(to right, #D31027, #EA384D);">Ruby</div>
-                    </label>
-                    <label class="cursor-pointer">
-                        <input type="radio" name="background_style" value="#ffffff" class="hidden">
-                        <div class="p-4 rounded-lg h-20 flex items-center justify-center text-gray-800 font-bold shadow-md transition-all duration-200 hover:scale-105 border border-gray-200" style="background: #ffffff;">Minimalist White</div>
-                    </label>
+                <!-- Customization -->
+                <h3 class="md:col-span-2 text-xl font-semibold mt-4">Customization</h3>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Avatar</label>
+                    {{ form.avatar }}
+                    {% if card.avatar %}
+                        <p class="text-xs mt-1">Current: <a href="{{ card.avatar.url }}" target="_blank">{{ card.avatar.name }}</a></p>
+                    {% endif %}
                 </div>
-
-                <button type="submit" class="w-full accent-gradient text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out mt-6">
-                    Generate E-Card
-                </button>
-            </form>
-
-            <!-- E-Card Preview Section -->
-                        <div class="w-full flex flex-col items-center justify-center md:sticky md:top-10" style="max-height: 80vh; overflow-y: auto;">
-                                                <div id="ecardPreview" class="w-96 rounded-xl shadow-xl p-6 flex flex-col gap-4 bg-cover bg-center transition-all duration-300" >
-                    <!-- User Info -->
-                    <div class="flex items-center gap-4">
-                        <img id="avatarPreview" class="hidden w-16 h-16 rounded-full object-cover border-2 border-white shadow-lg" alt="Avatar Preview">
-                        <div>
-                            <h3 class="text-2xl font-bold" id="namePreview">Your Name</h3>
-                            <p class="text-sm" id="jobPreview">Your Job Title</p>
-                            <p class="text-xs" id="companyPreview">Company</p>
-                        </div>
-                    </div>
-                    <!-- Contact Info -->
-                    <div class="text-sm space-y-1">
-                        <p id="contactPreview"></p>
-                        <p id="websitePreview" class="hidden"></p>
-                        <p id="addressPreview" class="hidden"></p>
-                        <p id="notesPreview" class="text-sm italic hidden"></p>
-                    </div>
-                    <!-- Social Links -->
-                    <div class="social-icons flex justify-start flex-wrap gap-4" id="socialLinks"></div>
-                    <!-- QR Code -->
-                    <div id="qrCodeDisplay" class="mt-4 mx-auto p-1 bg-white rounded-md shadow-inner w-24 h-24 flex items-center justify-center"></div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Background Style</label>
+                    {{ form.background_style }}
                 </div>
             </div>
-        </div>
+
+            <div class="flex justify-end mt-8">
+                <button type="submit" class="accent-gradient text-white font-bold py-3 px-8 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
+                    {% if card %}Save Changes{% else %}Create Card{% endif %}
+                </button>
+            </div>
+        </form>
     </div>
 </div>
-
-<style>
-    @keyframes fade-in-down {
-        0% { opacity: 0; transform: translateY(-20px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
-</style>
-
-<script src="https://cdn.jsdelivr.net/npm/davidshimjs-qrcodejs@0.0.2/qrcode.min.js"></script>
-<script>
-    const form = document.getElementById('ecardForm');
-    const avatarInput = document.getElementById('avatarInput');
-    const avatarPreview = document.getElementById('avatarPreview');
-    const ecardPreview = document.getElementById('ecardPreview');
-
-    const socialIcons = {
-        facebook: 'facebook',
-        whatsapp: 'message-circle',
-        youtube: 'youtube',
-        instagram: 'instagram',
-        twitter: 'twitter',
-        linkedin: 'linkedin'
-    };
-
-    function updatePreview() {
-        const data = new FormData(form);
-        const firstName = data.get('firstName') || '';
-        const lastName = data.get('lastName') || '';
-        const fullName = `${firstName} ${lastName}`.trim();
-
-        // Update User Info
-        document.getElementById('namePreview').innerText = fullName || 'Your Name';
-        document.getElementById('jobPreview').innerText = data.get('jobTitle') || 'Your Job Title';
-        document.getElementById('companyPreview').innerText = data.get('company') || 'Company';
-
-        if (avatarInput.files[0]) {
-            const reader = new FileReader();
-            reader.onload = () => {
-                avatarPreview.src = reader.result;
-                avatarPreview.classList.remove('hidden');
-            };
-            reader.readAsDataURL(avatarInput.files[0]);
-        } else {
-            avatarPreview.classList.add('hidden');
-        }
-
-        // Update Contact Info
-        const email = data.get('email');
-        const phone = data.get('phone');
-        const contactEl = document.getElementById('contactPreview');
-        contactEl.innerHTML = '';
-        if (email) {
-            contactEl.innerHTML += `<span><i data-lucide="mail" class="inline-block w-4 h-4 mr-2 align-middle"></i>${email}</span>`;
-        }
-        if (phone) {
-            contactEl.innerHTML += `<br><span><i data-lucide="phone" class="inline-block w-4 h-4 mr-2 align-middle"></i>${phone}</span>`;
-        }
-
-        const websiteEl = document.getElementById('websitePreview');
-        const website = data.get('website');
-        if (website) {
-            websiteEl.innerHTML = `<i data-lucide="globe" class="inline-block w-4 h-4 mr-2 align-middle"></i>${website}`;
-            websiteEl.classList.remove('hidden');
-        } else {
-            websiteEl.classList.add('hidden');
-        }
-
-        const addressEl = document.getElementById('addressPreview');
-        const address = data.get('address');
-        if (address) {
-            addressEl.innerHTML = `<i data-lucide="map-pin" class="inline-block w-4 h-4 mr-2 align-middle"></i>${address}`;
-            addressEl.classList.remove('hidden');
-        } else {
-            addressEl.classList.add('hidden');
-        }
-
-        const notesEl = document.getElementById('notesPreview');
-        const notes = data.get('notes');
-        if (notes) {
-            notesEl.innerText = `"${notes}"`;
-            notesEl.classList.remove('hidden');
-        } else {
-            notesEl.classList.add('hidden');
-        }
-
-        // Update Social Links
-        const socialLinksContainer = document.getElementById('socialLinks');
-        socialLinksContainer.innerHTML = '';
-        Object.keys(socialIcons).forEach(key => {
-            const url = data.get(key);
-            if (url) {
-                const a = document.createElement('a');
-                a.href = url;
-                a.target = '_blank';
-                a.style.color = getSocialIconColor(key);
-                a.innerHTML = `<i data-lucide="${socialIcons[key]}" class="w-6 h-6"></i>`;
-                socialLinksContainer.appendChild(a);
-            }
-        });
-
-        // Update Card Design
-        const selectedBackground = document.querySelector('input[name="background_style"]:checked').value;
-        ecardPreview.style.background = selectedBackground;
-
-        const namePreview = document.getElementById('namePreview');
-        const jobPreview = document.getElementById('jobPreview');
-        const companyPreview = document.getElementById('companyPreview');
-        const allTextElements = ecardPreview.querySelectorAll('p, h3');
-
-        if (selectedBackground === '#ffffff') {
-            namePreview.style.color = '#111827';
-            jobPreview.style.color = '#374151';
-            companyPreview.style.color = '#6b7280';
-            allTextElements.forEach(el => el.style.color = '#374151');
-        } else {
-            namePreview.style.color = '#ffffff';
-            jobPreview.style.color = '#e5e7eb';
-            companyPreview.style.color = '#d1d5db';
-            allTextElements.forEach(el => el.style.color = '#ffffff');
-        }
-        
-        lucide.createIcons();
-
-        // QR Code Generation
-        const qrCodeContainer = document.getElementById('qrCodeDisplay');
-        qrCodeContainer.innerHTML = ''; // Clear previous QR code
-        new QRCode(qrCodeContainer, {
-            text: window.location.href, // This will be updated upon saving
-            width: 96,
-            height: 96,
-            colorDark : "#000000",
-            colorLight : "#ffffff",
-            correctLevel : QRCode.CorrectLevel.H
-        });
-    }
-
-    function getSocialIconColor(key) {
-        const colors = {
-            facebook: '#1877F2',
-            whatsapp: '#25D366',
-            youtube: '#FF0000',
-            instagram: '#E4405F',
-            twitter: '#1DA1F2',
-            linkedin: '#0A66C2'
-        };
-        return colors[key] || '#333';
-    }
-
-    form.addEventListener('input', updatePreview);
-
-    form.addEventListener('submit', function (e) {
-        e.preventDefault();
-        form.submit(); 
-    });
-
-    document.addEventListener('DOMContentLoaded', updatePreview);
-</script>
 {% endblock %}

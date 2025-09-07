@@ -1,0 +1,17 @@
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=user
+Group=www-data
+WorkingDirectory=/home/user/ecard
+ExecStart=/home/user/ecard/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/gunicorn.sock \
+          ecard_project.wsgi:application
+
+[Install]
+WantedBy=multi-user.target

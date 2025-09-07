@@ -64,21 +64,24 @@
             </button>
 
             <div class="flex flex-wrap justify-center gap-3 w-full">
-                <a href="{% url 'dashboard' %}" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
-                    <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Back to Dashboard
-                </a>
-                <a href="{% url 'edit_card' card.unique_slug %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center">
-                    <i data-lucide="edit" class="w-4 h-4 mr-2"></i> Edit Card
-                </a>
-                <button id="copyLink" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
-                    <i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy Link
-                </button>
-                <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center">
-                    <i data-lucide="whatsapp" class="w-4 h-4 mr-2"></i> WhatsApp
-                </a>
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center">
-                    <i data-lucide="facebook" class="w-4 h-4 mr-2"></i> Facebook
-                </a>
+                {% if is_owner %}
+                    <a href="{% url 'dashboard' %}" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
+                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Back to Dashboard
+                    </a>
+                    <a href="{% url 'edit_card' card.slug %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center">
+                        <i data-lucide="edit" class.="w-4 h-4 mr-2"></i> Edit Card
+                    </a>
+                    <button id="copyLink" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
+                        <i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy Link
+                    </button>
+                {% else %}
+                    <button id="copyLink" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
+                        <i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy Link
+                    </button>
+                    <a href="{% url 'register' %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center">
+                        <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Create card for yourself
+                    </a>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -115,6 +115,42 @@ The application will be available at `http://127.0.0.1:8000/`.
 2.  **View Statistics:** See the total number of users and e-cards on the platform.
 3.  **Manage E-Cards:** View a list of all e-cards and delete any that are inappropriate or no longer needed.
 
+## Production Deployment
+
+This project is configured for production deployment on a Linux server (e.g., Ubuntu on Hetzner) using a professional-grade stack.
+
+### Technology Stack
+
+*   **Web Server:** Nginx
+*   **Application Server:** Gunicorn
+*   **Database:** PostgreSQL (with SQLite fallback for local development)
+*   **Process Management:** Systemd
+*   **SSL:** Let's Encrypt
+
+### Overview
+
+The production environment is managed through environment variables and dedicated service files.
+
+1.  **Configuration via `.env`:** Sensitive information and environment-specific settings (like `SECRET_KEY`, `DATABASE_URL`, and `ALLOWED_HOSTS`) are loaded from a `.env` file at the project root. This is handled by the `python-decouple` library.
+
+2.  **Gunicorn:** The `gunicorn` application server runs the Django application. It is managed by a `systemd` service (`ecard.service`), which ensures the application starts on boot and restarts if it fails.
+
+3.  **Nginx:** Nginx acts as a reverse proxy, forwarding requests to Gunicorn. It is also responsible for serving static and media files directly, which is more efficient. The configuration is located in `ecard.conf`.
+
+4.  **Systemd:** The `ecard.service` and `gunicorn.socket` files manage the Gunicorn process, ensuring it is always running.
+
+5.  **SSL/TLS:** The site is secured with a Let's Encrypt SSL certificate, which is automatically provisioned and renewed by `certbot`.
+
+### Deployment Steps
+
+A `deploy.sh` script is provided to automate the setup on a fresh Ubuntu server. This script will:
+*   Install all necessary packages.
+*   Set up the PostgreSQL database.
+*   Configure and start the Nginx and Gunicorn services.
+*   Set up the firewall.
+
+For detailed instructions, refer to the `deploy.sh` script and the configuration files (`nginx.conf`, `gunicorn.service`, `gunicorn.socket`).
+
 ## Project Structure
 
 ```
