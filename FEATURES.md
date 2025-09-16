@@ -20,8 +20,9 @@ This document outlines the key features and functionalities implemented in the E
 
 ### 1.4 Admin Login & Dashboard
 - Separate login for superusers to access the admin dashboard.
-- Admin dashboard provides an overview of total users and total e-cards.
-- Admins can view and delete any e-card.
+- Admin dashboard provides animated metric cards for total users, total cards, and moderation queue size.
+- Admins can view and delete any e-card, with quick navigation buttons for going home or logging out.
+- Glassmorphism styling, motion, and icons mirror the user dashboard so the admin console feels first-class.
 
 ## 2. E-Card Creation & Customization
 
@@ -45,10 +46,11 @@ This document outlines the key features and functionalities implemented in the E
 - Automatic text color adjustment: Text color (black/white) dynamically changes based on the selected background to ensure readability.
 - Social media icons retain their brand colors and gain a subtle light background on dark card themes for visibility.
 
-### 2.4 Live Preview
-- Real-time, static preview of the e-card during the creation process.
-- All entered information (personal details, contact info, social links, QR code) is immediately reflected in the preview.
-- No animations in the live preview for a direct representation.
+### 2.4 Builder Experience Enhancements
+- Dual-panel builder with animated preview so changes are reflected instantly.
+- Smart styling system adjusts text contrast based on chosen backgrounds or custom colors.
+- Iconic form groups, gradient pickers, and avatar previews keep onboarding friendly.
+- Animated guidance badges and stats highlight the design journey while building.
 
 ## 3. E-Card Viewing & Sharing
 
@@ -61,9 +63,11 @@ This document outlines the key features and functionalities implemented in the E
 - Scanning the QR code directs to the e-card's unique URL.
 - "Download QR Code" button allows users to save the QR code image.
 
-### 3.3 Sharing Options
-- Buttons for easy sharing via WhatsApp and Facebook.
+### 3.3 Sharing & Quick Actions
+- Buttons for easy sharing via WhatsApp and Facebook plus browser-native share support.
 - "Copy Link" button to quickly copy the e-card's URL to the clipboard.
+- Contact quick actions: copy email/phone, launch mailto, call now, or save as a downloadable vCard.
+- Insight cards surface helpful reminders (e.g., embed links, check analytics) beside the QR panel.
 
 ### 3.4 Edit E-Card
 - Users can edit their existing e-cards.
@@ -76,14 +80,15 @@ This document outlines the key features and functionalities implemented in the E
 - Utilizes Django's ORM for database interactions.
 
 ### 4.2 Frontend Technologies
-- HTML for structure.
-- Tailwind CSS for styling and responsive design.
-- JavaScript for dynamic functionalities (live preview, QR code generation, form handling).
-- Lucide Icons for vector icons.
+- HTML templates with glassmorphism-inspired layouts.
+- Tailwind CSS and custom animation keyframes for gradients, floating cards, and interactive buttons.
+- JavaScript for dynamic functionalities (live preview, QR generation, contact quick actions, native sharing, tutorial modal).
+- Lucide Icons for consistent iconography across dashboards, forms, and cards.
 - qrcode.js library for client-side QR code generation in live preview.
+- Embedded tutorial modal on the home page to demonstrate the card creation flow.
 
 ### 4.3 Database
-- SQLite (db.sqlite3) for development.
+- PostgreSQL powers both development and production via a `DATABASE_URL` environment variable (configured through `python-decouple` and `dj-database-url`).
 
 ### 4.4 Media Handling
 - Stores user avatars and generated QR codes in the `/media` directory.

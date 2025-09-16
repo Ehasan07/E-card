@@ -18,7 +18,10 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = config(
+      'ALLOWED_HOSTS',
+      default='127.0.0.1,localhost,0.0.0.0'
+  ).split(',')
 
 
 # Application definition
@@ -68,12 +71,12 @@ WSGI_APPLICATION = 'ecard_project.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{(BASE_DIR / 'db.sqlite3')}",
+    'default': dj_database_url.config(
+        default='postgres://ec_user:ec_pass@localhost:5432/ecard_db',
         conn_max_age=600,
+        ssl_require=False
     )
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -130,10 +133,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = '/dashboard/'
 LOGOUT_REDIRECT_URL = '/register/'
-IRECT_URL = '/'
-_REDIRECT_URL = '/'
 
 # Security settings
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

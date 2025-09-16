@@ -3,56 +3,370 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-10">
-        <div class="flex justify-between items-center mb-4 animate-fade-in-down">
-        <h1 class="text-4xl font-bold text-gray-800">Welcome back, {{ user.username }}!</h1>
-        <a href="{% url 'logout' %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">Logout</a>
-    </div>
-    <p class="text-lg text-gray-600 mb-8 animate-fade-in-up">Manage your digital e-cards here. Create, view, and share your professional presence with ease. Ready to make another one?</p>
-
-    <div class="mb-10 text-center animate-fade-in-up" style="animation-delay: 0.2s;">
-        <a href="{% url 'create_card' %}" class="accent-gradient text-white font-bold py-4 px-8 rounded-full text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-flex items-center justify-center">
-            <i data-lucide="plus-circle" class="w-6 h-6 mr-3"></i> Create New E-Card
-        </a>
-    </div>
-
-    {% if cards %}
-    <h2 class="text-3xl font-bold mb-6 text-gray-800">Your Existing E-Cards</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {% for card in cards %}
-        <div class="glassmorphism rounded-2xl p-6 flex flex-col justify-between border border-transparent hover:border-indigo-400 transition-all duration-300 ease-in-out animate-slide-up transform hover:-translate-y-1 hover:shadow-2xl"
-             style="animation-delay: {{ card.animation_delay }}; background: {{ card.background_gradient }};">
-            <div>
-                <h3 class="text-2xl font-bold mb-2 text-white">{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h3>
-                <p class="text-white mb-4">{{ card.card_data.jobTitle }} at {{ card.card_data.company }}</p>
-                <p class="text-white text-sm">Created: {{ card.created_at|date:"M d, Y" }}</p>
+<div class="min-h-screen">
+    <div class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-pink-100/60 via-white to-indigo-100/60"></div>
+        <div class="relative container mx-auto px-4 py-12">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
+                <div class="space-y-4">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-pink-200 text-xs font-semibold tracking-[0.35em] uppercase text-pink-500">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Your hub
+                    </span>
+                    <div>
+                        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
+                        <p class="text-gray-600 max-w-xl">All your interactive calling cards in one place. Edit, preview, and share in seconds.</p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a href="{% url 'index' %}" class="back-home-btn">
+                        <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
+                        Back to home
+                    </a>
+                    <a href="{% url 'create_card' %}" class="group relative inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden">
+                        <span class="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 group-hover:opacity-90 transition"></span>
+                        <span class="absolute -inset-0.5 bg-gradient-to-r from-rose-300 to-pink-400 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
+                        <span class="relative flex items-center gap-3">
+                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                            Create new card
+                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                        </span>
+                    </a>
+                </div>
             </div>
-            <div class="flex justify-end space-x-3 mt-4">
-                <a href="{% url 'view_card' card.unique_slug %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white accent-gradient hover:shadow-md transition-all duration-200">
-                    <i data-lucide="eye" class="w-4 h-4 mr-2"></i> View
-                </a>
-                <a href="#" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-red-600 bg-white hover:bg-red-50 hover:text-red-700 transition-all duration-200">
-                    <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Delete
-                </a>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="dashboard-pulse">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-pink-100 text-pink-600">
+                            <i data-lucide="id-card" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">Active cards</p>
+                            <p class="stat-value">{{ cards|length }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-pulse" style="animation-delay: 0.2s;">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-indigo-100 text-indigo-600">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">Last updated</p>
+                            <p class="stat-value">{% if cards %}{{ cards.0.created_at|timesince }} ago{% else %}Just now{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="dashboard-pulse" style="animation-delay: 0.4s;">
+                    <div class="stat-card">
+                        <div class="stat-icon bg-emerald-100 text-emerald-600">
+                            <i data-lucide="share-2" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <p class="stat-label">Share ready</p>
+                            <p class="stat-value">{% if cards %}Yes{% else %}Create one{% endif %}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            {% if cards %}
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {% for card in cards %}
+                        <div class="card-preview group">
+                            <div class="flex items-start gap-4">
+                                <div class="avatar-shell">
+                                    {% if card.avatar %}
+                                        <img src="{{ card.avatar.url }}" alt="{{ card.card_data.firstName }} {{ card.card_data.lastName }}" class="avatar-img">
+                                    {% else %}
+                                        <div class="avatar-placeholder">
+                                            <i data-lucide="user" class="w-6 h-6"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-1 space-y-2">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <div>
+                                            <h3 class="text-lg font-semibold text-gray-900">{{ card.card_data.firstName|default:'Card' }} {{ card.card_data.lastName|default:card.id }}</h3>
+                                            <p class="text-sm text-gray-500">{{ card.card_data.jobTitle|default:'No title set yet' }}</p>
+                                        </div>
+                                        <span class="status-pill">
+                                            <span class="status-dot"></span>
+                                            Live
+                                        </span>
+                                    </div>
+                                    <div class="preview-banner" style="background: {{ card.card_data.background_style|default:'linear-gradient(135deg,#ff9a9e,#fad0c4)' }};"></div>
+                                    <div class="flex items-center gap-3 text-sm text-gray-500">
+                                        <span class="inline-flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-gray-200">
+                                            <i data-lucide="calendar" class="w-4 h-4"></i>
+                                            Updated {{ card.created_at|date:"M d, Y" }}
+                                        </span>
+                                        {% if card.card_data.website %}
+                                            <span class="inline-flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-gray-200">
+                                                <i data-lucide="globe" class="w-4 h-4"></i>
+                                                {{ card.card_data.website|cut:'https://'|cut:'http://'|truncatechars:20 }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex flex-wrap gap-3 pt-2">
+                                        <a href="{% url 'view_card' card.slug %}" class="card-action">
+                                            <i data-lucide="eye" class="w-4 h-4"></i>
+                                            View card
+                                        </a>
+                                        <a href="{% url 'edit_card' card.slug %}" class="card-action accent">
+                                            <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                            Edit details
+                                        </a>
+                                        <button type="button" class="card-action" data-copy-url="{{ card.get_absolute_url }}" onclick="(function(btn){const url=new URL(btn.dataset.copyUrl, window.location.origin).href;navigator.clipboard.writeText(url).then(()=>{btn.dataset.original=btn.dataset.original||btn.innerHTML;btn.innerHTML='<i data-lucide=\'check\' class=\'w-4 h-4\'></i>Copied!';setTimeout(()=>{btn.innerHTML=btn.dataset.original;lucide.createIcons();},1500);}).catch(()=>alert('Unable to copy link'));})(this)">
+                                            <i data-lucide="copy" class="w-4 h-4"></i>
+                                            Copy link
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i data-lucide="id-card" class="w-10 h-10"></i>
+                    </div>
+                    <h2 class="text-2xl font-semibold text-gray-800">No cards yet</h2>
+                    <p class="text-gray-600 max-w-md mx-auto">Create your first digital card and share it instantly with anyone—add your details, customize the look, and publish.</p>
+                    <a href="{% url 'create_card' %}" class="empty-cta">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Start designing
+                    </a>
+                </div>
+            {% endif %}
         </div>
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="glassmorphism rounded-2xl p-8 text-center animate-fade-in-up">
-        <i data-lucide="info" class="w-16 h-16 text-gray-500 mx-auto mb-4"></i>
-        <h2 class="text-2xl font-bold text-gray-800 mb-3">No E-Cards Yet!</h2>
-        <p class="text-gray-600 mb-6">It looks like you haven't created any digital e-cards. Let's get started!</p>
-        <a href="{% url 'create_card' %}" class="accent-gradient text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out inline-flex items-center justify-center">
-            <i data-lucide="plus" class="w-5 h-5 mr-2"></i> Create Your First E-Card
-        </a>
-    </div>
-    {% endif %}
-
-    <div class="fixed bottom-10 right-10">
-        <a href="{% url 'create_card' %}" class="accent-gradient text-white rounded-full p-4 shadow-lg hover:shadow-2xl transform hover:scale-110 transition-all duration-300 ease-in-out flex items-center justify-center">
-            <i data-lucide="plus" class="w-8 h-8"></i>
-        </a>
     </div>
 </div>
+
+<style>
+    .dashboard-pulse { animation: dashPulse 8s ease-in-out infinite; }
+    @keyframes dashPulse {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+    }
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.2rem;
+        border-radius: 1.25rem;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(8px);
+    }
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #64748b;
+        font-weight: 600;
+    }
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #0f172a;
+    }
+    .card-preview {
+        border-radius: 1.5rem;
+        background: rgba(255,255,255,0.85);
+        border: 1px solid rgba(255,255,255,0.6);
+        padding: 1.5rem;
+        box-shadow: 0 30px 60px -35px rgba(15, 23, 42, 0.6);
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+        backdrop-filter: blur(10px);
+    }
+    .card-preview:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 35px 70px -30px rgba(236, 72, 153, 0.45);
+    }
+    .avatar-shell {
+        width: 3.5rem;
+        height: 3.5rem;
+        border-radius: 1.2rem;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(148,163,184,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
+    }
+    .avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .avatar-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        color: #94a3b8;
+    }
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.3rem 0.7rem;
+        border-radius: 999px;
+        font-size: 0.75rem;
+        background: rgba(220, 252, 231, 0.9);
+        border: 1px solid rgba(22, 163, 74, 0.2);
+        color: #166534;
+        font-weight: 600;
+    }
+    .status-dot {
+        position: relative;
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #22c55e;
+    }
+    .status-dot::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: inherit;
+        background: rgba(34, 197, 94, 0.35);
+        animation: ping 1.5s infinite;
+    }
+    @keyframes ping {
+        0% { transform: scale(1); opacity: 0.8; }
+        80%, 100% { transform: scale(1.8); opacity: 0; }
+    }
+    .preview-banner {
+        height: 90px;
+        border-radius: 1rem;
+        background-size: cover;
+        background-position: center;
+        border: 1px solid rgba(255,255,255,0.45);
+        box-shadow: inset 0 1px 15px -12px rgba(15,23,42,0.8);
+    }
+    .card-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.55rem 1rem;
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(226,232,240,0.9);
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+        transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+    }
+    .card-action:hover {
+        transform: translateY(-3px);
+        color: #111827;
+        box-shadow: 0 15px 35px -30px rgba(15, 23, 42, 0.45);
+    }
+    .card-action i { opacity: 0.75; }
+    .card-action.accent {
+        background: linear-gradient(135deg, rgba(236,72,153,0.95), rgba(244,114,182,0.95));
+        color: white;
+        border: none;
+        box-shadow: 0 20px 45px -25px rgba(236,72,153,0.6);
+    }
+    .card-action.accent:hover {
+        box-shadow: 0 25px 60px -25px rgba(236,72,153,0.7);
+    }
+    .empty-state {
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(226,232,240,0.7);
+        border-radius: 1.75rem;
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: 0 25px 60px -35px rgba(15, 23, 42, 0.45);
+    }
+    .empty-icon {
+        width: 4rem;
+        height: 4rem;
+        border-radius: 1.25rem;
+        margin: 0 auto 1.5rem auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(244,114,182,0.12);
+        color: #ec4899;
+    }
+    .empty-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #ec4899, #f59e0b);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 999px;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        box-shadow: 0 20px 45px -25px rgba(236,72,153,0.5);
+    }
+    .empty-cta:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 25px 60px -25px rgba(236,72,153,0.65);
+    }
+    .back-home-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.8rem 1.4rem;
+        border-radius: 1.1rem;
+        font-weight: 600;
+        color: #475569;
+        background: rgba(255,255,255,0.88);
+        border: 1px solid rgba(226,232,240,0.85);
+        box-shadow: 0 18px 40px -28px rgba(15,23,42,0.35);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .back-home-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(236,72,153,0.12), rgba(59,130,246,0.12));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .back-home-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 24px 52px -26px rgba(59,130,246,0.35);
+    }
+    .back-home-btn:hover::after { opacity: 1; }
+    .back-home-btn .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 0.9rem;
+        background: rgba(59,130,246,0.12);
+        color: #2563eb;
+        position: relative;
+        z-index: 1;
+    }
+    @media (max-width: 768px) {
+        .card-preview { padding: 1.2rem; }
+        .preview-banner { height: 80px; }
+        .stat-card { padding: 1rem; }
+    }
+</style>
 {% endblock %}

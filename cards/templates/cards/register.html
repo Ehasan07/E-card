@@ -6,32 +6,158 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
-<div class="min-h-screen flex items-center justify-center">
-            <div class="p-1 rounded-2xl shadow-lg" style="background: linear-gradient(to right, #4facfe, #a18cd1, #fbc2eb);">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white bg-opacity-80 backdrop-blur-xl rounded-2xl">
-            <h2 class="text-3xl font-bold text-center text-gray-800">Create Your Account</h2>
-            <form method="post" class="space-y-6">
-                {% csrf_token %}
-                {{ user_form.as_p }}
-                <div class="phone-field">
-                    {{ profile_form.phone_number }}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="relative w-full max-w-5xl">
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute -top-24 -left-24 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-20 -right-16 w-72 h-72 bg-indigo-300/30 rounded-full blur-3xl animate-pulse" style="animation-delay:1.8s;"></div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 backdrop-blur-xl bg-white/70 border border-white/80 rounded-3xl shadow-2xl overflow-hidden">
+            <div class="relative hidden lg:flex flex-col justify-between p-10 text-white" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
+                <div>
+                    <span class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.4em] font-semibold bg-white/20 px-4 py-1 rounded-full">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Join us
+                    </span>
+                    <h2 class="text-3xl font-bold mt-5 mb-3">Start crafting memorable e-cards</h2>
+                    <p class="text-white/90 leading-relaxed">Create a profile to unlock personalized designs, instant QR sharing and a sleek digital identity you control.</p>
                 </div>
-                <button type="submit" class="w-full accent-gradient text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
-                    Register
-                </button>
-            </form>
-            <p class="text-center text-gray-600">Already have an account? <a href="{% url 'login' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Log in</a></p>
-            <p class="text-center text-gray-600">Are you an administrator? <a href="{% url 'admin_login' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Admin Login</a></p>
-            <p class="text-center text-gray-600"><a href="{% url 'index' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Back to Home</a></p>
+                <div class="space-y-4">
+                    <div class="glass-feature">
+                        <i data-lucide="palette" class="w-5 h-5"></i>
+                        Customize beautiful themes
+                    </div>
+                    <div class="glass-feature">
+                        <i data-lucide="share-2" class="w-5 h-5"></i>
+                        Share instantly with QR & links
+                    </div>
+                    <div class="glass-feature">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                        Secure OTP-based recovery
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 lg:p-10">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Create your account</h1>
+                        <p class="text-sm text-gray-500">Join in less than a minute and start designing.</p>
+                    </div>
+                    <div class="hidden sm:flex items-center justify-center w-12 h-12 rounded-2xl bg-pink-100 text-pink-500">
+                        <i data-lucide="id-card" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <form method="post" class="space-y-5" id="register-form">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 gap-4">
+                        <label class="form-field">
+                            <span><i data-lucide="user" class="w-4 h-4"></i> Username</span>
+                            {{ user_form.username }}
+                        </label>
+                        <label class="form-field">
+                            <span><i data-lucide="mail" class="w-4 h-4"></i> Email</span>
+                            {{ user_form.email }}
+                        </label>
+                        <label class="form-field">
+                            <span><i data-lucide="lock" class="w-4 h-4"></i> Password</span>
+                            {{ user_form.password }}
+                        </label>
+                        <label class="form-field">
+                            <span><i data-lucide="phone" class="w-4 h-4"></i> Phone number</span>
+                            <div class="phone-field">
+                                {{ profile_form.phone_number }}
+                            </div>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden group">
+                        <span class="absolute inset-0 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 group-hover:opacity-90 transition"></span>
+                        <span class="absolute -inset-0.5 bg-gradient-to-r from-rose-200 to-orange-200 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
+                        <span class="relative flex items-center gap-3">
+                            <i data-lucide="rocket" class="w-5 h-5"></i>
+                            Register now
+                        </span>
+                    </button>
+                </form>
+
+                <div class="mt-8 space-y-2 text-sm text-gray-500">
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="log-in" class="w-4 h-4 text-pink-500"></i>
+                        Already have an account?
+                        <a href="{% url 'login' %}" class="text-pink-600 font-semibold hover:underline">Log in</a>
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="shield" class="w-4 h-4 text-pink-500"></i>
+                        Need admin access?
+                        <a href="{% url 'admin_login' %}" class="text-pink-600 font-semibold hover:underline">Admin login</a>
+                    </p>
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4 text-pink-500"></i>
+                        Explore more on the
+                        <a href="{% url 'index' %}" class="text-pink-600 font-semibold hover:underline">home page</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
+<style>
+    #register-form input {
+        width: 100%;
+        border-radius: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(148,163,184,0.25);
+        background: rgba(255,255,255,0.9);
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+    #register-form input:focus {
+        outline: none;
+        border-color: rgba(244,114,182,0.6);
+        box-shadow: 0 0 0 4px rgba(244,114,182,0.2);
+    }
+    .form-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+    }
+    .form-field span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        font-size: 0.7rem;
+    }
+    .glass-feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.35);
+        backdrop-filter: blur(6px);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+    @media (max-width: 1023px) {
+        .glass-feature { padding: 0.65rem 0.9rem; }
+    }
+</style>
+
 <script>
-    const phoneInputField = document.querySelector("#id_phone_number");
-    const phoneInput = window.intlTelInput(phoneInputField, {
-        initialCountry: "bd",
-        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-    });
+    const phoneInputField = document.getElementById('id_phone_number');
+    if (phoneInputField) {
+        const phoneInput = window.intlTelInput(phoneInputField, {
+            initialCountry: 'bd',
+            utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js',
+        });
+    }
 </script>
 {% endblock %}

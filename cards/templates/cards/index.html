@@ -1,60 +1,543 @@
 {% extends 'cards/base.html' %}
+{% load static %}
 
 {% block title %}Create & Share Moments That Matter{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex flex-col items-center justify-center text-center px-4">
-    <div class="max-w-4xl">
-        <h1 class="text-5xl md:text-7xl font-extrabold text-gray-800 leading-tight mb-6 animate-fade-in-down">
-            Create & Share Moments That Matter
-        </h1>
-        <p class="text-lg md:text-xl text-gray-600 mb-10 animate-fade-in-up">
-            Craft beautiful, personalized e-cards in seconds. A unique and memorable way to celebrate any occasion.
-        </p>
-        <a href="{% url 'register' %}" class="accent-gradient text-white font-bold py-4 px-8 rounded-full text-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 ease-in-out inline-block animate-pulse">
-            Get Started Now
-        </a>
+<div class="relative min-h-screen overflow-hidden">
+    <div class="absolute inset-0 -z-10">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-grid"></div>
     </div>
 
-    <div class="mt-20 w-full max-w-5xl grid md:grid-cols-3 gap-8">
-        <div class="glassmorphism p-8 rounded-2xl text-left animate-slide-up">
-            <i data-lucide="sparkles" class="w-12 h-12 accent-gradient text-white p-2 rounded-lg mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2">Stunning Designs</h3>
-            <p class="text-gray-600">Choose from a variety of vibrant, professionally designed templates.</p>
+    <div class="container mx-auto px-4 py-16 lg:py-24 space-y-24">
+        <div class="grid gap-12 lg:grid-cols-2 items-center">
+            <div class="space-y-8">
+                <span class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/80 border border-white/60 backdrop-blur text-xs font-semibold tracking-[0.4em] uppercase text-pink-500 shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    Digital cards reimagined
+                </span>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight">
+                    Craft captivating <span class="text-transparent bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 bg-clip-text">E-cards</span> in moments
+                </h1>
+                <p class="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl">
+                    Personalize, animate, and share your story with elegant digital cards. From professional intros to heartfelt celebrations, bring every moment to life.
+                </p>
+                <div class="flex flex-wrap gap-4">
+                    <a href="{% url 'register' %}" class="hero-cta primary">
+                        <span>Start designing</span>
+                        <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+                    </a>
+                    <button type="button" class="hero-cta secondary" onclick="openTutorial()">
+                        <i data-lucide="play-circle" class="w-5 h-5"></i>
+                        Watch tutorial
+                    </button>
+                </div>
+                <div class="flex flex-wrap gap-6 pt-4">
+                    <div class="stat-card">
+                        <span class="text-2xl font-bold text-slate-900">500+</span>
+                        <span class="text-xs tracking-[0.3em] uppercase text-slate-400">Design combos</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="text-2xl font-bold text-slate-900">Instant</span>
+                        <span class="text-xs tracking-[0.3em] uppercase text-slate-400">QR sharing</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative">
+                <div class="hero-showcase">
+                    <div class="showcase-card primary">
+                        <div class="card-header">
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <span class="dot"></span>
+                            <p class="uppercase tracking-[0.35em] text-xs text-white/60">Canvas preview</p>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-block">
+                                <h3>Drag elements</h3>
+                                <p>Re-order contact rows with intuitive drag handles.</p>
+                            </div>
+                            <div class="card-block">
+                                <h3>Brand palette</h3>
+                                <p>Instant theme suggestions powered by your logo colours.</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <span><i data-lucide="zap" class="w-4 h-4"></i>Auto contrast</span>
+                            <span><i data-lucide="layers" class="w-4 h-4"></i>Component library</span>
+                        </div>
+                    </div>
+                    <div class="showcase-card secondary">
+                        <header>
+                            <span class="badge-soft"><i data-lucide="sparkle" class="w-4 h-4"></i>Smart tip</span>
+                            <p class="text-white/70 text-xs">Try "Aurora" gradient for dark-mode cards.</p>
+                        </header>
+                        <ul class="list">
+                            <li><i data-lucide="check" class="w-4 h-4"></i> Live text contrast checks</li>
+                            <li><i data-lucide="check" class="w-4 h-4"></i> Auto QR regeneration</li>
+                            <li><i data-lucide="check" class="w-4 h-4"></i> Accessibility warnings</li>
+                        </ul>
+                    </div>
+                    <div class="showcase-floating">
+                        <span><i data-lucide="clock" class="w-4 h-4"></i> Build in under 2 minutes</span>
+                        <span><i data-lucide="sparkles" class="w-4 h-4"></i> AI layout suggestions</span>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="glassmorphism p-8 rounded-2xl text-left animate-slide-up" style="animation-delay: 0.2s;">
-            <i data-lucide="smartphone-sharing" class="w-12 h-12 accent-gradient text-white p-2 rounded-lg mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2">Share Anywhere</h3>
-            <p class="text-gray-600">Share your creations instantly via a unique link or a stylish QR code.</p>
+
+        <div class="grid gap-8 md:grid-cols-3">
+            <div class="glass-feature-card" style="animation-delay:0s;">
+                <div class="feature-icon bg-indigo-100 text-indigo-600">
+                    <i data-lucide="sparkles" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-900">Design brilliance</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Pick from curated palettes, gradients, and typography presets designed to impress on every screen.</p>
+            </div>
+            <div class="glass-feature-card" style="animation-delay:0.15s;">
+                <div class="feature-icon bg-pink-100 text-pink-500">
+                    <i data-lucide="smartphone" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-900">Mobile-first previews</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Real-time updates show exactly how your card feels on desktop, tablet, and mobile.</p>
+            </div>
+            <div class="glass-feature-card" style="animation-delay:0.3s;">
+                <div class="feature-icon bg-emerald-100 text-emerald-500">
+                    <i data-lucide="lock" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-slate-900">Built-in security</h3>
+                <p class="text-slate-500 text-sm leading-relaxed">Secure OTP recovery, admin moderation tools, and smart link expiring keep you in control.</p>
+            </div>
         </div>
-        <div class="glassmorphism p-8 rounded-2xl text-left animate-slide-up" style="animation-delay: 0.4s;">
-            <i data-lucide="settings-2" class="w-12 h-12 accent-gradient text-white p-2 rounded-lg mb-4"></i>
-            <h3 class="text-2xl font-bold mb-2">Simple & Fun</h3>
-            <p class="text-gray-600">Our multi-step creator makes it easy and enjoyable to personalize your card.</p>
+
+        <div class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur shadow-2xl overflow-hidden">
+            <div class="grid md:grid-cols-2">
+                <div class="relative p-10 space-y-6">
+                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-600 text-xs font-semibold tracking-[0.35em] uppercase">
+                        <i data-lucide="magic-wand" class="w-4 h-4"></i>
+                        How it works
+                    </span>
+                    <h2 class="text-2xl font-semibold text-slate-900">Launch your card in four easy steps</h2>
+                    <ol class="space-y-5 text-left">
+                        <li class="timeline-step">
+                            <span class="step-index">1</span>
+                            <div>
+                                <h4>Create your account</h4>
+                                <p>Sign up with email and secure OTP-backed phone verification.</p>
+                            </div>
+                        </li>
+                        <li class="timeline-step">
+                            <span class="step-index">2</span>
+                            <div>
+                                <h4>Design your card</h4>
+                                <p>Pick gradients, upload your avatar, and define contact points.</p>
+                            </div>
+                        </li>
+                        <li class="timeline-step">
+                            <span class="step-index">3</span>
+                            <div>
+                                <h4>Preview & fine-tune</h4>
+                                <p>See real-time updates across desktop and mobile layouts.</p>
+                            </div>
+                        </li>
+                        <li class="timeline-step">
+                            <span class="step-index">4</span>
+                            <div>
+                                <h4>Share instantly</h4>
+                                <p>Deploy a custom URL and downloadable QR code in one tap.</p>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+                <div class="relative p-10 bg-gradient-to-br from-indigo-500 via-violet-500 to-rose-500 text-white">
+                    <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/15 blur-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-56 h-56 rounded-full bg-white/15 blur-3xl"></div>
+                    <div class="relative space-y-6">
+                        <h3 class="text-xl font-semibold">What our community loves</h3>
+                        <div class="testimonials">
+                            <article>
+                                <p>“The dashboard is gorgeous and I can update my brand in seconds. Clients scan the QR code and we’re connected instantly.”</p>
+                                <span>- Priya S., Marketing Consultant</span>
+                            </article>
+                            <article>
+                                <p>“I replaced printed business cards with this platform. The analytics and admin controls keep everything organized.”</p>
+                                <span>- Marco R., Founder</span>
+                            </article>
+                            <article>
+                                <p>“Love the drag-and-drop editor. The team continues to ship creative templates every month.”</p>
+                                <span>- Hannah T., Product Designer</span>
+                            </article>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <span class="badge"><i data-lucide="sparkle" class="w-4 h-4"></i>Fresh templates monthly</span>
+                            <span class="badge"><i data-lucide="shield-check" class="w-4 h-4"></i>Security-first design</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-    @keyframes fade-in-down {
-        0% { opacity: 0; transform: translateY(-20px); }
-        100% { opacity: 1; transform: translateY(0); }
+    .gradient-orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(0px);
+        opacity: 0.45;
+        animation: floatOrb 18s ease-in-out infinite;
     }
-    @keyframes fade-in-up {
-        0% { opacity: 0; transform: translateY(20px); }
-        100% { opacity: 1; transform: translateY(0); }
+    .gradient-orb.orb-1 {
+        width: 420px;
+        height: 420px;
+        top: -120px;
+        left: -140px;
+        background: radial-gradient(circle at center, rgba(236,72,153,0.45) 0%, rgba(236,72,153,0) 70%);
     }
-    @keyframes slide-up {
+    .gradient-orb.orb-2 {
+        width: 360px;
+        height: 360px;
+        bottom: -100px;
+        right: -120px;
+        background: radial-gradient(circle at center, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%);
+        animation-delay: 3s;
+    }
+    .gradient-grid {
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px),
+                          linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px);
+        background-size: 90px 90px;
+        mask-image: radial-gradient(circle at center, rgba(0,0,0,0.65), transparent 70%);
+    }
+    @keyframes floatOrb {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-15px); }
+    }
+    .hero-cta {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.6rem;
+        border-radius: 1.2rem;
+        font-weight: 600;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hero-cta.primary {
+        color: white;
+        background: linear-gradient(135deg, #ec4899, #f97316);
+        box-shadow: 0 25px 45px -20px rgba(236,72,153,0.6);
+    }
+    .hero-cta.primary:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 28px 60px -22px rgba(236,72,153,0.65);
+    }
+    .hero-cta.secondary {
+        background: rgba(255,255,255,0.8);
+        border: 1px solid rgba(226,232,240,0.9);
+        color: #475569;
+        backdrop-filter: blur(8px);
+    }
+    .hero-cta.secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 35px -22px rgba(15,23,42,0.25);
+    }
+    .stat-card {
+        display: inline-flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: 0.9rem 1.2rem;
+        border-radius: 1.2rem;
+        background: rgba(255,255,255,0.85);
+        border: 1px solid rgba(226,232,240,0.6);
+        box-shadow: 0 20px 40px -30px rgba(15,23,42,0.35);
+    }
+    .hero-showcase {
+        position: relative;
+        width: 100%;
+        min-height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+    }
+    .showcase-card {
+        position: relative;
+        border-radius: 1.8rem;
+        padding: 1.8rem;
+        backdrop-filter: blur(10px);
+        color: white;
+        box-shadow: 0 35px 80px -30px rgba(15, 23, 42, 0.55);
+    }
+    .showcase-card.primary {
+        width: 100%;
+        max-width: 360px;
+        background: linear-gradient(135deg, #312e81, #9333ea);
+        z-index: 2;
+        animation: hoverFloat 12s ease-in-out infinite;
+    }
+    .showcase-card.secondary {
+        position: absolute;
+        top: 15%;
+        right: -40px;
+        width: 240px;
+        background: linear-gradient(135deg, #0f172a, #4338ca);
+        border: 1px solid rgba(255,255,255,0.2);
+        animation: hoverFloatAlt 10s ease-in-out infinite;
+    }
+    @keyframes hoverFloat {
+        0%, 100% { transform: translateY(0px) rotate(-1deg); }
+        50% { transform: translateY(-10px) rotate(1deg); }
+    }
+    @keyframes hoverFloatAlt {
+        0%, 100% { transform: translateY(0px) rotate(3deg); }
+        50% { transform: translateY(12px) rotate(-2deg); }
+    }
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 0.45rem;
+        margin-bottom: 1.4rem;
+    }
+    .card-header .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.35);
+    }
+    .card-body {
+        display: grid;
+        gap: 1rem;
+    }
+    .card-body .card-block {
+        padding: 1.1rem;
+        border-radius: 1.2rem;
+        background: rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.18);
+    }
+    .card-body h3 { font-weight: 600; margin-bottom: 0.35rem; }
+    .card-body p { font-size: 0.85rem; opacity: 0.85; }
+    .card-footer {
+        margin-top: 1.5rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+    .card-footer span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.95rem;
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.25);
+        font-size: 0.75rem;
+    }
+    .showcase-card.secondary header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    .badge-soft {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.35rem 0.8rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.2);
+        font-size: 0.7rem;
+    }
+    .showcase-card.secondary .list {
+        display: grid;
+        gap: 0.8rem;
+        font-size: 0.8rem;
+        opacity: 0.85;
+    }
+    .showcase-card.secondary li {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .showcase-floating {
+        position: absolute;
+        bottom: -30px;
+        left: 0;
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+    }
+    .showcase-floating span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 1rem;
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.85);
+        color: #475569;
+        border: 1px solid rgba(226,232,240,0.8);
+        font-size: 0.75rem;
+        box-shadow: 0 18px 40px -30px rgba(15,23,42,0.45);
+    }
+    .glass-feature-card {
+        padding: 1.8rem;
+        border-radius: 1.6rem;
+        background: rgba(255,255,255,0.85);
+        border: 1px solid rgba(255,255,255,0.6);
+        box-shadow: 0 25px 55px -35px rgba(15,23,42,0.4);
+        backdrop-filter: blur(10px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        animation: slideUp 1s ease forwards;
+        opacity: 0;
+    }
+    .glass-feature-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 28px 65px -30px rgba(15,23,42,0.45);
+    }
+    @keyframes slideUp {
         0% { opacity: 0; transform: translateY(30px); }
-        100% { opacity: 1; transform: translateY(0); }
+        100% { opacity: 1; transform: translateY(0px); }
     }
-    .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
-    .animate-fade-in-up { animation: fade-in-up 0.8s ease-out 0.4s forwards; }
-    .animate-slide-up { animation: slide-up 0.7s ease-out forwards; opacity: 0; }
-    .animate-pulse { animation: pulse 2s infinite; }
-    @keyframes pulse {
-        0%, 100% { box-shadow: 0 0 0 0 rgba(207, 85, 108, 0.7); }
-        70% { box-shadow: 0 0 0 20px rgba(207, 85, 108, 0); }
+    .feature-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    @media (max-width: 1024px) {
+        .preview-card { margin-top: 2rem; }
+        .pill-1 { right: 10px; }
+        .pill-2 { left: 10px; }
+        .analytics-card { bottom: -20px; right: -10px; }
+    }
+    .timeline-step {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        text-align: left;
+    }
+    .timeline-step h4 {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+    }
+    .timeline-step p {
+        font-size: 0.85rem;
+        color: #6b7280;
+    }
+    .step-index {
+        flex-shrink: 0;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #ec4899, #f97316);
+        color: white;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        box-shadow: 0 12px 28px -18px rgba(236,72,153,0.45);
+    }
+    .testimonials {
+        display: grid;
+        gap: 1rem;
+    }
+    .testimonials article {
+        background: rgba(255,255,255,0.15);
+        border-radius: 1.2rem;
+        padding: 1.2rem;
+        border: 1px solid rgba(255,255,255,0.25);
+        backdrop-filter: blur(8px);
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+    .testimonials span {
+        display: block;
+        margin-top: 0.6rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: rgba(255,255,255,0.7);
+    }
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.25);
+        background: rgba(255,255,255,0.18);
+        font-size: 0.75rem;
+    }
+    @media (max-width: 1024px) {
+        .hero-showcase {
+            padding: 1.2rem;
+            flex-direction: column;
+        }
+        .showcase-card.primary {
+            max-width: 100%;
+        }
+        .showcase-card.secondary {
+            position: relative;
+            top: auto;
+            right: auto;
+            margin-top: 1.5rem;
+        }
+        .showcase-floating {
+            position: relative;
+            bottom: auto;
+            left: auto;
+            margin-top: 1.5rem;
+        }
     }
 </style>
+<script>
+    function openTutorial() {
+        const modal = document.getElementById('tutorialModal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        const video = modal.querySelector('video');
+        if (video) {
+            video.currentTime = 0;
+            video.play().catch(() => {});
+        }
+    }
+    function closeTutorial() {
+        const modal = document.getElementById('tutorialModal');
+        if (!modal) return;
+        const video = modal.querySelector('video');
+        if (video) {
+            video.pause();
+        }
+        modal.classList.add('hidden');
+    }
+</script>
+
+<div id="tutorialModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur">
+    <div class="w-full max-w-4xl mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="flex justify-between items-center px-6 py-4 border-b">
+            <h3 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <i data-lucide="play-circle" class="w-5 h-5 text-indigo-500"></i>
+                Quick tour: Creating an e-card
+            </h3>
+            <button type="button" onclick="closeTutorial()" class="text-slate-500 hover:text-slate-700">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+        <video controls class="w-full h-[420px] object-cover">
+            <source src="{% static 'videos/ecard_tutorial.mp4' %}" type="video/mp4">
+            Your browser does not support embedded videos.
+        </video>
+        <div class="px-6 py-4 bg-slate-50 text-sm text-slate-600">
+            This short walkthrough covers signing up, designing your card, previewing, and sharing via QR.
+        </div>
+    </div>
+</div>
 {% endblock %}

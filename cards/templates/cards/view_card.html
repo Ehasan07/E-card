@@ -5,39 +5,264 @@
 
 {% block content %}
 <style>
+    .view-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+    .view-wrapper::before,
+    .view-wrapper::after {
+        content: '';
+        position: absolute;
+        width: 280px;
+        height: 280px;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.65) 0%, transparent 70%);
+        filter: blur(0px);
+        opacity: 0.35;
+        border-radius: 50%;
+        animation: pulseGlow 12s ease-in-out infinite;
+        pointer-events: none;
+    }
+    .view-wrapper::before {
+        top: -140px;
+        right: -120px;
+    }
+    .view-wrapper::after {
+        bottom: -160px;
+        left: -140px;
+        animation-delay: 4s;
+    }
+    @keyframes pulseGlow {
+        0%, 100% { transform: scale(1); opacity: 0.35; }
+        50% { transform: scale(1.15); opacity: 0.55; }
+    }
+    .card-shell {
+        backdrop-filter: blur(12px);
+        background: linear-gradient(135deg, rgba(255,255,255,0.35), rgba(255,255,255,0.15));
+        border: 1px solid rgba(255,255,255,0.35);
+        box-shadow: 0 25px 60px -30px rgba(15, 23, 42, 0.55);
+        animation: floaty 14s ease-in-out infinite;
+        position: relative;
+    }
+    .card-shell::after {
+        content: '';
+        position: absolute;
+        inset: 1px;
+        border-radius: inherit;
+        border: 1px solid rgba(255,255,255,0.22);
+        pointer-events: none;
+    }
+    @keyframes floaty {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
     .social-icon-bg {
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: rgba(255, 255, 255, 0.85);
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 40px;
-        height: 40px;
+        width: 44px;
+        height: 44px;
+        box-shadow: 0 12px 30px -20px rgba(15, 23, 42, 0.5);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .social-icon-bg:hover {
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 0 18px 35px -25px rgba(15, 23, 42, 0.65);
+    }
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.9rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        background: rgba(255,255,255,0.25);
+        color: inherit;
+        text-transform: uppercase;
+    }
+    .contact-row {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 0.9rem;
+        border-radius: 1rem;
+        background-color: rgba(255,255,255,0.16);
+        border: 1px solid rgba(255,255,255,0.3);
+        backdrop-filter: blur(6px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .contact-row:hover {
+        transform: translateX(6px);
+        box-shadow: 0 15px 30px -25px rgba(15, 23, 42, 0.45);
+    }
+    .qr-card {
+        border: 1px solid rgba(255,255,255,0.45);
+        background: rgba(255,255,255,0.22);
+        backdrop-filter: blur(8px);
+        border-radius: 1.5rem;
+        box-shadow: 0 18px 45px -25px rgba(15, 23, 42, 0.55);
+    }
+    .floating-chip {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: rgba(255,255,255,0.25);
+        border: 1px solid rgba(255,255,255,0.4);
+        border-radius: 9999px;
+        padding: 0.45rem 1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        box-shadow: 0 12px 35px -25px rgba(15, 23, 42, 0.5);
+    }
+    .floating-chip i { opacity: 0.8; }
+    .action-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+    }
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.1rem;
+        border-radius: 0.9rem;
+        font-weight: 600;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: rgba(255,255,255,0.28);
+        border: 1px solid rgba(255,255,255,0.38);
+        color: inherit;
+    }
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 35px -25px rgba(15, 23, 42, 0.45);
+    }
+    .action-btn.accent {
+        background: linear-gradient(135deg, rgba(239,68,68,0.9), rgba(236,72,153,0.95));
+        border: none;
+        color: #ffffff;
+        box-shadow: 0 18px 40px -20px rgba(236,72,153,0.55);
+    }
+    .action-btn.accent:hover {
+        box-shadow: 0 22px 50px -20px rgba(236,72,153,0.7);
+    }
+    .qr-detail {
+        text-align: center;
+        font-size: 0.85rem;
+        opacity: 0.85;
+        margin-top: 1rem;
+        line-height: 1.5;
+    }
+    .highlights-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+    .highlight-card {
+        border-radius: 1rem;
+        padding: 0.75rem 0.9rem;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .contact-quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+    }
+    .quick-act {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.95rem;
+        border-radius: 0.9rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: inherit;
+        font-size: 0.75rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .quick-act:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px -20px rgba(15,23,42,0.35);
+    }
+    .insight-panels {
+        margin-top: 2rem;
+        display: grid;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    .insight-card {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-radius: 1.1rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: inherit;
+        font-size: 0.8rem;
+    }
+    .insight-card i {
+        width: 24px;
+        height: 24px;
+    }
+    .insight-title {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        opacity: 0.7;
+        margin-bottom: 0.2rem;
+    }
+    .insight-copy {
+        font-size: 0.75rem;
+        opacity: 0.9;
     }
 </style>
-<div class="min-h-screen flex items-center justify-center px-4 py-10 animate-fade-in-down">
-    <div class="w-full max-w-5xl glassmorphism rounded-2xl p-8 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-8" style="background: {{ card.card_data.background_style }}; color: {{ card.text_color }};">
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="view-wrapper w-full max-w-5xl rounded-3xl p-[1px]" style="background: {{ card.card_data.background_style }}; color: {{ card.text_color }};">
+        <div class="card-shell rounded-3xl grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-10">
+            <span class="floating-chip">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                Digital calling card
+            </span>
         <!-- Left Column: E-Card Information -->
-        <div class="flex flex-col items-center text-center p-6 glassmorphism rounded-2xl animate-slide-up">
+        <div class="flex flex-col items-center text-center p-6 md:p-8 rounded-2xl bg-white/5 backdrop-blur-md relative overflow-hidden">
+            <div class="absolute inset-x-0 top-0 h-36 bg-gradient-to-b from-white/25 to-transparent pointer-events-none"></div>
             {% if card.avatar %}
-            <img src="{{ card.avatar.url }}" alt="Avatar" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md mb-4">
+            <img src="{{ card.avatar.url }}" alt="Avatar" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl mb-4">
             {% else %}
             <div class="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center mb-4">
                 <i data-lucide="user" class="w-16 h-16 text-gray-600"></i>
             </div>
             {% endif %}
             
-            <h1 class="text-3xl font-bold mb-2">{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h1>
+            <h1 class="text-3xl font-bold mb-1">{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h1>
             <p class="text-lg opacity-90">{{ card.card_data.jobTitle }}</p>
-            <p class="text-md opacity-80 mb-4">{{ card.card_data.company }}</p>
+            <p class="text-md opacity-80 mb-5">{{ card.card_data.company }}</p>
 
-            <div class="space-y-2 w-full text-left opacity-90">
-                {% if card.card_data.email %}<p><i data-lucide="mail" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.email }}</p>{% endif %}
-                {% if card.card_data.phone %}<p><i data-lucide="phone" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.phone }}</p>{% endif %}
-                {% if card.card_data.website %}<p><i data-lucide="globe" class="inline-block w-5 h-5 mr-2"></i> <a href="{{ card.card_data.website }}" target="_blank" class="hover:underline" style="color: {{ card.text_color }};">{{ card.card_data.website }}</a></p>{% endif %}
-                {% if card.card_data.address %}<p><i data-lucide="map-pin" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.address }}</p>{% endif %}
-                {% if card.card_data.birthday %}<p><i data-lucide="cake" class="inline-block w-5 h-5 mr-2"></i> {{ card.card_data.birthday }}</p>{% endif %}
-                {% if card.card_data.notes %}<p class="text-sm italic mt-4">"{{ card.card_data.notes }}"</p>{% endif %}
+            <span class="info-badge mb-6"><i data-lucide="star" class="w-4 h-4"></i>Let's connect</span>
+
+            <div class="space-y-3 w-full text-left opacity-95">
+                {% if card.card_data.email %}<div class="contact-row"><i data-lucide="mail" class="w-5 h-5"></i> {{ card.card_data.email }}</div>{% endif %}
+                {% if card.card_data.phone %}<div class="contact-row"><i data-lucide="phone" class="w-5 h-5"></i> {{ card.card_data.phone }}</div>{% endif %}
+                {% if card.card_data.website %}<div class="contact-row"><i data-lucide="globe" class="w-5 h-5"></i> <a href="{{ card.card_data.website }}" target="_blank" class="hover:underline" style="color: {{ card.text_color }};">{{ card.card_data.website }}</a></div>{% endif %}
+                {% if card.card_data.address %}<div class="contact-row"><i data-lucide="map-pin" class="w-5 h-5"></i> {{ card.card_data.address }}</div>{% endif %}
+                {% if card.card_data.birthday %}<div class="contact-row"><i data-lucide="cake" class="w-5 h-5"></i> {{ card.card_data.birthday }}</div>{% endif %}
             </div>
 
             <div class="social-icons mt-6 flex justify-center space-x-4 w-full">
@@ -48,63 +273,202 @@
                 {% if card.card_data.twitter %}<a href="{{ card.card_data.twitter }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #1DA1F2;"><i data-lucide="twitter" class="w-7 h-7"></i></a>{% endif %}
                 {% if card.card_data.linkedin %}<a href="{{ card.card_data.linkedin }}" target="_blank" class="transition-transform duration-200 hover:scale-110 {% if 'Graphite' in card.card_data.background_style or 'Deep Ocean' in card.card_data.background_style %}social-icon-bg{% endif %}" style="color: #0A66C2;"><i data-lucide="linkedin" class="w-7 h-7"></i></a>{% endif %}
             </div>
+
+            <div class="contact-quick-actions">
+                {% if card.card_data.email %}
+                    <button id="copyEmailBtn" class="quick-act">
+                        <i data-lucide="mail" class="w-4 h-4"></i> Copy email
+                    </button>
+                    <button id="emailLaunchBtn" class="quick-act">
+                        <i data-lucide="send" class="w-4 h-4"></i> Send email
+                    </button>
+                {% endif %}
+                {% if card.card_data.phone %}
+                    <button id="copyPhoneBtn" class="quick-act">
+                        <i data-lucide="phone" class="w-4 h-4"></i> Copy phone
+                    </button>
+                    <a href="tel:{{ card.card_data.phone }}" class="quick-act">
+                        <i data-lucide="phone-call" class="w-4 h-4"></i> Call now
+                    </a>
+                {% endif %}
+                <button id="saveContactBtn" class="quick-act" data-first-name="{{ card.card_data.firstName|default:'' }}" data-last-name="{{ card.card_data.lastName|default:'' }}" data-company="{{ card.card_data.company|default:'' }}" data-phone="{{ card.card_data.phone|default:'' }}" data-email="{{ card.card_data.email|default:'' }}">
+                    <i data-lucide="contact" class="w-4 h-4"></i> Save to contacts
+                </button>
+            </div>
+
+            {% if card.card_data.notes %}
+            <div class="mt-6 text-sm italic opacity-90 px-5 py-4 rounded-2xl bg-white/15 border border-white/25">
+                "{{ card.card_data.notes }}"
+            </div>
+            {% endif %}
+
+            <div class="highlights-grid">
+                <div class="highlight-card"><i data-lucide="clock" class="w-4 h-4"></i>Joined {{ card.created_at|date:"M Y" }}</div>
+                <div class="highlight-card"><i data-lucide="qr-code" class="w-4 h-4"></i>Live QR share</div>
+                {% if card.card_data.website %}<div class="highlight-card"><i data-lucide="globe-2" class="w-4 h-4"></i>Online presence</div>{% endif %}
+            </div>
         </div>
 
         <!-- Right Column: QR Code and Sharing Options -->
-        <div class="flex flex-col items-center justify-center p-6 glassmorphism rounded-2xl animate-slide-up" style="animation-delay: 0.2s;">
-            <h3 class="text-2xl font-bold mb-4" style="color: {{ card.text_color }};">Scan to Connect!</h3>
-            <div id="qrcode" class="p-3 border-4 border-white rounded-lg shadow-xl bg-white mb-6">
+        <div class="flex flex-col items-center justify-center p-6 md:p-8 rounded-2xl bg-white/5 backdrop-blur-md relative overflow-hidden">
+            <div class="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-white/20 to-transparent pointer-events-none"></div>
+            <h3 class="text-2xl font-bold mb-4 flex items-center gap-2" style="color: {{ card.text_color }};">
+                <i data-lucide="scan" class="w-6 h-6"></i>
+                Scan to connect
+            </h3>
+            <div id="qrcode" class="qr-card p-4 rounded-2xl">
                 {% if card.qr_code %}
                 <img id="qrCodeImg" src="{{ card.qr_code.url }}" alt="QR Code">
                 {% endif %}
             </div>
-            
-            <button id="downloadQrCode" class="accent-gradient text-white font-bold py-3 px-6 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center mb-4">
-                <i data-lucide="download" class="w-5 h-5 mr-2"></i> Download QR Code
-            </button>
+            <p class="qr-detail">
+                Share this code to give contacts instant access to your digital card.
+            </p>
 
-            <div class="flex flex-wrap justify-center gap-3 w-full">
+            <div class="action-bar">
+                <button id="downloadQrCode" class="action-btn accent">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    Download QR
+                </button>
+                <button id="copyLink" class="action-btn">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                    Copy link
+                </button>
+                <button id="nativeShareBtn" class="action-btn hidden">
+                    <i data-lucide="share" class="w-4 h-4"></i>
+                    Share card
+                </button>
                 {% if is_owner %}
-                    <a href="{% url 'dashboard' %}" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
-                        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Back to Dashboard
+                    <a href="{% url 'edit_card' card.slug %}" class="action-btn accent">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                        Edit card
                     </a>
-                    <a href="{% url 'edit_card' card.slug %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center">
-                        <i data-lucide="edit" class.="w-4 h-4 mr-2"></i> Edit Card
+                    <a href="{% url 'dashboard' %}" class="action-btn">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Dashboard
                     </a>
-                    <button id="copyLink" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
-                        <i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy Link
-                    </button>
                 {% else %}
-                    <button id="copyLink" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors duration-200 flex items-center">
-                        <i data-lucide="copy" class="w-4 h-4 mr-2"></i> Copy Link
-                    </button>
-                    <a href="{% url 'register' %}" class="accent-gradient text-white font-bold py-2 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out flex items-center justify-center">
-                        <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Create card for yourself
+                    <a href="{% url 'register' %}" class="action-btn accent">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        Create your card
                     </a>
                 {% endif %}
+            </div>
+
+            <div class="insight-panels">
+                <div class="insight-card">
+                    <i data-lucide="sparkle" class="w-4 h-4"></i>
+                    <div>
+                        <p class="insight-title">Pro tip</p>
+                        <p class="insight-copy">Embed this link in your email signature for automatic networking.</p>
+                    </div>
+                </div>
+                <div class="insight-card">
+                    <i data-lucide="chart-line" class="w-4 h-4"></i>
+                    <div>
+                        <p class="insight-title">Ready to track</p>
+                        <p class="insight-copy">Check dashboard analytics to see how often your card is viewed.</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+</div>
 <script>
-    document.getElementById('downloadQrCode').addEventListener('click', function() {
-        const qrCodeImg = document.getElementById('qrCodeImg');
-        if (qrCodeImg) {
-            const link = document.createElement('a');
-            link.href = qrCodeImg.src;
-            link.download = 'e-card-qrcode.png';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    (function() {
+        const downloadBtn = document.getElementById('downloadQrCode');
+        if (downloadBtn) {
+            downloadBtn.addEventListener('click', function() {
+                const qrCodeImg = document.getElementById('qrCodeImg');
+                if (!qrCodeImg) { return; }
+                const link = document.createElement('a');
+                link.href = qrCodeImg.src;
+                link.download = 'e-card-qrcode.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
         }
-    });
 
-    document.getElementById('copyLink').addEventListener('click', function() {
-        navigator.clipboard.writeText(window.location.href).then(function() {
-            alert('E-Card link copied to clipboard!');
-        }, function(err) {
-            console.error('Could not copy text: ', err);
-        });
-    });
+        const copyLinkBtn = document.getElementById('copyLink');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', function() {
+                navigator.clipboard.writeText(window.location.href).then(function() {
+                    alert('E-Card link copied to clipboard!');
+                }).catch(function(err) {
+                    console.error('Could not copy text: ', err);
+                });
+            });
+        }
+
+        const copyEmailBtn = document.getElementById('copyEmailBtn');
+        if (copyEmailBtn) {
+            copyEmailBtn.addEventListener('click', function() {
+                const email = '{{ card.card_data.email|escapejs }}';
+                if (!email) { return; }
+                navigator.clipboard.writeText(email).then(() => alert('Email copied!'));
+            });
+        }
+
+        const emailLaunchBtn = document.getElementById('emailLaunchBtn');
+        if (emailLaunchBtn) {
+            emailLaunchBtn.addEventListener('click', function() {
+                const email = '{{ card.card_data.email|urlencode }}';
+                if (!email) { return; }
+                window.location.href = 'mailto:' + email;
+            });
+        }
+
+        const copyPhoneBtn = document.getElementById('copyPhoneBtn');
+        if (copyPhoneBtn) {
+            copyPhoneBtn.addEventListener('click', function() {
+                const phone = '{{ card.card_data.phone|escapejs }}';
+                if (!phone) { return; }
+                navigator.clipboard.writeText(phone).then(() => alert('Phone copied!'));
+            });
+        }
+
+        const saveContactBtn = document.getElementById('saveContactBtn');
+        if (saveContactBtn) {
+            saveContactBtn.addEventListener('click', function() {
+                const first = this.dataset.firstName || '';
+                const last = this.dataset.lastName || '';
+                const company = this.dataset.company || '';
+                const phone = this.dataset.phone || '';
+                const email = this.dataset.email || '';
+                const lines = [
+                    'BEGIN:VCARD',
+                    'VERSION:3.0',
+                    `FN:${first} ${last}`.trim(),
+                    `N:${last};${first};;;`,
+                    company ? `ORG:${company}` : '',
+                    phone ? `TEL;TYPE=CELL:${phone}` : '',
+                    email ? `EMAIL;TYPE=INTERNET:${email}` : '',
+                    'END:VCARD'
+                ].filter(Boolean).join('\n');
+                const blob = new Blob([lines], { type: 'text/vcard;charset=utf-8' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `${first || 'contact'}-${last || 'card'}.vcf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(link.href), 0);
+            });
+        }
+
+        const nativeShareBtn = document.getElementById('nativeShareBtn');
+        if (nativeShareBtn && navigator.share) {
+            nativeShareBtn.classList.remove('hidden');
+            nativeShareBtn.addEventListener('click', function() {
+                navigator.share({
+                    title: '{{ card.card_data.firstName|default:"My E-Card" }}',
+                    text: 'Check out this digital card',
+                    url: window.location.href
+                }).catch(() => {});
+            });
+        }
+    })();
 </script>
 {% endblock %}

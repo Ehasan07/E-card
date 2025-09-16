@@ -53,12 +53,23 @@ def login_view(request):
 
 def logout_view(request):
     logout(request)
-    return redirect('register')
+    return redirect('login')
 
 @login_required
 def dashboard(request):
-    cards = Card.objects.filter(user=request.user, is_active=True)
+    cards = Card.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'cards/dashboard.html', {'cards': cards})
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def admin_dashboard(request):
+    from django.contrib.auth.models import User
+    all_cards = Card.objects.select_related('user').order_by('-created_at')
+    ctx = {
+        'total_users': User.objects.count(),
+        'total_cards': all_cards.count(),
+        'all_cards': all_cards
+    }
+    return render(request, 'cards/admin_dashboard.html', ctx)
 
 @login_required
 def create_card(request):

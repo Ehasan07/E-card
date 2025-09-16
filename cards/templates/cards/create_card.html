@@ -3,111 +3,577 @@
 {% block title %}{% if card %}Edit E-Card{% else %}Create E-Card{% endif %}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4 py-10">
-    <div class="w-full max-w-3xl glassmorphism rounded-2xl p-8 shadow-lg">
-        <h1 class="text-3xl font-bold text-center mb-6">{% if card %}Edit Your E-Card{% else %}Create Your E-Card{% endif %}</h1>
-        <form method="post" enctype="multipart/form-data" class="space-y-6">
-            {% csrf_token %}
-            
-            {% if form.non_field_errors %}
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                    {% for error in form.non_field_errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Personal Information -->
-                <div>
-                    <label class="block text-sm font-medium mb-1">First Name</label>
-                    {{ form.firstName }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Last Name</label>
-                    {{ form.lastName }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Job Title</label>
-                    {{ form.jobTitle }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Company</label>
-                    {{ form.company }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Email</label>
-                    {{ form.email }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Phone</label>
-                    {{ form.phone }}
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium mb-1">Address</label>
-                    {{ form.address }}
-                </div>
-                 <div>
-                    <label class="block text-sm font-medium mb-1">Website</label>
-                    {{ form.website }}
-                </div>
-                 <div>
-                    <label class="block text-sm font-medium mb-1">Birthday</label>
-                    {{ form.birthday }}
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium mb-1">Notes</label>
-                    {{ form.notes }}
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-6xl glassmorphism rounded-3xl shadow-2xl overflow-hidden border border-white/40">
+        <div class="flex flex-col lg:flex-row items-stretch">
+            <div class="w-full lg:w-7/12 p-8 lg:p-12 bg-white/70">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+                    <div>
+                        <p class="text-sm uppercase tracking-[0.35rem] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %}</p>
+                        <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Design your interactive e-card</h1>
+                    </div>
+                    <span class="inline-flex items-center gap-2 bg-pink-100 text-pink-600 text-xs font-semibold tracking-wide px-4 py-2 rounded-full shadow-sm">
+                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        Live preview enabled
+                    </span>
                 </div>
 
-                <!-- Social Media -->
-                <h3 class="md:col-span-2 text-xl font-semibold mt-4">Social Media Links</h3>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Facebook</label>
-                    {{ form.facebook }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">WhatsApp</label>
-                    {{ form.whatsapp }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">YouTube</label>
-                    {{ form.youtube }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Instagram</label>
-                    {{ form.instagram }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Twitter</label>
-                    {{ form.twitter }}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">LinkedIn</label>
-                    {{ form.linkedin }}
-                </div>
+                <form method="post" enctype="multipart/form-data" class="space-y-10" id="card-builder-form">
+                    {% csrf_token %}
 
-                <!-- Customization -->
-                <h3 class="md:col-span-2 text-xl font-semibold mt-4">Customization</h3>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Avatar</label>
-                    {{ form.avatar }}
-                    {% if card.avatar %}
-                        <p class="text-xs mt-1">Current: <a href="{{ card.avatar.url }}" target="_blank">{{ card.avatar.name }}</a></p>
+                    {% if form.non_field_errors %}
+                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
                     {% endif %}
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1">Background Style</label>
-                    {{ form.background_style }}
-                </div>
-            </div>
 
-            <div class="flex justify-end mt-8">
-                <button type="submit" class="accent-gradient text-white font-bold py-3 px-8 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
-                    {% if card %}Save Changes{% else %}Create Card{% endif %}
-                </button>
+                    <section class="space-y-6">
+                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">1</span>
+                            Personal details
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">First name</label>
+                                {{ form.firstName }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Last name</label>
+                                {{ form.lastName }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Job title</label>
+                                {{ form.jobTitle }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Company</label>
+                                {{ form.company }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Email</label>
+                                {{ form.email }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Phone</label>
+                                {{ form.phone }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Address</label>
+                                {{ form.address }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Website</label>
+                                {{ form.website }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Birthday</label>
+                                {{ form.birthday }}
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Notes</label>
+                                {{ form.notes }}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-6">
+                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">2</span>
+                            Social presence
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Facebook</label>
+                                {{ form.facebook }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">WhatsApp</label>
+                                {{ form.whatsapp }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">YouTube</label>
+                                {{ form.youtube }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Instagram</label>
+                                {{ form.instagram }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Twitter / X</label>
+                                {{ form.twitter }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">LinkedIn</label>
+                                {{ form.linkedin }}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="space-y-6">
+                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
+                            <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">3</span>
+                            Style & finishing touches
+                        </h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Avatar</label>
+                                {{ form.avatar }}
+                                {% if card and card.avatar %}
+                                    <p class="text-xs text-gray-500 mt-2">Current avatar: <a href="{{ card.avatar.url }}" target="_blank" class="underline">{{ card.avatar.name }}</a></p>
+                                {% endif %}
+                            </div>
+                            <div class="md:col-span-2 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-semibold text-gray-600">Pick a background</p>
+                                    <span class="text-xs text-gray-400">Tap an option or use the colour picker</span>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="background-options">
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)">
+                                        <span>Blush Sunrise</span>
+                                    </button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">
+                                        <span>Lavender Dream</span>
+                                    </button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #43cea2 0%, #185a9d 100%)">
+                                        <span>Emerald Ocean</span>
+                                    </button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)">
+                                        <span>Royal Velvet</span>
+                                    </button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9569 0%, #e92758 100%)">
+                                        <span>Sunset Blaze</span>
+                                    </button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #232526 0%, #414345 100%)">
+                                        <span>Midnight Slate</span>
+                                    </button>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <label for="customBackgroundPicker" class="text-sm font-semibold text-gray-600">Or choose a custom colour</label>
+                                    <input type="color" id="customBackgroundPicker" class="h-12 w-12 rounded-full border-0 shadow-inner cursor-pointer" value="#ff9a9e" aria-label="Custom background colour picker">
+                                </div>
+                                <div class="hidden">
+                                    {{ form.background_style }}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="flex flex-wrap justify-end gap-3 pt-4">
+                        <a href="{% url 'dashboard' %}" class="px-5 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">Cancel</a>
+                        <button type="submit" class="px-6 py-3 rounded-xl accent-gradient text-white font-semibold shadow-lg shadow-pink-200/70 hover:shadow-pink-300/80 transform hover:-translate-y-0.5 hover:scale-[1.01] transition">
+                            {% if card %}Save changes{% else %}Create e-card{% endif %}
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+            <div class="w-full lg:w-5/12 bg-gradient-to-br from-white/20 via-white/10 to-white/5 relative overflow-hidden">
+                <div class="absolute -top-12 -right-12 w-56 h-56 bg-pink-200/40 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-72 h-72 bg-indigo-200/40 rounded-full blur-3xl"></div>
+                <div class="relative h-full flex items-center justify-center px-6 py-12">
+                    <div class="w-full max-w-md preview-wrapper">
+                        <div id="previewCard" class="preview-card rounded-3xl shadow-2xl overflow-hidden text-white">
+                            <div class="p-8 backdrop-blur-sm bg-white/0" id="previewContent">
+                                <div class="flex flex-col items-center text-center gap-4">
+                                    <div class="relative">
+                                        <div id="previewAvatarFallback" class="w-28 h-28 rounded-full bg-white/25 border border-white/70 flex items-center justify-center text-white/80 text-4xl font-semibold tracking-wide">
+                                            <i data-lucide="user" class="w-14 h-14"></i>
+                                        </div>
+                                        <img id="previewAvatarImg" src="{% if card and card.avatar %}{{ card.avatar.url }}{% endif %}" alt="Avatar preview" class="hidden w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <h2 id="previewName" class="text-2xl font-bold tracking-tight">Your Name</h2>
+                                        <p id="previewJob" class="text-sm uppercase tracking-[0.3em] text-white/80">Your role</p>
+                                        <p id="previewCompany" class="text-base text-white/80">Company</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 space-y-3" id="previewContacts">
+                                    <p id="previewEmailRow" class="preview-contact"><i data-lucide="mail" class="w-5 h-5"></i><span id="previewEmail">hello@example.com</span></p>
+                                    <p id="previewPhoneRow" class="preview-contact"><i data-lucide="phone" class="w-5 h-5"></i><span id="previewPhone">+00 000 000</span></p>
+                                    <p id="previewWebsiteRow" class="preview-contact"><i data-lucide="globe" class="w-5 h-5"></i><a id="previewWebsite" href="#" target="_blank">example.com</a></p>
+                                    <p id="previewAddressRow" class="preview-contact"><i data-lucide="map-pin" class="w-5 h-5"></i><span id="previewAddress">City, Country</span></p>
+                                    <p id="previewBirthdayRow" class="preview-contact"><i data-lucide="cake" class="w-5 h-5"></i><span id="previewBirthday">Birthday</span></p>
+                                </div>
+
+                                <p id="previewNotes" class="mt-6 text-sm italic text-white/90 hidden"></p>
+
+                                <div id="previewSocials" class="mt-8 flex flex-wrap justify-center gap-3">
+                                    <span class="preview-social" data-social-preview="facebook" style="--brand-color:#1877F2;">
+                                        <i data-lucide="facebook" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="whatsapp" style="--brand-color:#25D366;">
+                                        <i data-lucide="message-circle" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="youtube" style="--brand-color:#FF0000;">
+                                        <i data-lucide="youtube" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="instagram" style="--brand-color:#E4405F;">
+                                        <i data-lucide="instagram" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="twitter" style="--brand-color:#1DA1F2;">
+                                        <i data-lucide="twitter" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="linkedin" style="--brand-color:#0A66C2;">
+                                        <i data-lucide="linkedin" class="w-5 h-5"></i>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-6 bg-white/70 border border-white/40 rounded-2xl px-6 py-4 text-gray-600 text-sm shadow-md flex items-center gap-3">
+                            <i data-lucide="info" class="w-5 h-5 text-pink-500"></i>
+                            Changes appear instantly on the preview. Background choice is saved automatically.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .preview-card {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+        transition: background 0.8s ease, transform 0.4s ease, box-shadow 0.4s ease;
+        animation: floaty 10s ease-in-out infinite;
+    }
+    .preview-card:hover {
+        transform: translateY(-8px) scale(1.01);
+        box-shadow: 0 30px 60px -20px rgba(239, 68, 68, 0.35);
+    }
+    @keyframes floaty {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-6px); }
+        100% { transform: translateY(0px); }
+    }
+    .bg-option {
+        position: relative;
+        border-radius: 1rem;
+        padding: 1px;
+        height: 110px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        overflow: hidden;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: rgba(255, 255, 255, 0.95);
+        font-weight: 600;
+        border: none;
+        box-shadow: 0 10px 25px -15px rgba(15, 23, 42, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .bg-option span {
+        position: relative;
+        z-index: 2;
+        padding-bottom: 0.9rem;
+    }
+    .bg-option::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        background: var(--gradient, linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%));
+    }
+    .bg-option:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 18px 35px -20px rgba(15, 23, 42, 0.5);
+    }
+    .bg-option.active {
+        box-shadow: 0 22px 45px -20px rgba(236, 72, 153, 0.6);
+        transform: translateY(-6px) scale(1.01);
+    }
+    .bg-option.active::after {
+        content: '';
+        position: absolute;
+        inset: 4px;
+        border-radius: 0.9rem;
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        z-index: 2;
+    }
+    .preview-contact {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.65rem 1rem;
+        border-radius: 0.9rem;
+        background-color: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        font-weight: 500;
+        letter-spacing: 0.02em;
+    }
+    .preview-contact a {
+        text-decoration: none;
+        color: inherit;
+    }
+    .preview-social {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--brand-color);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .preview-social.hidden { display: none; }
+    .preview-social:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 15px 30px -20px rgba(15, 23, 42, 0.45);
+    }
+    @media (max-width: 1023px) {
+        .preview-card { animation: none; }
+    }
+</style>
+
+<script>
+    (function() {
+        const form = document.getElementById('card-builder-form');
+        if (!form) { return; }
+
+        const fallbackBackground = 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)';
+        const fieldIds = ['firstName','lastName','jobTitle','company','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin'];
+        const inputs = {};
+        fieldIds.forEach(name => {
+            const el = document.getElementById(`id_${name}`);
+            if (el) {
+                inputs[name] = el;
+            }
+        });
+
+        const previewCard = document.getElementById('previewCard');
+        const previewName = document.getElementById('previewName');
+        const previewJob = document.getElementById('previewJob');
+        const previewCompany = document.getElementById('previewCompany');
+        const previewEmailRow = document.getElementById('previewEmailRow');
+        const previewPhoneRow = document.getElementById('previewPhoneRow');
+        const previewWebsiteRow = document.getElementById('previewWebsiteRow');
+        const previewAddressRow = document.getElementById('previewAddressRow');
+        const previewBirthdayRow = document.getElementById('previewBirthdayRow');
+        const previewEmail = document.getElementById('previewEmail');
+        const previewPhone = document.getElementById('previewPhone');
+        const previewWebsite = document.getElementById('previewWebsite');
+        const previewAddress = document.getElementById('previewAddress');
+        const previewBirthday = document.getElementById('previewBirthday');
+        const previewNotes = document.getElementById('previewNotes');
+        const previewAvatarImg = document.getElementById('previewAvatarImg');
+        const previewAvatarFallback = document.getElementById('previewAvatarFallback');
+        const backgroundField = document.getElementById('id_background_style');
+        const backgroundOptions = document.querySelectorAll('[data-bg-option]');
+        const customPicker = document.getElementById('customBackgroundPicker');
+        const socialElements = document.querySelectorAll('[data-social-preview]');
+
+        function extractRgb(value) {
+            if (!value) { return null; }
+            const hexMatch = value.match(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})/);
+            if (hexMatch) {
+                let hex = hexMatch[0].replace('#', '');
+                if (hex.length === 3) {
+                    hex = hex.split('').map(ch => ch + ch).join('');
+                }
+                const r = parseInt(hex.slice(0, 2), 16);
+                const g = parseInt(hex.slice(2, 4), 16);
+                const b = parseInt(hex.slice(4, 6), 16);
+                if ([r, g, b].some(isNaN)) { return null; }
+                return [r, g, b];
+            }
+            const rgbMatch = value.match(/rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/);
+            if (rgbMatch) {
+                return [parseInt(rgbMatch[1], 10), parseInt(rgbMatch[2], 10), parseInt(rgbMatch[3], 10)];
+            }
+            return null;
+        }
+
+        function chooseTextColor(value) {
+            const rgb = extractRgb(value);
+            if (!rgb) { return '#333333'; }
+            const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+            return luminance < 0.55 ? '#FFFFFF' : '#1f2937';
+        }
+
+        function applyBackground(value) {
+            const backgroundValue = value || fallbackBackground;
+            previewCard.style.background = backgroundValue;
+            const contrast = chooseTextColor(backgroundValue);
+            previewCard.style.color = contrast;
+            previewCard.querySelectorAll('.preview-contact, .preview-contact a, #previewName, #previewJob, #previewCompany, #previewNotes').forEach(el => {
+                el.style.color = contrast;
+            });
+            previewCard.querySelectorAll('.preview-contact').forEach(el => {
+                el.style.borderColor = contrast === '#FFFFFF' ? 'rgba(255,255,255,0.3)' : 'rgba(17,24,39,0.15)';
+                el.style.backgroundColor = contrast === '#FFFFFF' ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.7)';
+            });
+            previewCard.querySelectorAll('.preview-social').forEach(el => {
+                const isLight = contrast === '#1f2937';
+                el.style.backgroundColor = isLight ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.18)';
+                el.style.borderColor = isLight ? 'rgba(17,24,39,0.1)' : 'rgba(255,255,255,0.35)';
+            });
+            if (backgroundField) {
+                backgroundField.value = backgroundValue;
+            }
+        }
+
+        function setActiveBackground(option) {
+            backgroundOptions.forEach(btn => btn.classList.remove('active'));
+            if (option) {
+                option.classList.add('active');
+                const gradient = option.getAttribute('data-bg-option');
+                option.style.setProperty('--gradient', gradient);
+            }
+        }
+
+        function formatDate(value) {
+            if (!value) { return ''; }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+            return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+        }
+
+        function cleanUrl(url) {
+            if (!url) { return ''; }
+            try {
+                const parsed = new URL(url, window.location.origin);
+                return parsed.host + parsed.pathname.replace(/\/$/, '');
+            } catch (e) {
+                return url.replace(/^https?:\/\//, '');
+            }
+        }
+
+        function updateSocials() {
+            socialElements.forEach(el => {
+                const network = el.getAttribute('data-social-preview');
+                const field = inputs[network];
+                const value = field ? field.value.trim() : '';
+                el.classList.toggle('hidden', !value);
+                if (value) {
+                    el.setAttribute('title', value);
+                }
+            });
+        }
+
+        function updatePreview() {
+            const name = [inputs.firstName?.value || '', inputs.lastName?.value || ''].join(' ').trim();
+            previewName.textContent = name || 'Your Name';
+
+            const job = inputs.jobTitle?.value.trim();
+            previewJob.textContent = job || 'Your role';
+            previewJob.style.opacity = job ? '1' : '0.55';
+
+            const company = inputs.company?.value.trim();
+            previewCompany.textContent = company || 'Company';
+            previewCompany.style.opacity = company ? '1' : '0.6';
+
+            const email = inputs.email?.value.trim();
+            previewEmailRow.classList.toggle('hidden', !email);
+            previewEmail.textContent = email || '';
+
+            const phone = inputs.phone?.value.trim();
+            previewPhoneRow.classList.toggle('hidden', !phone);
+            previewPhone.textContent = phone || '';
+
+            const website = inputs.website?.value.trim();
+            previewWebsiteRow.classList.toggle('hidden', !website);
+            if (website) {
+                previewWebsite.textContent = cleanUrl(website);
+                previewWebsite.href = website;
+            } else {
+                previewWebsite.href = '#';
+            }
+
+            const address = inputs.address?.value.trim();
+            previewAddressRow.classList.toggle('hidden', !address);
+            previewAddress.textContent = address || '';
+
+            const birthday = inputs.birthday?.value.trim();
+            const formattedBirthday = formatDate(birthday);
+            previewBirthdayRow.classList.toggle('hidden', !formattedBirthday);
+            previewBirthday.textContent = formattedBirthday;
+
+            const notes = inputs.notes?.value.trim();
+            previewNotes.classList.toggle('hidden', !notes);
+            previewNotes.textContent = notes || '';
+
+            updateSocials();
+        }
+
+        backgroundOptions.forEach(option => {
+            const gradient = option.getAttribute('data-bg-option');
+            option.style.setProperty('--gradient', gradient);
+            option.addEventListener('click', () => {
+                setActiveBackground(option);
+                applyBackground(gradient);
+            });
+        });
+
+        if (customPicker) {
+            customPicker.addEventListener('input', event => {
+                const value = event.target.value;
+                backgroundOptions.forEach(btn => btn.classList.remove('active'));
+                applyBackground(value);
+            });
+        }
+
+        if (backgroundField && backgroundField.value) {
+            const match = Array.from(backgroundOptions).find(option => option.getAttribute('data-bg-option') === backgroundField.value);
+            if (match) {
+                setActiveBackground(match);
+                applyBackground(backgroundField.value);
+            } else {
+                applyBackground(backgroundField.value);
+            }
+            if (customPicker && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(backgroundField.value.trim())) {
+                customPicker.value = backgroundField.value.trim();
+            }
+        } else {
+            const firstOption = backgroundOptions[0];
+            if (firstOption) {
+                setActiveBackground(firstOption);
+                applyBackground(firstOption.getAttribute('data-bg-option'));
+            } else {
+                applyBackground(fallbackBackground);
+            }
+        }
+
+        fieldIds.forEach(name => {
+            const input = inputs[name];
+            if (!input) { return; }
+            input.addEventListener('input', updatePreview);
+        });
+
+        const avatarInput = document.getElementById('id_avatar');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', event => {
+                const [file] = event.target.files;
+                if (!file) {
+                    previewAvatarImg.classList.add('hidden');
+                    previewAvatarImg.src = '';
+                    previewAvatarFallback.classList.remove('hidden');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    previewAvatarImg.src = e.target.result;
+                    previewAvatarImg.classList.remove('hidden');
+                    previewAvatarFallback.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        if (previewAvatarImg && previewAvatarImg.getAttribute('src')) {
+            previewAvatarImg.classList.remove('hidden');
+            previewAvatarFallback.classList.add('hidden');
+        }
+
+        updatePreview();
+    })();
+</script>
 {% endblock %}

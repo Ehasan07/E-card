@@ -3,21 +3,147 @@
 {% block title %}Admin Login{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center">
-        <div class="p-1 rounded-2xl shadow-lg" style="background: linear-gradient(to right, #4facfe, #a18cd1, #fbc2eb);">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white bg-opacity-80 backdrop-blur-xl rounded-2xl">
-            <h2 class="text-3xl font-bold text-center text-gray-800">Admin Login</h2>
-            <form method="post" class="space-y-6">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="w-full accent-gradient text-white font-bold py-3 px-4 rounded-lg hover:shadow-lg transform hover:scale-105 transition-all duration-300 ease-in-out">
-                    Login as Admin
-                </button>
-            </form>
-            <div class="text-center mt-4">
-                <a href="{% url 'password_reset' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</a>
+<div class="min-h-screen flex items-center justify-center px-4 py-12">
+    <div class="relative w-full max-w-4xl">
+        <div class="absolute inset-0 -z-10">
+            <div class="absolute -top-24 -left-20 w-80 h-80 bg-slate-300/30 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 right-0 w-72 h-72 bg-indigo-300/30 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 bg-white/80 border border-white/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl">
+            <div class="hidden md:flex flex-col justify-between p-10 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #312e81 45%, #6b21a8 100%);">
+                <div>
+                    <span class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.4em] font-semibold bg-white/10 px-4 py-1 rounded-full">
+                        <i data-lucide="shield" class="w-4 h-4"></i>
+                        Admin access
+                    </span>
+                    <h2 class="text-3xl font-bold mt-5">Control center</h2>
+                    <p class="mt-3 text-white/85 leading-relaxed">Manage users, cards, and platform health from one secure dashboard.</p>
+                </div>
+                <div class="space-y-4">
+                    <div class="admin-feature">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        Monitor user growth
+                    </div>
+                    <div class="admin-feature">
+                        <i data-lucide="activity" class="w-5 h-5"></i>
+                        Track card activity live
+                    </div>
+                    <div class="admin-feature">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                        Secure privileged access
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8 md:p-10">
+                <div class="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900">Admin login</h1>
+                        <p class="text-sm text-slate-500">Authorized personnel only.</p>
+                    </div>
+                    <div class="hidden sm:flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 text-slate-600">
+                        <i data-lucide="key" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <form method="post" class="space-y-5" id="admin-login-form">
+                    {% csrf_token %}
+                    {% if form.non_field_errors %}
+                        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% for field in form.visible_fields %}
+                        <label class="admin-login-field">
+                            <span>
+                                {% if field.name == 'username' %}
+                                    <i data-lucide="user-cog" class="w-4 h-4"></i>
+                                {% else %}
+                                    <i data-lucide="lock" class="w-4 h-4"></i>
+                                {% endif %}
+                                {{ field.label }}
+                            </span>
+                            {{ field }}
+                            {% if field.errors %}
+                                <small class="text-red-500 text-xs">{{ field.errors|striptags }}</small>
+                            {% endif %}
+                        </label>
+                    {% endfor %}
+
+                    <button type="submit" class="w-full relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden group">
+                        <span class="absolute inset-0 bg-gradient-to-r from-slate-700 via-indigo-600 to-purple-600 group-hover:opacity-90 transition"></span>
+                        <span class="absolute -inset-0.5 bg-gradient-to-r from-indigo-200 to-purple-200 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
+                        <span class="relative flex items-center gap-3">
+                            <i data-lucide="shield-check" class="w-5 h-5"></i>
+                            Log in as admin
+                        </span>
+                    </button>
+                </form>
+
+                <div class="mt-8 text-sm text-slate-500">
+                    <p class="flex items-center gap-2">
+                        <i data-lucide="key-round" class="w-4 h-4 text-indigo-500"></i>
+                        Forgot credentials?
+                        <a href="{% url 'password_reset_request_otp' %}" class="text-indigo-600 font-semibold hover:underline">Request reset</a>
+                    </p>
+                    <p class="flex items-center gap-2 mt-2">
+                        <i data-lucide="arrow-left" class="w-4 h-4 text-indigo-500"></i>
+                        <a href="{% url 'index' %}" class="text-indigo-600 font-semibold hover:underline">Back to home</a>
+                    </p>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    #admin-login-form input {
+        width: 100%;
+        border-radius: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(100,116,139,0.25);
+        background: rgba(255,255,255,0.9);
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+    #admin-login-form input:focus {
+        outline: none;
+        border-color: rgba(79,70,229,0.5);
+        box-shadow: 0 0 0 4px rgba(79,70,229,0.18);
+    }
+    .admin-login-field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #475569;
+    }
+    .admin-login-field span {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-transform: uppercase;
+        letter-spacing: 0.09em;
+        font-size: 0.7rem;
+    }
+    .admin-feature {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        background: rgba(255,255,255,0.18);
+        border: 1px solid rgba(255,255,255,0.35);
+        backdrop-filter: blur(6px);
+        font-weight: 600;
+        letter-spacing: 0.03em;
+    }
+    @media (max-width: 768px) {
+        .admin-feature { padding: 0.65rem 0.9rem; }
+    }
+</style>
 {% endblock %}

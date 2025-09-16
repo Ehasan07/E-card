@@ -34,16 +34,24 @@ A comprehensive web application built with Django that allows users to create, c
     *   A short bio or notes section.
 *   **Profile Picture:** Users can upload an avatar to personalize their e-card.
 *   **Styling Options:** Choose from a variety of background styles to customize the look and feel of the e-card.
-*   **Live Preview:** A real-time preview of the e-card is displayed during the creation process, updating as you type.
+*   **Immersive Builder:** A two-panel builder shows a live, animated preview while you customize content, colors, avatar, and gradients.
+*   **Smart Styling:** Automatic text-contrast detection keeps content readable no matter which gradient or custom color you choose.
+*   **Drag-and-Drop Ready UI:** Inputs are grouped into guided sections with icons, micro-animations, and instant feedback so you always know what changed.
 
 ### E-Card Sharing and Viewing
 *   **Unique Shareable URL:** Each e-card has a unique URL that can be shared with others.
 *   **QR Code Generation:** A QR code is automatically generated for each e-card, which links to the e-card's URL. The QR code can be downloaded for use on physical materials.
 *   **Social Media Integration:** Display icons and links to various social media profiles, including Facebook, WhatsApp, YouTube, Instagram, Twitter, and LinkedIn.
+*   **Quick Actions:** Copy email/phone, launch mailto calls, save contacts as vCards, and share via the browser’s native share sheet in a single tap.
+*   **Insight Banners:** Helpful tips and reminders surface next to the QR panel so you remember to embed or monitor your card after sharing.
 
 ### Dashboards
-*   **User Dashboard:** A personalized dashboard for logged-in users to view, manage, and delete their created e-cards.
-*   **Admin Dashboard:** A separate, secure dashboard for administrators to get an overview of the platform, including total users and total e-cards. Admins can also view and delete any e-card on the platform.
+*   **User Dashboard:** A personalized dashboard for logged-in users to view, manage, and delete their created e-cards, with animated stat cards and stylish back-to-home navigation.
+*   **Admin Dashboard:** A secure console showing total users, cards, and moderation queue with glassmorphism styling, quick actions, and logout/back-home shortcuts.
+
+### Hero & Onboarding Experience
+*   **Showcase Landing Page:** Animated gradients, feature highlights, a hero tutorial modal, and AI-inspired UI mockups make the home page feel premium.
+*   **Guided Registration & Login:** Split layouts with elevator pitches, feature callouts, and icon-labeled inputs deliver a welcoming experience for both users and admins.
 
 ## Getting Started
 
@@ -53,6 +61,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 
 *   Python 3.8+
 *   pip (Python package installer)
+*   PostgreSQL 12+ (local instance or connection credentials)
 
 ### Installation
 
@@ -74,12 +83,34 @@ Follow these instructions to get a copy of the project up and running on your lo
     pip install -r requirements.txt
     ```
 
-4.  **Apply database migrations:**
+4.  **Create a PostgreSQL database and user:**
+    If you have `psql` access, run the helper script (defaults shown below substitute environment variables `DB_USER`, `DB_PASS`, `DB_NAME` if set):
+    ```bash
+    # Optional: export PGUSER if your local superuser is different (e.g. postgres)
+    chmod +x scripts/setup_postgres.sh  # make executable (first run only)
+    ./scripts/setup_postgres.sh
+    ```
+    Or execute the SQL manually:
+    ```sql
+    CREATE ROLE ec_user WITH LOGIN PASSWORD 'change_me';
+    CREATE DATABASE ecard_db OWNER ec_user;
+    GRANT ALL PRIVILEGES ON DATABASE ecard_db TO ec_user;
+    ```
+
+5.  **Configure environment variables:**
+    Copy `.env.example` to `.env` (or export variables in your shell) and adjust as needed:
+    ```bash
+    SECRET_KEY=your-production-secret
+    DEBUG=True
+    ALLOWED_HOSTS=127.0.0.1,localhost
+    DATABASE_URL=postgres://ec_user:change_me@localhost:5432/ecard_db
+    ```
+
+6.  **Apply database migrations:**
     ```bash
     python manage.py makemigrations
     python manage.py migrate
     ```
-    *(Note: The `db.sqlite3` file is ignored by Git. This command will create a new database file locally.)*
 
 5.  **Collect static files:**
     ```bash
@@ -105,15 +136,15 @@ The application will be available at `http://127.0.0.1:8000/`.
 
 1.  **Register/Login:** Create a new account or log in to an existing one.
 2.  **Create E-Card:** From the dashboard, click on "Create E-Card" and fill in your details.
-3.  **Customize:** Choose a background style and upload a profile picture.
+3.  **Customize:** Choose backgrounds or enter custom colors, upload a profile picture, and see changes live.
 4.  **Save and View:** Save your e-card to generate a unique URL and QR code.
-5.  **Share:** Share your e-card using the provided URL or by downloading the QR code.
+5.  **Share:** Share your e-card using the provided URL, native share button, or downloaded QR code; copy contact info or save it as a vCard in one click.
 
 ### Admin Flow
 
 1.  **Admin Login:** Navigate to `/my-admin/login/` and log in using your superuser credentials.
-2.  **View Statistics:** See the total number of users and e-cards on the platform.
-3.  **Manage E-Cards:** View a list of all e-cards and delete any that are inappropriate or no longer needed.
+2.  **View Statistics:** See the total number of users, cards, and queue size via animated metric cards.
+3.  **Manage E-Cards:** Review all e-cards with quick actions, then jump back home or log out via the navigation buttons.
 
 ## Production Deployment
 
@@ -123,7 +154,7 @@ This project is configured for production deployment on a Linux server (e.g., Ub
 
 *   **Web Server:** Nginx
 *   **Application Server:** Gunicorn
-*   **Database:** PostgreSQL (with SQLite fallback for local development)
+*   **Database:** PostgreSQL (configured via `DATABASE_URL`)
 *   **Process Management:** Systemd
 *   **SSL:** Let's Encrypt
 
