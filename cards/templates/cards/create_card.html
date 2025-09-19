@@ -1,4 +1,5 @@
 {% extends 'cards/base.html' %}
+{% load static %}
 
 {% block title %}{% if card %}Edit E-Card{% else %}Create E-Card{% endif %}{% endblock %}
 
@@ -57,7 +58,32 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Phone</label>
+                                <div class="flex rounded-xl shadow-sm">
+                                    <div class="relative w-28" data-country-picker="phone" data-default-code="880" data-selected-code="{{ form.phone_country.value|default:'880' }}">
+                                        {{ form.phone_country }}
+                                        <button type="button" class="country-trigger h-12 w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-l-xl px-3 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 hover:bg-pink-50 transition" data-country-button>
+                                            <span class="text-lg" data-country-flag>🌐</span>
+                                            <span data-country-code class="text-sm">+000</span>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                                        </button>
+                                        <div class="country-dropdown hidden absolute z-30 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-xl" data-country-dropdown>
+                                            <div class="border-b border-gray-100 p-2">
+                                                <input type="text" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" placeholder="Search country or code" data-country-search>
+                                            </div>
+                                            <ul class="max-h-60 overflow-y-auto py-1" data-country-list></ul>
+                                            <p class="hidden px-4 py-3 text-sm text-gray-500" data-country-empty>No results found</p>
+                                        </div>
+                                    </div>
+                                    {{ form.phone_number }}
+                                </div>
                                 {{ form.phone }}
+                                {% if form.phone_country.errors or form.phone_number.errors %}
+                                    <p class="mt-2 text-sm text-pink-600">
+                                        {{ form.phone_country.errors|striptags }} {{ form.phone_number.errors|striptags }}
+                                    </p>
+                                {% else %}
+                                    <p class="mt-2 text-xs text-gray-500">Enter digits only – the country code is added automatically.</p>
+                                {% endif %}
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Address</label>
@@ -90,7 +116,32 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">WhatsApp</label>
+                                <div class="flex rounded-xl shadow-sm">
+                                    <div class="relative w-28" data-country-picker="whatsapp" data-default-code="880" data-selected-code="{{ form.whatsapp_country.value|default:'880' }}">
+                                        {{ form.whatsapp_country }}
+                                        <button type="button" class="country-trigger h-12 w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-l-xl px-3 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 hover:bg-pink-50 transition" data-country-button>
+                                            <span class="text-lg" data-country-flag>🌐</span>
+                                            <span data-country-code class="text-sm">+000</span>
+                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                                        </button>
+                                        <div class="country-dropdown hidden absolute z-30 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-xl" data-country-dropdown>
+                                            <div class="border-b border-gray-100 p-2">
+                                                <input type="text" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" placeholder="Search country or code" data-country-search>
+                                            </div>
+                                            <ul class="max-h-60 overflow-y-auto py-1" data-country-list></ul>
+                                            <p class="hidden px-4 py-3 text-sm text-gray-500" data-country-empty>No results found</p>
+                                        </div>
+                                    </div>
+                                    {{ form.whatsapp_number }}
+                                </div>
                                 {{ form.whatsapp }}
+                                {% if form.whatsapp_country.errors or form.whatsapp_number.errors %}
+                                    <p class="mt-2 text-sm text-pink-600">
+                                        {{ form.whatsapp_country.errors|striptags }} {{ form.whatsapp_number.errors|striptags }}
+                                    </p>
+                                {% else %}
+                                    <p class="mt-2 text-xs text-gray-500">WhatsApp number only &mdash; the link is generated automatically.</p>
+                                {% endif %}
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">YouTube</label>
@@ -368,6 +419,266 @@
         const backgroundOptions = document.querySelectorAll('[data-bg-option]');
         const customPicker = document.getElementById('customBackgroundPicker');
         const socialElements = document.querySelectorAll('[data-social-preview]');
+        const whatsappCountryField = document.getElementById('id_whatsapp_country');
+        const whatsappNumberField = document.getElementById('id_whatsapp_number');
+        const whatsappHiddenField = document.getElementById('id_whatsapp');
+        const phoneCountryField = document.getElementById('id_phone_country');
+        const phoneNumberField = document.getElementById('id_phone_number');
+        const phoneHiddenField = document.getElementById('id_phone');
+        if (whatsappHiddenField) {
+            whatsappHiddenField.dataset.initialValue = whatsappHiddenField.value;
+        }
+        if (phoneHiddenField) {
+            phoneHiddenField.dataset.initialValue = phoneHiddenField.value;
+        }
+
+        const COUNTRY_DATA_URL = "{% static 'cards/country_codes.json' %}";
+        const countryPickerConfigs = {
+            phone: {
+                type: 'phone',
+                container: document.querySelector('[data-country-picker="phone"]'),
+                hiddenInput: phoneCountryField,
+                defaultCode: (document.querySelector('[data-country-picker="phone"]')?.dataset.defaultCode) || '880'
+            },
+            whatsapp: {
+                type: 'whatsapp',
+                container: document.querySelector('[data-country-picker="whatsapp"]'),
+                hiddenInput: whatsappCountryField,
+                defaultCode: (document.querySelector('[data-country-picker="whatsapp"]')?.dataset.defaultCode) || '880'
+            }
+        };
+        let countryDataset = [];
+        let openCountryPicker = null;
+
+        const escapeHtml = (value) => value
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+
+        const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+        const highlightMatch = (text, term) => {
+            if (!term) {
+                return escapeHtml(text);
+            }
+            const regex = new RegExp(`(${escapeRegExp(term)})`, 'ig');
+            return escapeHtml(text).replace(regex, '<span class="text-pink-500 font-semibold">$1</span>');
+        };
+
+        const closeCountryDropdown = (config) => {
+            if (!config?.dropdown) { return; }
+            config.dropdown.classList.add('hidden');
+            config.button?.setAttribute('aria-expanded', 'false');
+            config.searchInput.value = '';
+            config.filteredCountries = config.allCountries;
+            config.activeIndex = -1;
+            openCountryPicker = openCountryPicker === config ? null : openCountryPicker;
+        };
+
+        const setCountrySelection = (config, country, trigger = true) => {
+            if (!country || !config?.hiddenInput) { return; }
+            config.selectedCountry = country;
+            config.hiddenInput.value = country.dialDigits;
+            if (config.container) {
+                config.container.dataset.selectedCode = country.dialDigits;
+            }
+            if (config.buttonFlag) {
+                config.buttonFlag.textContent = country.flag;
+            }
+            if (config.buttonCode) {
+                config.buttonCode.textContent = country.dial_code;
+            }
+            if (config.button) {
+                config.button.setAttribute('aria-label', `${country.name} ${country.dial_code}`);
+            }
+
+            if (config.type === 'phone' && trigger) {
+                syncPhoneValue();
+            }
+            if (config.type === 'whatsapp' && trigger) {
+                syncWhatsappLink();
+            }
+        };
+
+        const renderCountryOptions = (config, term = '', preserveActive = false) => {
+            if (!config?.listEl) { return; }
+            const normalized = term.trim().toLowerCase();
+            const results = !normalized ? config.allCountries : config.allCountries.filter(country => country.search.includes(normalized));
+            config.filteredCountries = results.slice(0, 80);
+            if (!preserveActive) {
+                config.activeIndex = config.filteredCountries.findIndex(country => country.dialDigits === config.hiddenInput.value);
+            }
+            if (config.activeIndex < 0 || config.activeIndex >= config.filteredCountries.length) {
+                config.activeIndex = config.filteredCountries.length ? 0 : -1;
+            }
+
+            if (!config.filteredCountries.length) {
+                config.listEl.innerHTML = '';
+                if (config.emptyState) {
+                    config.emptyState.classList.remove('hidden');
+                }
+                return;
+            }
+
+            if (config.emptyState) {
+                config.emptyState.classList.add('hidden');
+            }
+            const termDisplay = normalized.startsWith('+') ? normalized : normalized.replace(/^[+]/, '');
+            config.listEl.innerHTML = config.filteredCountries.map((country, index) => {
+                const isActive = index === config.activeIndex;
+                const itemClasses = ['flex items-center gap-3 px-3 py-2 text-sm cursor-pointer transition', 'hover:bg-pink-50'];
+                if (isActive) {
+                    itemClasses.push('bg-pink-50 text-pink-600');
+                }
+                const nameHtml = highlightMatch(country.name, normalized);
+                const dialHtml = highlightMatch(country.dial_code, termDisplay);
+                return `
+                    <li class="${itemClasses.join(' ')}" data-country-item data-index="${index}" data-dial="${country.dialDigits}">
+                        <span class="text-lg select-none">${country.flag}</span>
+                        <div class="flex flex-col leading-tight select-none">
+                            <span class="text-sm font-medium">${nameHtml}</span>
+                            <span class="text-xs text-gray-500">${dialHtml}</span>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+        };
+
+        const openCountryDropdown = (config) => {
+            if (!config?.dropdown) { return; }
+            if (openCountryPicker && openCountryPicker !== config) {
+                closeCountryDropdown(openCountryPicker);
+            }
+            config.dropdown.classList.remove('hidden');
+            config.button?.setAttribute('aria-expanded', 'true');
+            renderCountryOptions(config, '');
+            config.searchInput.value = '';
+            setTimeout(() => config.searchInput.focus(), 0);
+            openCountryPicker = config;
+        };
+
+        const initCountryPicker = (config) => {
+            if (!config?.container || !config.hiddenInput || !countryDataset.length) { return; }
+
+            config.button = config.container.querySelector('[data-country-button]');
+            config.buttonFlag = config.container.querySelector('[data-country-flag]');
+            config.buttonCode = config.container.querySelector('[data-country-code]');
+            config.dropdown = config.container.querySelector('[data-country-dropdown]');
+            config.searchInput = config.container.querySelector('[data-country-search]');
+            config.listEl = config.container.querySelector('[data-country-list]');
+            config.emptyState = config.container.querySelector('[data-country-empty]');
+            config.allCountries = countryDataset;
+            config.filteredCountries = countryDataset;
+            config.activeIndex = -1;
+
+            const initialCode = config.container.dataset.selectedCode || config.hiddenInput.value || config.defaultCode || '880';
+            const initialCountry = countryDataset.find(country => country.dialDigits === initialCode) || countryDataset[0];
+            setCountrySelection(config, initialCountry, false);
+
+            const handleSelection = (index) => {
+                const country = config.filteredCountries[index];
+                if (!country) { return; }
+                setCountrySelection(config, country);
+                closeCountryDropdown(config);
+                config.button?.focus();
+            };
+
+            if (config.button) {
+                config.button.addEventListener('click', () => {
+                    if (config.dropdown.classList.contains('hidden')) {
+                        openCountryDropdown(config);
+                    } else {
+                        closeCountryDropdown(config);
+                    }
+                });
+                config.button.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        if (config.dropdown.classList.contains('hidden')) {
+                            openCountryDropdown(config);
+                        } else {
+                            closeCountryDropdown(config);
+                        }
+                    }
+                });
+            }
+
+            if (config.searchInput) {
+                config.searchInput.addEventListener('input', (event) => {
+                    renderCountryOptions(config, event.target.value);
+                });
+                config.searchInput.addEventListener('keydown', (event) => {
+                    if (!config.filteredCountries.length) { return; }
+                    if (event.key === 'ArrowDown') {
+                        event.preventDefault();
+                        config.activeIndex = (config.activeIndex + 1) % config.filteredCountries.length;
+                        renderCountryOptions(config, event.target.value, true);
+                    }
+                    if (event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        config.activeIndex = (config.activeIndex - 1 + config.filteredCountries.length) % config.filteredCountries.length;
+                        renderCountryOptions(config, event.target.value, true);
+                    }
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        handleSelection(config.activeIndex >= 0 ? config.activeIndex : 0);
+                    }
+                    if (event.key === 'Escape') {
+                        event.preventDefault();
+                        closeCountryDropdown(config);
+                        config.button?.focus();
+                    }
+                });
+            }
+
+            if (config.listEl) {
+                config.listEl.addEventListener('mousedown', (event) => {
+                    const item = event.target.closest('[data-country-item]');
+                    if (!item) { return; }
+                    event.preventDefault();
+                    handleSelection(Number(item.dataset.index));
+                });
+                config.listEl.addEventListener('mousemove', (event) => {
+                    const item = event.target.closest('[data-country-item]');
+                    if (!item) { return; }
+                    const index = Number(item.dataset.index);
+                    if (!Number.isNaN(index)) {
+                        config.activeIndex = index;
+                        config.listEl.querySelectorAll('[data-country-item]').forEach((li, idx) => {
+                            li.classList.toggle('bg-pink-50', idx === config.activeIndex);
+                            li.classList.toggle('text-pink-600', idx === config.activeIndex);
+                        });
+                    }
+                });
+            }
+        };
+
+        document.addEventListener('click', (event) => {
+            if (openCountryPicker && !openCountryPicker.container.contains(event.target)) {
+                closeCountryDropdown(openCountryPicker);
+            }
+        });
+
+        fetch(COUNTRY_DATA_URL)
+            .then(response => response.json())
+            .then(data => {
+                countryDataset = data.map(country => ({
+                    ...country,
+                    dialDigits: country.dial_code.replace(/[^0-9]/g, ''),
+                    search: `${country.name.toLowerCase()} ${country.dial_code.replace('+', '')} ${country.code.toLowerCase()}`
+                }));
+                Object.values(countryPickerConfigs).forEach(config => initCountryPicker(config));
+                syncPhoneValue(false);
+                syncWhatsappLink(false);
+                updatePreview();
+            })
+            .catch(() => {
+                syncPhoneValue(false);
+                syncWhatsappLink(false);
+                updatePreview();
+            });
 
         function extractRgb(value) {
             if (!value) { return null; }
@@ -459,6 +770,81 @@
             });
         }
 
+        function syncWhatsappLink(triggerPreview = true) {
+            if (!whatsappHiddenField || !inputs.whatsapp) { return; }
+            const countryDigits = whatsappCountryField && whatsappCountryField.value ? whatsappCountryField.value.replace(/\D/g, '') : '';
+            let numberDigits = '';
+            if (whatsappNumberField) {
+                const sanitized = whatsappNumberField.value.replace(/\D/g, '');
+                if (whatsappNumberField.value !== sanitized) {
+                    whatsappNumberField.value = sanitized;
+                }
+                numberDigits = sanitized;
+                if (countryDigits && numberDigits.startsWith(countryDigits)) {
+                    numberDigits = numberDigits.slice(countryDigits.length);
+                    whatsappNumberField.value = numberDigits;
+                }
+            }
+
+            let linkValue = '';
+            if (countryDigits && numberDigits) {
+                linkValue = `https://wa.me/${countryDigits}${numberDigits}`;
+            } else if (whatsappHiddenField.dataset.initialValue && !numberDigits && !countryDigits) {
+                linkValue = whatsappHiddenField.dataset.initialValue;
+            }
+
+            whatsappHiddenField.value = linkValue;
+            inputs.whatsapp.value = linkValue;
+
+            if (triggerPreview) {
+                updateSocials();
+            }
+        }
+
+        function syncPhoneValue(triggerPreview = true) {
+            if (!phoneHiddenField || !inputs.phone) { return; }
+            const countryDigits = phoneCountryField && phoneCountryField.value ? phoneCountryField.value.replace(/\D/g, '') : '';
+            let numberDigits = '';
+            if (phoneNumberField) {
+                const sanitized = phoneNumberField.value.replace(/\D/g, '');
+                if (phoneNumberField.value !== sanitized) {
+                    phoneNumberField.value = sanitized;
+                }
+                numberDigits = sanitized;
+                if (countryDigits && numberDigits.startsWith(countryDigits)) {
+                    numberDigits = numberDigits.slice(countryDigits.length);
+                    phoneNumberField.value = numberDigits;
+                }
+            }
+
+            let stored = '';
+            if (countryDigits && numberDigits) {
+                stored = `${countryDigits}${numberDigits}`;
+            } else if (phoneHiddenField.dataset.initialValue && !countryDigits && !numberDigits) {
+                stored = phoneHiddenField.dataset.initialValue;
+            } else {
+                stored = numberDigits;
+            }
+
+            phoneHiddenField.value = stored;
+            inputs.phone.value = stored;
+
+            if (triggerPreview) {
+                updatePreview();
+            }
+        }
+
+        function formatPhoneDisplay(raw) {
+            const digits = raw ? raw.replace(/\D/g, '') : '';
+            if (!digits) { return ''; }
+            const countryDigits = phoneCountryField && phoneCountryField.value ? phoneCountryField.value.replace(/\D/g, '') : '';
+            if (countryDigits && digits.startsWith(countryDigits)) {
+                const remainder = digits.slice(countryDigits.length);
+                return remainder ? `+${countryDigits} ${remainder}` : `+${countryDigits}`;
+            }
+            return `+${digits}`;
+        }
+
         function updatePreview() {
             const name = [inputs.firstName?.value || '', inputs.lastName?.value || ''].join(' ').trim();
             previewName.textContent = name || 'Your Name';
@@ -475,9 +861,10 @@
             previewEmailRow.classList.toggle('hidden', !email);
             previewEmail.textContent = email || '';
 
-            const phone = inputs.phone?.value.trim();
-            previewPhoneRow.classList.toggle('hidden', !phone);
-            previewPhone.textContent = phone || '';
+            const phoneValue = inputs.phone?.value.trim();
+            const phoneDisplay = formatPhoneDisplay(phoneValue);
+            previewPhoneRow.classList.toggle('hidden', !phoneDisplay);
+            previewPhone.textContent = phoneDisplay || '';
 
             const website = inputs.website?.value.trim();
             previewWebsiteRow.classList.toggle('hidden', !website);
@@ -548,6 +935,34 @@
             input.addEventListener('input', updatePreview);
         });
 
+        if (whatsappCountryField) {
+            whatsappCountryField.addEventListener('change', () => {
+                syncWhatsappLink();
+                updatePreview();
+            });
+        }
+
+        if (whatsappNumberField) {
+            whatsappNumberField.addEventListener('input', () => {
+                syncWhatsappLink();
+                updatePreview();
+            });
+            whatsappNumberField.addEventListener('blur', () => syncWhatsappLink());
+        }
+
+        if (phoneCountryField) {
+            phoneCountryField.addEventListener('change', () => {
+                syncPhoneValue();
+            });
+        }
+
+        if (phoneNumberField) {
+            phoneNumberField.addEventListener('input', () => {
+                syncPhoneValue();
+            });
+            phoneNumberField.addEventListener('blur', () => syncPhoneValue());
+        }
+
         const avatarInput = document.getElementById('id_avatar');
         if (avatarInput) {
             avatarInput.addEventListener('change', event => {
@@ -573,6 +988,8 @@
             previewAvatarFallback.classList.add('hidden');
         }
 
+        syncPhoneValue(false);
+        syncWhatsappLink(false);
         updatePreview();
     })();
 </script>

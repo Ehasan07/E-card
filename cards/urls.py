@@ -16,4 +16,6 @@ urlpatterns = [
     path('documentation/', views.documentation_view, name='documentation'),
     path('password_reset/request_otp/', views.password_reset_request_otp, name='password_reset_request_otp'),
     path('password_reset/verify_otp/', views.password_reset_verify_otp, name='password_reset_verify_otp'),
+    path('export/csv/', views.export_cards_csv, name='export_cards_csv'),
+    path('export/excel/', views.export_cards_excel, name='export_cards_excel'),
 ]

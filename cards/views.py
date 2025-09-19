@@ -1,7 +1,11 @@
+import csv
+import json
+import re
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import UserForm, ProfileForm, OTPForm, CardForm
+from .forms import UserForm, ProfileForm, OTPForm, CardForm, COUNTRY_CHOICES
 from .models import Card, Profile
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm
@@ -14,6 +18,42 @@ from django.urls import reverse
 import markdown
 import os
 from django.contrib import messages
+from django.http import HttpResponse
+
+from openpyxl import Workbook
+
+
+def _normalize_whatsapp_link(value: str) -> str:
+    if not value:
+        return ''
+    value = value.strip()
+    if value.startswith('http://') or value.startswith('https://'):
+        return value
+    digits = re.sub(r'\D', '', value.lstrip('+'))
+    return f"https://wa.me/{digits}" if digits else ''
+
+
+def _normalize_phone_number(value: str, default_code: str = '880') -> tuple[str, str]:
+    if not value:
+        return '', ''
+    digits = re.sub(r'\D', '', str(value).lstrip('+'))
+    if not digits:
+        return '', ''
+
+    match_code = ''
+    for code, _label in sorted(COUNTRY_CHOICES, key=lambda item: len(item[0]), reverse=True):
+        if digits.startswith(code):
+            match_code = code
+            break
+
+    if not match_code:
+        if not digits.startswith(default_code):
+            digits = f"{default_code}{digits}"
+        match_code = default_code
+
+    remainder = digits[len(match_code):]
+    display = f"+{match_code} {remainder}" if remainder else f"+{match_code}"
+    return digits, display
 
 
 def index(request):
@@ -82,7 +122,8 @@ def create_card(request):
     if request.method == 'POST':
         form = CardForm(request.POST, request.FILES)
         if form.is_valid():
-            card_data = {key: value for key, value in form.cleaned_data.items() if key not in ['avatar']}
+            excluded_keys = {'avatar', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
+            card_data = {key: value for key, value in form.cleaned_data.items() if key not in excluded_keys}
             
             card = form.save(commit=False)
             card.user = request.user
@@ -104,7 +145,14 @@ def edit_card(request, slug):
         form = CardForm(request.POST, request.FILES, instance=card)
         if form.is_valid():
             # Update card_data from form
-            card.card_data.update({key: value for key, value in form.cleaned_data.items() if key not in ['avatar']})
+            excluded_keys = {'avatar', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
+            for key, value in form.cleaned_data.items():
+                if key in excluded_keys:
+                    continue
+                if value:
+                    card.card_data[key] = value
+                elif key in card.card_data:
+                    card.card_data[key] = value
             
             # The form's save() will handle the avatar update
             form.save() # This re-triggers the model's save method, updating QR code etc.
@@ -126,11 +174,19 @@ def view_card(request, slug):
     # Note: The model-generated QR already has ?qr=1.
     qr_code_url = request.build_absolute_uri(card.get_absolute_url()) + "?qr=1"
 
+    whatsapp_link = _normalize_whatsapp_link(card.card_data.get('whatsapp'))
+    phone_digits, phone_display = _normalize_phone_number(card.card_data.get('phone'))
+    phone_tel = f"+{phone_digits}" if phone_digits else ''
+
     context = {
         'card': card,
         'is_owner': is_owner,
         'from_qr': from_qr,
         'qr_code_url': qr_code_url,
+        'whatsapp_link': whatsapp_link,
+        'phone_digits': phone_digits,
+        'phone_display': phone_display,
+        'phone_tel': phone_tel,
     }
     return render(request, 'cards/view_card.html', context)
 
@@ -153,10 +209,11 @@ def admin_dashboard(request):
     total_users = User.objects.count()
     total_cards = Card.objects.count()
     all_cards = Card.objects.all().order_by('-created_at')
+
     context = {
         'total_users': total_users,
         'total_cards': total_cards,
-        'all_cards': all_cards
+        'all_cards': all_cards,
     }
     return render(request, 'cards/admin_dashboard.html', context)
 
@@ -165,6 +222,101 @@ def delete_card_admin(request, slug):
     card = get_object_or_404(Card, slug=slug)
     card.delete()
     return redirect('admin_dashboard')
+
+
+BASE_EXPORT_HEADERS = ['ID', 'Name', 'Email', 'Phone', 'Slug', 'Created Date']
+
+
+def _collect_card_data_keys(cards):
+    keys = set()
+    for card in cards:
+        data = card.card_data if isinstance(card.card_data, dict) else {}
+        keys.update(data.keys())
+    return sorted(keys)
+
+
+def _format_card_data_value(value):
+    if value is None:
+        return ''
+    if isinstance(value, (dict, list)):
+        return json.dumps(value, ensure_ascii=False)
+    return str(value)
+
+
+def _build_card_row(card: Card, extra_keys):
+    card_data = card.card_data or {}
+    user = card.user
+
+    name = (
+        f"{card_data.get('firstName', '')} {card_data.get('lastName', '')}".strip()
+        or user.get_full_name()
+        or user.username
+    )
+
+    phone = card_data.get('phone') or getattr(getattr(user, 'profile', None), 'phone_number', '')
+    created = card.created_at.strftime('%Y-%m-%d %H:%M:%S') if card.created_at else ''
+
+    base_row = [
+        str(user.id),
+        name,
+        user.email or '',
+        phone or '',
+        card.slug or '',
+        created,
+    ]
+
+    if isinstance(card_data, dict):
+        data_values = [_format_card_data_value(card_data.get(key)) for key in extra_keys]
+    else:
+        data_values = ['' for _ in extra_keys]
+
+    return base_row + data_values
+
+
+def _superuser_only(request):
+    return request.user.is_authenticated and request.user.is_superuser
+
+
+def export_cards_csv(request):
+    if not _superuser_only(request):
+        return HttpResponse('Unauthorized', status=401)
+
+    cards = list(Card.objects.select_related('user', 'user__profile').order_by('id'))
+    card_data_keys = _collect_card_data_keys(cards)
+    headers = BASE_EXPORT_HEADERS + card_data_keys
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="cards.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(headers)
+
+    for card in cards:
+        writer.writerow(_build_card_row(card, card_data_keys))
+
+    return response
+
+
+def export_cards_excel(request):
+    if not _superuser_only(request):
+        return HttpResponse('Unauthorized', status=401)
+
+    cards = list(Card.objects.select_related('user', 'user__profile').order_by('id'))
+    card_data_keys = _collect_card_data_keys(cards)
+    headers = BASE_EXPORT_HEADERS + card_data_keys
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Cards'
+    ws.append(headers)
+
+    for card in cards:
+        ws.append(_build_card_row(card, card_data_keys))
+
+    response = HttpResponse(
+        content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    response['Content-Disposition'] = 'attachment; filename="cards.xlsx"'
+    wb.save(response)
+    return response
 
 def documentation_view(request):
     readme_path = os.path.join(settings.BASE_DIR, 'README.md')

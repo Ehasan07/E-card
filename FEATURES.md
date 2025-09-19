@@ -68,6 +68,7 @@ This document outlines the key features and functionalities implemented in the E
 - "Copy Link" button to quickly copy the e-card's URL to the clipboard.
 - Contact quick actions: copy email/phone, launch mailto, call now, or save as a downloadable vCard.
 - Insight cards surface helpful reminders (e.g., embed links, check analytics) beside the QR panel.
+- Admins can download fresh CSV or Excel exports of all cards directly from the dashboard.
 
 ### 3.4 Edit E-Card
 - Users can edit their existing e-cards.

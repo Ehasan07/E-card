@@ -45,6 +45,11 @@ A comprehensive web application built with Django that allows users to create, c
 *   **Quick Actions:** Copy email/phone, launch mailto calls, save contacts as vCards, and share via the browser’s native share sheet in a single tap.
 *   **Insight Banners:** Helpful tips and reminders surface next to the QR panel so you remember to embed or monitor your card after sharing.
 
+### Data Export Tools
+*   **One-click CSV/Excel:** The admin dashboard includes “Download CSV” and “Download Excel” buttons to export the latest card data.
+*   **CSV Export:** Generates a standards-compliant UTF-8 CSV containing ID, Name, Email, Phone, Slug, Created Date, plus every key/value stored in each card’s JSON `card_data` field.
+*   **Excel Export:** Uses `openpyxl` to create a styled `.xlsx` file with the same dynamic columns—ready for analysis in spreadsheet tools.
+
 ### Dashboards
 *   **User Dashboard:** A personalized dashboard for logged-in users to view, manage, and delete their created e-cards, with animated stat cards and stylish back-to-home navigation.
 *   **Admin Dashboard:** A secure console showing total users, cards, and moderation queue with glassmorphism styling, quick actions, and logout/back-home shortcuts.
@@ -129,6 +134,12 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
 
 The application will be available at `http://127.0.0.1:8000/`.
+
+### Exporting Data (CSV / Excel)
+
+1. Sign into the admin dashboard as a superuser.
+2. From the “Platform overview” page click **Download CSV** or **Download Excel**.
+3. The files include columns: ID, Name, Email, Phone, Slug, and Created Date (all sourced from PostgreSQL).
 
 ## Usage
 

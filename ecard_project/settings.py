@@ -72,7 +72,7 @@ WSGI_APPLICATION = 'ecard_project.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://ec_user:ec_pass@localhost:5432/ecard_db',
+        default=f'sqlite:///{BASE_DIR / "db.sqlite3"}',
         conn_max_age=600,
         ssl_require=False
     )

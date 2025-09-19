@@ -23,6 +23,14 @@
                         <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
                         Back to home
                     </a>
+                    <a href="{% url 'export_cards_csv' %}" class="admin-nav-btn csv">
+                        <span class="icon"><i data-lucide="file-output" class="w-4 h-4"></i></span>
+                        Download CSV
+                    </a>
+                    <a href="{% url 'export_cards_excel' %}" class="admin-nav-btn excel">
+                        <span class="icon"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></span>
+                        Download Excel
+                    </a>
                     <a href="{% url 'logout' %}" class="admin-nav-btn logout">
                         <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
                         Logout
@@ -278,6 +286,26 @@
         background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.12));
     }
     .admin-nav-btn.home .icon { color: #2563eb; }
+    .admin-nav-btn.csv::after {
+        background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(37,99,235,0.12));
+    }
+    .admin-nav-btn.csv .icon {
+        background: rgba(59,130,246,0.12);
+        color: #1d4ed8;
+    }
+    .admin-nav-btn.csv:hover {
+        box-shadow: 0 26px 55px -28px rgba(37,99,235,0.4);
+    }
+    .admin-nav-btn.excel::after {
+        background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,197,94,0.15));
+    }
+    .admin-nav-btn.excel .icon {
+        background: rgba(16,185,129,0.12);
+        color: #047857;
+    }
+    .admin-nav-btn.excel:hover {
+        box-shadow: 0 26px 55px -28px rgba(16,185,129,0.35);
+    }
     .admin-nav-btn.logout {
         color: #dc2626;
         border-color: rgba(248,113,113,0.5);

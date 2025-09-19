@@ -22,7 +22,7 @@ class Card(models.Model):
     qr_code = models.ImageField(upload_to='qrcodes/', blank=True, null=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     is_active = models.BooleanField(default=True)
-    text_color = models.CharField(max_length=20, default='#000000')
+    text_color = models.CharField(max_length=20, default='#FFFFFF')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_absolute_url(self):
@@ -54,13 +54,16 @@ class Card(models.Model):
                 return tuple(int(rgb_match.group(i)) for i in range(1, 4))
             return None
 
-        background_value = self.card_data.get('background_style', '')
+        background_value = self.card_data.get('background_style')
+        if not background_value:
+            self.card_data['background_style'] = '#000000'
+            background_value = '#000000'
         rgb = _find_rgb(background_value)
         if rgb:
             luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255
             self.text_color = '#FFFFFF' if luminance < 0.55 else '#333333'
         else:
-            self.text_color = '#333333'
+            self.text_color = '#FFFFFF'
 
         super().save(*args, **kwargs) # Save once to get an ID for new objects
 
