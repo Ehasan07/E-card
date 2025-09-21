@@ -1,336 +1,1067 @@
 {% extends 'cards/base.html' %}
 {% load static %}
 
-{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }}'s E-Card{% endblock %}
+{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }}'s V-Card{% endblock %}
 
 {% block content %}
-<style>
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(12px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
+<div class="vcard-page relative min-h-screen bg-slate-950 text-slate-100 px-4 py-16 overflow-hidden">
+    <div class="page-orb orb-one"></div>
+    <div class="page-orb orb-two"></div>
+    <div class="page-orb orb-three"></div>
 
-    .fade-in {
-        opacity: 0;
-        animation: fadeInUp 0.7s ease forwards;
-    }
+    <div class="max-w-5xl mx-auto relative z-10">
+        {% if is_admin_viewer %}
+            <div class="admin-return-banner" data-reveal style="--reveal-delay: 0s;">
+                <a href="{% url 'admin_dashboard' %}" class="admin-return-link">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Back to dashboard
+                </a>
+            </div>
+        {% endif %}
+        <div class="vcard-canvas" data-scroll-container>
+            <section class="hero-stack" data-reveal style="--reveal-delay: 0.04s;">
+                <div class="hero-shell">
+                    <div class="hero-grid">
+                        <article class="hero-holo" style="--holo-gradient: {{ card.card_data.background_style|default:'linear-gradient(140deg,#312e81 0%,#9333ea 35%,#ec4899 100%)' }};">
+                            <span class="hero-holo__shine"></span>
+                            <span class="hero-holo__glow"></span>
+                            <header class="hero-head">
+                                <div class="hero-avatar">
+                                    {% if card.avatar %}
+                                        <img src="{{ card.avatar.url }}" alt="{{ card.card_data.firstName }} {{ card.card_data.lastName }} avatar">
+                                    {% else %}
+                                        <span>{{ card.card_data.firstName|default:''|slice:':1' }}{{ card.card_data.lastName|default:''|slice:':1' }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="hero-meta">
+                                    <h1>{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h1>
+                                    <p>
+                                        {{ card.card_data.jobTitle|default:'Creative Professional' }}
+                                        {% if card.card_data.company %}
+                                            <span> · {{ card.card_data.company }}</span>
+                                        {% endif %}
+                                    </p>
+                                    {% if card.logo or card.card_data.logo_name %}
+                                        <div class="hero-brand">
+                                            <div class="hero-brand__badge">
+                                                {% if card.logo %}
+                                                    <img src="{{ card.logo.url }}" alt="{{ card.card_data.logo_name|default:'Brand logo' }}">
+                                                {% elif card.card_data.logo_name %}
+                                                    <span>{{ card.card_data.logo_name|slice:':2'|upper }}</span>
+                                                {% else %}
+                                                    <i data-lucide="building-2"></i>
+                                                {% endif %}
+                                            </div>
+                                            {% if card.card_data.logo_name %}
+                                                <span class="hero-brand__text">{{ card.card_data.logo_name }}</span>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </header>
+                            <div class="hero-details">
+                                <div class="hero-detail">
+                                    <span class="hero-detail__label">Email</span>
+                                    {% if card.card_data.email %}
+                                        <a href="mailto:{{ card.card_data.email }}" class="hero-detail__value hero-detail__link">{{ card.card_data.email }}</a>
+                                    {% else %}
+                                        <span class="hero-detail__value hero-detail__value--muted">Not provided</span>
+                                    {% endif %}
+                                </div>
+                                <div class="hero-detail">
+                                    <span class="hero-detail__label">Phone</span>
+                                    {% if phone_display %}
+                                        <a href="tel:{{ phone_tel }}" class="hero-detail__value hero-detail__link">{{ phone_display }}</a>
+                                    {% else %}
+                                        <span class="hero-detail__value hero-detail__value--muted">Not provided</span>
+                                    {% endif %}
+                                </div>
+                                <div class="hero-detail">
+                                    <span class="hero-detail__label">Website</span>
+                                    {% if card.card_data.website %}
+                                        <a href="{{ card.card_data.website }}" class="hero-detail__value hero-detail__link" target="_blank" rel="noopener">{{ card.card_data.website }}</a>
+                                    {% else %}
+                                        <span class="hero-detail__value hero-detail__value--muted">Not provided</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </article>
 
-    .fade-in.delay-1 { animation-delay: 0.1s; }
-    .fade-in.delay-2 { animation-delay: 0.2s; }
-    .fade-in.delay-3 { animation-delay: 0.3s; }
-    .fade-in.delay-4 { animation-delay: 0.4s; }
+                        <aside class="hero-side">
+                            <div class="hero-side__qr" data-reveal style="--reveal-delay: 0.12s;">
+                                <span class="hero-side__title"><i data-lucide="scan"></i>Share instantly</span>
+                                <div class="hero-side__qr-frame">
+                                    {% if card.qr_code %}
+                                        <img src="{{ card.qr_code.url }}" alt="QR Code" id="qrCodeImg" class="hero-side__qr-image">
+                                    {% else %}
+                                        <div class="hero-side__qr-placeholder">
+                                            <i data-lucide="qr-code"></i>
+                                            <p>QR code not generated yet.</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div class="hero-side__actions">
+                                    <button id="saveContactBtn" type="button" data-first-name="{{ card.card_data.firstName|default:''|escape }}" data-last-name="{{ card.card_data.lastName|default:''|escape }}" data-company="{{ card.card_data.company|default:''|escape }}" data-phone="{{ phone_tel|default:''|escape }}" data-email="{{ card.card_data.email|default:''|escape }}" class="hero-side__cta hero-side__cta--save">
+                                        <i data-lucide="user-plus"></i>
+                                        Save to Contact
+                                    </button>
+                                    <button id="downloadQrCode" type="button" class="hero-side__cta hero-side__cta--download {% if not card.qr_code %}opacity-60 pointer-events-none{% endif %}">
+                                        <i data-lucide="arrow-down-to-line"></i>
+                                        Download QR
+                                    </button>
+                                    {% if show_guest_cta %}
+                                        <a href="{% url 'index' %}" class="hero-side__cta hero-side__cta--guest">
+                                            <i data-lucide="sparkles"></i>
+                                            Create a card for yourself
+                                        </a>
+                                    {% endif %}
+                                </div>
+                                <div class="hero-side__stat">
+                                    <span class="hero-side__stat-label">Profile views</span>
+                                    <span class="hero-side__stat-value">{{ profile_views }}</span>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+                </div>
+            </section>
 
-    .avatar-ring {
-        position: relative;
-    }
-
-    .avatar-ring::after {
-        content: '';
-        position: absolute;
-        inset: -8px;
-        border-radius: 9999px;
-        border: 1px dashed rgba(255, 255, 255, 0.3);
-        animation: fadeInUp 0.8s ease forwards;
-    }
-
-    .phone-menu-visible {
-        transform-origin: top;
-        animation: fadeInUp 0.25s ease forwards;
-    }
-
-    .role-chip,
-    .company-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.55rem 1.2rem;
-        border-radius: 9999px;
-        background: var(--card-surface-color);
-        color: var(--card-text-color);
-        text-transform: none;
-        box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.35);
-    }
-
-    .role-chip {
-        font-size: 1rem;
-        font-weight: 600;
-    }
-
-    .company-chip {
-        font-size: 0.95rem;
-        font-weight: 500;
-        opacity: 0.95;
-    }
-
-    .chip-base {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.55rem 1.2rem;
-        border-radius: 9999px;
-        background: var(--card-surface-color);
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.35);
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-        max-width: 100%;
-    }
-
-    .chip-base:hover {
-        transform: translateY(-1px);
-        background: rgba(255, 255, 255, 0.25);
-        box-shadow: 0 16px 35px -24px rgba(0, 0, 0, 0.4);
-    }
-
-    .chip-icon {
-        opacity: 0.8;
-        flex-shrink: 0;
-    }
-
-    .chip-text {
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .chip-text--wrap {
-        white-space: normal;
-        word-break: break-word;
-        text-align: center;
-        overflow: visible;
-        text-overflow: initial;
-    }
-
-    .chip-link {
-        color: inherit;
-        text-decoration: none;
-    }
-
-    .chip-group {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.65rem;
-    }
-
-
-    .chip-icon {
-        opacity: 0.9;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-    }
-
-    .role-chip:hover .chip-icon,
-    .company-chip:hover .chip-icon {
-        transform: translateY(-2px) scale(1.05);
-        opacity: 1;
-    }
-</style>
-<div class="min-h-screen bg-white flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-3xl">
-        <div class="rounded-3xl shadow-2xl p-8 sm:p-12 fade-in"
-             style="background: {{ card.card_data.background_style|default:'#000000' }};
-                    --card-text-color: {{ card.text_color|default:'#FFFFFF' }};
-                    {% if card.text_color|lower == '#ffffff' %}
-                        --card-muted-color: #E5E7EB;
-                        --card-subtle-color: #CBD5F5;
-                        --card-surface-color: #1F2937;
-                    {% else %}
-                        --card-muted-color: #4B5563;
-                        --card-subtle-color: #64748B;
-                        --card-surface-color: #E2E8F0;
+            <section class="capsule-section" data-reveal style="--reveal-delay: 0.22s;">
+                <header class="section-head">
+                    <span class="section-flag">
+                        <i data-lucide="handshake"></i>
+                        Primary connections
+                    </span>
+                    <h2>Coordinates to reach {{ card.card_data.firstName|default:'this contact' }}</h2>
+                </header>
+                <div class="capsule-grid">
+                    {% if card.card_data.email %}
+                        <article class="capsule-card">
+                            <div class="capsule-card__icon"><i data-lucide="mail"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">Email</span>
+                                <div class="capsule-card__value-row">
+                                    <a href="mailto:{{ card.card_data.email }}" class="capsule-card__value capsule-card__value--link">{{ card.card_data.email }}</a>
+                                    <button type="button" class="capsule-card__copy" aria-label="Copy email" data-copy="{{ card.card_data.email }}" data-copy-label="Email copied!">
+                                        <i data-lucide="copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
                     {% endif %}
-                    color: var(--card-text-color);">
-            <div class="flex flex-col items-center text-center gap-4">
-                {% if card.avatar %}
-                    <div class="avatar-ring fade-in delay-1">
-                        <img src="{{ card.avatar.url }}" alt="Avatar" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg">
-                    </div>
-                {% else %}
-                    <div class="avatar-ring fade-in delay-1">
-                        <div class="w-32 h-32 rounded-full bg-gray-700 flex items-center justify-center">
-                            <i data-lucide="user" class="w-16 h-16 text-gray-300"></i>
-                        </div>
-                    </div>
-                {% endif %}
 
-                <div class="fade-in delay-2">
-                    <h1 class="text-3xl font-bold sm:text-4xl">{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h1>
-                <div class="chip-group mt-4">
-                    {% if card.card_data.jobTitle %}
-                        <span class="chip-base">
-                            <i data-lucide="briefcase" class="w-5 h-5 chip-icon"></i>
-                            <span class="chip-text leading-tight">{{ card.card_data.jobTitle }}</span>
+                    {% if phone_display %}
+                        <article class="capsule-card capsule-card--phone">
+                            <div class="capsule-card__icon"><i data-lucide="phone"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">Mobile</span>
+                                <div class="capsule-card__value-row">
+                                    <span class="capsule-card__value">{{ phone_display }}</span>
+                                </div>
+                                <div class="capsule-card__quick-actions">
+                                    <a href="tel:{{ phone_tel }}" class="capsule-card__quick" title="Call">
+                                        <span>Call Now</span>
+                                        <i data-lucide="phone-call"></i>
+                                    </a>
+                                    <a href="sms:{{ phone_tel }}" class="capsule-card__quick" title="Send Message">
+                                        <span>Send Message</span>
+                                        <i data-lucide="message-square"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </article>
+                    {% endif %}
+
+                    {% if card.card_data.website %}
+                        <article class="capsule-card">
+                            <div class="capsule-card__icon"><i data-lucide="globe"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">Website</span>
+                                <div class="capsule-card__value-row">
+                                    <a href="{{ card.card_data.website }}" target="_blank" rel="noopener" class="capsule-card__value capsule-card__value--link">{{ card.card_data.website }}</a>
+                                    <button type="button" class="capsule-card__copy" aria-label="Copy website" data-copy="{{ card.card_data.website }}" data-copy-label="Website copied!">
+                                        <i data-lucide="copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    {% endif %}
+
+                    {% if card.card_data.company or card.card_data.jobTitle %}
+                        <article class="capsule-card">
+                            <div class="capsule-card__icon"><i data-lucide="briefcase"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">Role</span>
+                                <div class="capsule-card__value-row">
+                                    <span class="capsule-card__value">{{ card.card_data.jobTitle|default:'Professional' }}{% if card.card_data.company %} · {{ card.card_data.company }}{% endif %}</span>
+                                </div>
+                            </div>
+                        </article>
+                    {% endif %}
+
+                    {% if card.card_data.birthday %}
+                        <article class="capsule-card">
+                            <div class="capsule-card__icon"><i data-lucide="cake"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">Birthday</span>
+                                <div class="capsule-card__value-row">
+                                    <span class="capsule-card__value">{{ card.card_data.birthday }}</span>
+                                </div>
+                            </div>
+                        </article>
+                    {% endif %}
+
+                    {% if card.card_data.notes %}
+                        <article class="capsule-card capsule-card--note">
+                            <div class="capsule-card__icon"><i data-lucide="sticky-note"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">Notes</span>
+                                <div class="capsule-card__value-row">
+                                    <span class="capsule-card__value capsule-card__value--multiline">{{ card.card_data.notes|linebreaksbr }}</span>
+                                </div>
+                            </div>
+                        </article>
+                    {% endif %}
+                </div>
+            </section>
+
+            {% if card.card_data.facebook or whatsapp_link or card.card_data.instagram or card.card_data.twitter or card.card_data.linkedin or card.card_data.youtube or card.card_data.github or card.card_data.tiktok or card.card_data.snapchat or card.card_data.likee or card.card_data.pinterest or card.card_data.telegram or card.card_data.threads or card.card_data.behance or card.card_data.dribbble %}
+                <section class="social-section" data-reveal style="--reveal-delay: 0.3s;">
+                    <header class="section-head section-head--compact">
+                        <span class="section-flag">
+                            <i data-lucide="share-2"></i>
+                            Broadcast channels
                         </span>
-                    {% endif %}
-                    {% if card.card_data.company %}
-                        <span class="chip-base">
-                            <i data-lucide="building" class="w-4 h-4 chip-icon"></i>
-                            <span class="chip-text leading-tight">{{ card.card_data.company }}</span>
-                        </span>
-                    {% endif %}
-                </div>
-                </div>
-
-            </div>
-
-            <div class="mt-8 chip-group fade-in delay-3">
-                {% if card.card_data.email %}
-                    <span class="chip-base">
-                        <i data-lucide="mail" class="w-5 h-5 chip-icon"></i>
-                        <a href="mailto:{{ card.card_data.email }}" class="chip-text chip-link hover:underline">{{ card.card_data.email }}</a>
-                    </span>
-                {% endif %}
-
-                {% if phone_display %}
-                    <div class="relative flex flex-col items-center">
-                        <button id="phoneToggle" type="button" class="chip-base">
-                            <i data-lucide="phone" class="w-5 h-5 chip-icon"></i>
-                            <span class="chip-text">{{ phone_display }}</span>
-                            <i data-lucide="chevron-down" class="w-4 h-4 chip-icon"></i>
-                        </button>
-                        <div id="phoneMenu" class="hidden absolute top-full mt-2 w-48 rounded-2xl border border-gray-200 bg-white text-slate-700 shadow-xl">
-                            <a href="tel:{{ phone_tel }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-pink-50 transition">
-                                <i data-lucide="phone-call" class="w-4 h-4"></i>
-                                Call Now
+                        <h2>Stay synced on every network</h2>
+                        <p>Tap a beacon below to continue the conversation where it feels right.</p>
+                    </header>
+                    <div class="social-dock">
+                        {% if card.card_data.facebook %}
+                            <a href="{{ card.card_data.facebook }}" target="_blank" class="social-tile social-facebook" title="Facebook">
+                                <i data-lucide="facebook"></i>
+                                <span>Facebook</span>
                             </a>
-                            <a href="sms:{{ phone_tel }}" class="flex items-center gap-2 px-4 py-2 text-sm font-medium hover:bg-pink-50 transition">
-                                <i data-lucide="message-square" class="w-4 h-4"></i>
-                                Send Message
+                        {% endif %}
+                        {% if whatsapp_link %}
+                            <a href="{{ whatsapp_link }}" target="_blank" class="social-tile social-whatsapp" title="WhatsApp">
+                                <i data-lucide="message-circle"></i>
+                                <span>WhatsApp</span>
                             </a>
-                        </div>
+                        {% endif %}
+                        {% if card.card_data.instagram %}
+                            <a href="{{ card.card_data.instagram }}" target="_blank" class="social-tile social-instagram" title="Instagram">
+                                <i data-lucide="instagram"></i>
+                                <span>Instagram</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.twitter %}
+                            <a href="{{ card.card_data.twitter }}" target="_blank" class="social-tile social-twitter" title="Twitter">
+                                <i data-lucide="twitter"></i>
+                                <span>Twitter</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.linkedin %}
+                            <a href="{{ card.card_data.linkedin }}" target="_blank" class="social-tile social-linkedin" title="LinkedIn">
+                                <i data-lucide="linkedin"></i>
+                                <span>LinkedIn</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.youtube %}
+                            <a href="{{ card.card_data.youtube }}" target="_blank" class="social-tile social-youtube" title="YouTube">
+                                <i data-lucide="youtube"></i>
+                                <span>YouTube</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.github %}
+                            <a href="{{ card.card_data.github }}" target="_blank" class="social-tile social-github" title="GitHub">
+                                <i data-lucide="github"></i>
+                                <span>GitHub</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.tiktok %}
+                            <a href="{{ card.card_data.tiktok }}" target="_blank" class="social-tile social-tiktok" title="TikTok">
+                                <i data-lucide="music-2"></i>
+                                <span>TikTok</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.snapchat %}
+                            <a href="{{ card.card_data.snapchat }}" target="_blank" class="social-tile social-snapchat" title="Snapchat">
+                                <i data-lucide="ghost"></i>
+                                <span>Snapchat</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.likee %}
+                            <a href="{{ card.card_data.likee }}" target="_blank" class="social-tile social-likee" title="Likee">
+                                <i data-lucide="heart"></i>
+                                <span>Likee</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.pinterest %}
+                            <a href="{{ card.card_data.pinterest }}" target="_blank" class="social-tile social-pinterest" title="Pinterest">
+                                <i data-lucide="pin"></i>
+                                <span>Pinterest</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.telegram %}
+                            <a href="{{ card.card_data.telegram }}" target="_blank" class="social-tile social-telegram" title="Telegram">
+                                <i data-lucide="send"></i>
+                                <span>Telegram</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.threads %}
+                            <a href="{{ card.card_data.threads }}" target="_blank" class="social-tile social-threads" title="Threads">
+                                <i data-lucide="at-sign"></i>
+                                <span>Threads</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.behance %}
+                            <a href="{{ card.card_data.behance }}" target="_blank" class="social-tile social-behance" title="Behance">
+                                <i data-lucide="palette"></i>
+                                <span>Behance</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.dribbble %}
+                            <a href="{{ card.card_data.dribbble }}" target="_blank" class="social-tile social-dribbble" title="Dribbble">
+                                <i data-lucide="basketball"></i>
+                                <span>Dribbble</span>
+                            </a>
+                        {% endif %}
                     </div>
-                {% endif %}
-
-                {% if card.card_data.website %}
-                    <span class="chip-base">
-                        <i data-lucide="globe" class="w-5 h-5 chip-icon"></i>
-                        <a href="{{ card.card_data.website }}" target="_blank" rel="noopener" class="chip-text chip-link hover:underline">{{ card.card_data.website }}</a>
-                    </span>
-                {% endif %}
-
-                {% if card.card_data.address %}
-                    <span class="chip-base">
-                        <i data-lucide="map-pin" class="w-5 h-5 chip-icon"></i>
-                        <span class="chip-text">{{ card.card_data.address }}</span>
-                    </span>
-                {% endif %}
-
-                {% if card.card_data.birthday %}
-                    <span class="chip-base">
-                        <i data-lucide="cake" class="w-5 h-5 chip-icon"></i>
-                        <span class="chip-text">{{ card.card_data.birthday }}</span>
-                    </span>
-                {% endif %}
-            </div>
-
-            <div class="mt-8 flex justify-center gap-4 fade-in delay-4">
-                {% if card.card_data.facebook %}
-                    <a href="{{ card.card_data.facebook }}" target="_blank" class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#1877F2] shadow-md transition-transform duration-200 hover:scale-110 hover:rotate-2">
-                        <i data-lucide="facebook" class="w-6 h-6"></i>
-                    </a>
-                {% endif %}
-                {% if whatsapp_link %}
-                    <a href="{{ whatsapp_link }}" target="_blank" class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#25D366] shadow-md transition-transform duration-200 hover:scale-110">
-                        <i data-lucide="message-circle" class="w-6 h-6"></i>
-                    </a>
-                {% endif %}
-                {% if card.card_data.instagram %}
-                    <a href="{{ card.card_data.instagram }}" target="_blank" class="flex h-12 w-12 items-center justify-center rounded-full bg-white text-[#E4405F] shadow-md transition-transform duration-200 hover:scale-110 hover:-rotate-2">
-                        <i data-lucide="instagram" class="w-6 h-6"></i>
-                    </a>
-                {% endif %}
-            </div>
-
-            {% if card.qr_code %}
-                <div class="mt-8 flex flex-col items-center gap-4 fade-in delay-4">
-                    <div class="relative">
-                        <div class="absolute inset-0 rounded-3xl border border-gray-800"></div>
-                        <img src="{{ card.qr_code.url }}" alt="QR Code" id="qrCodeImg" class="relative w-44 h-44 object-contain rounded-2xl shadow-xl transition-transform duration-200 hover:scale-105">
-                    </div>
-                    <p class="text-sm" style="color: var(--card-subtle-color);">Scan to connect instantly</p>
-                </div>
+                </section>
             {% endif %}
 
-            {% if card.card_data.notes %}
-                <div class="mt-6 chip-group fade-in delay-4">
-                    <span class="chip-base">
-                        <i data-lucide="sticky-note" class="w-5 h-5 chip-icon"></i>
-                        <span class="chip-text chip-text--wrap">{{ card.card_data.notes|linebreaksbr }}</span>
+<section class="actions-section" data-reveal style="--reveal-delay: 0.46s;">
+                <header class="section-head section-head--compact">
+                    <span class="section-flag">
+                        <i data-lucide="bolt"></i>
+                        Quick actions
                     </span>
+                    <h2>Share or store this contact instantly</h2>
+                </header>
+                <div class="action-deck">
+                    <button id="copyEmailBtn" type="button" class="action-chip from-fuchsia-500 to-rose-500 {% if not card.card_data.email %}opacity-60 pointer-events-none{% endif %}">
+                        <i data-lucide="mail"></i>
+                        Copy email
+                    </button>
+                    <button id="copyLink" type="button" class="action-chip from-sky-500 to-cyan-500">
+                        <i data-lucide="link"></i>
+                        Copy link
+                    </button>
+                    {% if is_owner %}
+                        <a href="{% url 'edit_card' card.slug %}" class="action-chip from-amber-400 to-orange-400 text-slate-900">
+                            <i data-lucide="square-pen"></i>
+                            Edit card
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="action-chip from-emerald-500 to-teal-500">
+                            <i data-lucide="layout-dashboard"></i>
+                            Dashboard
+                        </a>
+                    {% endif %}
                 </div>
-            {% endif %}
-
-            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 fade-in delay-4">
-                <button id="copyEmailBtn" type="button" class="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-fuchsia-500 to-rose-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5 {% if not card.card_data.email %}opacity-60 pointer-events-none{% endif %}">
-                    <i data-lucide="mail" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5"></i>
-                    Copy Email
-                </button>
-                <button id="saveContactBtn" type="button" data-first-name="{{ card.card_data.firstName|default:''|escape }}" data-last-name="{{ card.card_data.lastName|default:''|escape }}" data-company="{{ card.card_data.company|default:''|escape }}" data-phone="{{ phone_tel|default:''|escape }}" data-email="{{ card.card_data.email|default:''|escape }}" class="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-sky-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5">
-                    <i data-lucide="user-plus" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5"></i>
-                    Save to Contacts
-                </button>
-            </div>
-
-            <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 fade-in delay-4">
-                <button id="downloadQrCode" type="button" class="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5 {% if not card.qr_code %}opacity-60 pointer-events-none{% endif %}">
-                    <i data-lucide="arrow-down-to-line" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5"></i>
-                    Download QR
-                </button>
-                <button id="copyLink" type="button" class="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-blue-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5">
-                    <i data-lucide="link" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5"></i>
-                    Copy Link
-                </button>
-                {% if is_owner %}
-                    <a href="{% url 'edit_card' card.slug %}" class="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-400 px-4 py-3 text-sm font-semibold text-slate-900 shadow-md transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5">
-                        <i data-lucide="square-pen" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5"></i>
-                        Edit Card
-                    </a>
-                    <a href="{% url 'dashboard' %}" class="group flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-3 text-sm font-semibold text-white shadow-md transition-transform duration-200 hover:scale-105 hover:-translate-y-0.5">
-                        <i data-lucide="layout-dashboard" class="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5"></i>
-                        Dashboard
-                    </a>
-                {% endif %}
-            </div>
+            </section>
         </div>
     </div>
 </div>
 
+<style>
+    .vcard-page::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top left, rgba(236,72,153,0.25), transparent 55%),
+                    radial-gradient(circle at bottom right, rgba(59,130,246,0.2), transparent 50%);
+        pointer-events: none;
+    }
+    .page-orb {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(0px);
+        opacity: 0.4;
+        animation: pageFloat 16s ease-in-out infinite;
+    }
+    .page-orb.orb-one {
+        top: -180px;
+        left: -140px;
+        width: 360px;
+        height: 360px;
+        background: radial-gradient(circle at center, rgba(236,72,153,0.4), transparent 70%);
+    }
+    .page-orb.orb-two {
+        bottom: -220px;
+        right: -160px;
+        width: 420px;
+        height: 420px;
+        background: radial-gradient(circle at center, rgba(59,130,246,0.35), transparent 75%);
+        animation-delay: 4s;
+    }
+    .page-orb.orb-three {
+        top: 35%;
+        left: 50%;
+        width: 240px;
+        height: 240px;
+        transform: translateX(-50%);
+        background: radial-gradient(circle at center, rgba(129,140,248,0.28), transparent 70%);
+        animation-delay: 8s;
+    }
+    @keyframes pageFloat {
+        0%, 100% { transform: translate3d(0,0,0); opacity: 0.4; }
+        50% { transform: translate3d(0,-12px,0); opacity: 0.65; }
+    }
+
+    .admin-return-banner {
+        display: inline-flex;
+        margin-bottom: 1.5rem;
+        padding: 0.75rem 1.3rem;
+        border-radius: 999px;
+        background: rgba(15,23,42,0.6);
+        border: 1px solid rgba(148,163,184,0.35);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 20px 45px -30px rgba(15,23,42,0.6);
+    }
+    .admin-return-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        text-decoration: none;
+        color: #a5b4fc;
+    }
+    .admin-return-link:hover {
+        color: #c7d2fe;
+    }
+    .vcard-canvas {
+        display: flex;
+        flex-direction: column;
+        gap: clamp(2.5rem, 6vw, 4.5rem);
+        padding-block: clamp(1.5rem, 3vw, 2.75rem) clamp(3rem, 6vw, 5rem);
+    }
+    [data-reveal] {
+        opacity: 0;
+        transform: translateY(64px) scale(0.98);
+        transition:
+            opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
+            transform 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
+    }
+    [data-reveal].is-visible {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+    .hero-shell {
+        position: relative;
+        border-radius: 2.2rem;
+        background: rgba(15,23,42,0.55);
+        border: 1px solid rgba(148,163,184,0.22);
+        padding: clamp(1.8rem, 3vw, 2.4rem);
+        box-shadow: 0 35px 80px -40px rgba(15,23,42,0.7);
+        backdrop-filter: blur(14px);
+    }
+    .hero-grid {
+        display: grid;
+        gap: clamp(1.6rem, 3vw, 2.4rem);
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .hero-holo {
+        position: relative;
+        border-radius: 1.75rem;
+        padding: clamp(1.8rem, 4vw, 2.6rem);
+        background: var(--holo-gradient);
+        color: #f8fafc;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 40px 80px -42px rgba(30,41,59,0.7);
+        isolation: isolate;
+    }
+    .hero-holo__shine {
+        position: absolute;
+        inset: -40% auto auto -40%;
+        width: 80%;
+        height: 80%;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.35), transparent 65%);
+        opacity: 0.45;
+        mix-blend-mode: screen;
+        animation: holoShine 12s ease-in-out infinite;
+        pointer-events: none;
+    }
+    .hero-holo__glow {
+        position: absolute;
+        inset: auto -30% -40% auto;
+        width: 60%;
+        height: 60%;
+        background: radial-gradient(circle at center, rgba(255,255,255,0.35), transparent 70%);
+        opacity: 0.32;
+        mix-blend-mode: screen;
+        animation: holoGlow 14s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes holoShine {
+        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.45; }
+        50% { transform: translate3d(12%, -4%, 0) scale(1.08); opacity: 0.7; }
+    }
+    @keyframes holoGlow {
+        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.32; }
+        50% { transform: translate3d(-8%, 6%, 0) scale(1.1); opacity: 0.5; }
+    }
+    .hero-head {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: clamp(1.4rem, 3vw, 1.9rem);
+        position: relative;
+        z-index: 2;
+    }
+    .hero-avatar {
+        position: relative;
+        width: clamp(110px, 10vw, 140px);
+        height: clamp(110px, 10vw, 140px);
+        border-radius: 9999px;
+        display: grid;
+        place-items: center;
+        background: rgba(15,23,42,0.25);
+        border: 4px solid rgba(255,255,255,0.35);
+        box-shadow: 0 28px 65px -36px rgba(15,23,42,0.7);
+        color: rgba(15,23,42,0.85);
+        font-weight: 700;
+        font-size: clamp(1.6rem, 2.8vw, 2rem);
+        letter-spacing: 0.05em;
+        overflow: hidden;
+    }
+    .hero-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .hero-meta h1 {
+        font-size: clamp(1.85rem, 3.6vw, 2.3rem);
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+    .hero-meta p {
+        margin-top: 0.4rem;
+        color: rgba(241,245,249,0.82);
+        font-size: clamp(0.95rem, 1.8vw, 1.08rem);
+    }
+    .hero-details {
+        margin-top: clamp(1.8rem, 2.4vw, 2.3rem);
+        display: grid;
+        gap: 0.95rem;
+        position: relative;
+        z-index: 2;
+    }
+    .hero-detail {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 0.9rem 1.2rem;
+        border-radius: 1.15rem;
+        background: rgba(15,23,42,0.22);
+        border: 1px solid rgba(255,255,255,0.24);
+        box-shadow: 0 18px 45px -28px rgba(15,23,42,0.6);
+    }
+    .hero-detail__label {
+        font-size: 0.72rem;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: rgba(241,245,249,0.7);
+    }
+    .hero-detail__value {
+        margin-top: 0.45rem;
+        font-size: 0.96rem;
+        font-weight: 600;
+        color: #ffffff;
+        word-break: break-word;
+    }
+    .hero-detail__value--muted {
+        opacity: 0.65;
+        font-weight: 500;
+    }
+    .hero-detail__link {
+        color: inherit;
+        text-decoration: none;
+    }
+    .hero-brand {
+        margin-top: clamp(1rem, 2vw, 1.35rem);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.6rem 1rem;
+        border-radius: 9999px;
+        background: rgba(15,23,42,0.22);
+        border: 1px solid rgba(255,255,255,0.24);
+        box-shadow: 0 18px 45px -28px rgba(15,23,42,0.6);
+    }
+    .hero-brand__badge {
+        width: 44px;
+        height: 44px;
+        border-radius: 9999px;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,0.24);
+        border: 1px solid rgba(255,255,255,0.35);
+        color: rgba(15,23,42,0.85);
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+    .hero-brand__badge img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .hero-brand__badge i {
+        width: 20px;
+        height: 20px;
+    }
+    .hero-brand__badge span {
+        font-size: 0.85rem;
+    }
+    .hero-brand__text {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #f8fafc;
+        letter-spacing: 0.01em;
+    }
+
+    .hero-side {
+        display: flex;
+        align-items: stretch;
+    }
+    .hero-side__qr {
+        background: rgba(15,23,42,0.6);
+        border: 1px solid rgba(148,163,184,0.28);
+        border-radius: 1.6rem;
+        padding: clamp(1.4rem, 2.5vw, 1.8rem);
+        box-shadow: 0 22px 55px -32px rgba(15,23,42,0.65);
+        display: flex;
+        flex-direction: column;
+        gap: 1.35rem;
+        align-items: center;
+        text-align: center;
+    }
+    .hero-side__title {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: rgba(148,163,184,0.85);
+    }
+    .hero-side__qr-frame {
+        width: 100%;
+        display: grid;
+        place-items: center;
+        padding: 1.2rem;
+        border-radius: 1.35rem;
+        background: rgba(15,23,42,0.32);
+        border: 1px solid rgba(148,163,184,0.3);
+    }
+    .hero-side__qr-image {
+        width: clamp(160px, 26vw, 220px);
+        height: clamp(160px, 26vw, 220px);
+        object-fit: contain;
+    }
+    .hero-side__qr-placeholder {
+        display: grid;
+        place-items: center;
+        gap: 0.6rem;
+        color: rgba(203,213,225,0.85);
+    }
+    .hero-side__qr-placeholder i {
+        width: 48px;
+        height: 48px;
+        opacity: 0.75;
+    }
+    .hero-side__actions {
+        display: grid;
+        gap: 0.75rem;
+        width: 100%;
+    }
+    .hero-side__cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        width: 100%;
+        padding: 0.78rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #f8fafc;
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-align: center;
+    }
+    .hero-side__cta i {
+        width: 18px;
+        height: 18px;
+    }
+    .hero-side__cta--save {
+        background: linear-gradient(135deg, rgba(79,70,229,0.9), rgba(14,165,233,0.85));
+    }
+    .hero-side__cta--download {
+        background: linear-gradient(135deg, rgba(244,63,94,0.9), rgba(239,68,68,0.85));
+    }
+    .hero-side__cta--guest {
+        background: linear-gradient(135deg, rgba(16,185,129,0.88), rgba(34,197,94,0.82));
+        text-decoration: none;
+    }
+    .hero-side__cta:not(.pointer-events-none):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 24px 50px -32px rgba(14,165,233,0.55);
+    }
+    .hero-side__stat {
+        margin-top: 0.35rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.9rem 1.2rem;
+        border-radius: 1rem;
+        background: rgba(15,23,42,0.28);
+        border: 1px solid rgba(148,163,184,0.35);
+        box-shadow: 0 20px 48px -34px rgba(15,23,42,0.6);
+    }
+    .hero-side__stat-label {
+        text-transform: uppercase;
+        letter-spacing: 0.32em;
+        font-size: 0.7rem;
+        color: rgba(226,232,240,0.76);
+    }
+    .hero-side__stat-value {
+        font-size: 1.22rem;
+        font-weight: 700;
+        color: #ffffff;
+        letter-spacing: 0.03em;
+    }
+
+    .section-head {
+        display: grid;
+        gap: 0.65rem;
+        text-align: left;
+        max-width: 640px;
+    }
+    .section-head h2 {
+        font-size: clamp(1.35rem, 3vw, 1.75rem);
+        font-weight: 600;
+    }
+    .section-head p {
+        font-size: 0.95rem;
+        color: rgba(203,213,225,0.85);
+    }
+    .section-head--compact h2 {
+        font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+    }
+    .section-flag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.45rem 0.95rem;
+        border-radius: 9999px;
+        border: 1px solid rgba(148,163,184,0.3);
+        background: rgba(15,23,42,0.45);
+        font-size: 0.75rem;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+        color: rgba(148,163,184,0.9);
+    }
+
+    .capsule-grid {
+        margin-top: 2rem;
+        display: grid;
+        gap: clamp(1.2rem, 2vw, 1.8rem);
+        grid-template-columns: 1fr;
+    }
+    .capsule-card {
+        position: relative;
+        display: flex;
+        gap: 1.3rem;
+        align-items: flex-start;
+        padding: 1.55rem 1.8rem;
+        border-radius: 1.8rem;
+        background: rgba(15,23,42,0.7);
+        border: 1px solid rgba(148,163,184,0.3);
+        min-height: 160px;
+        box-shadow: 0 32px 65px -42px rgba(15,23,42,0.75);
+        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .capsule-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        border-color: rgba(129,140,248,0.5);
+        box-shadow: 0 42px 95px -40px rgba(79,70,229,0.55);
+    }
+    .capsule-card__icon {
+        flex: 0 0 56px;
+        height: 56px;
+        border-radius: 1.35rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(129,140,248,0.28), rgba(59,130,246,0.2));
+        color: #bfdbfe;
+        font-size: 1.2rem;
+        box-shadow: inset 0 0 0 1px rgba(148,197,255,0.22);
+    }
+    .capsule-card__content {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.95rem;
+    }
+    .capsule-card__label {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.24em;
+        font-weight: 600;
+        color: rgba(148,163,184,0.82);
+    }
+    .capsule-card__value-row {
+        display: flex;
+        align-items: center;
+        gap: 0.85rem;
+        min-width: 0;
+    }
+    .capsule-card__value {
+        flex: 1 1 auto;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #e2e8f0;
+        line-height: 1.45;
+        overflow-wrap: anywhere;
+    }
+    .capsule-card__value--link {
+        color: #93c5fd;
+        text-decoration: none;
+    }
+    .capsule-card__value--link:hover {
+        color: #c7d2fe;
+        text-decoration: underline;
+    }
+    .capsule-card--phone .capsule-card__value {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .capsule-card__value--multiline {
+        white-space: normal;
+        line-height: 1.7;
+    }
+    .capsule-card__copy {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 44px;
+        border-radius: 999px;
+        border: 1px solid rgba(148,163,184,0.32);
+        background: rgba(30,41,59,0.65);
+        color: rgba(148,197,255,0.95);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+        cursor: pointer;
+    }
+    .capsule-card__copy i {
+        width: 18px;
+        height: 18px;
+    }
+    .capsule-card__copy:hover,
+    .capsule-card__copy:focus-visible {
+        transform: translateY(-2px);
+        border-color: rgba(99,102,241,0.55);
+        background: rgba(79,70,229,0.28);
+        color: #e0e7ff;
+        outline: none;
+    }
+    .capsule-card__quick-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: auto;
+        flex-wrap: wrap;
+    }
+    .capsule-card__quick {
+        flex: 1 1 0;
+        min-width: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.6rem;
+        padding: 0.65rem 0.9rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(99,102,241,0.32);
+        background: rgba(79,70,229,0.18);
+        color: #c7d2fe;
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .capsule-card__quick i {
+        width: 18px;
+        height: 18px;
+    }
+    .capsule-card__quick:hover,
+    .capsule-card__quick:focus-visible {
+        background: rgba(99,102,241,0.35);
+        border-color: rgba(129,140,248,0.55);
+        color: #eef2ff;
+        outline: none;
+    }
+    .capsule-card--note .capsule-card__content {
+        gap: 0.8rem;
+    }
+
+    .social-section {
+        display: grid;
+        gap: 1.8rem;
+    }
+    .social-dock {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+    .social-tile {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.9rem 1.4rem;
+        border-radius: 1.2rem;
+        font-weight: 600;
+        color: #fff;
+        box-shadow: 0 25px 55px -32px rgba(15,23,42,0.7);
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .social-tile i {
+        width: 20px;
+        height: 20px;
+    }
+    .social-tile span {
+        position: relative;
+        z-index: 2;
+    }
+    .social-tile::after {
+        content: '';
+        position: absolute;
+        inset: auto -20% -50% auto;
+        width: 60%;
+        height: 160%;
+        background: rgba(255,255,255,0.18);
+        transform: rotate(25deg);
+    }
+    .social-tile:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 35px 70px -38px rgba(15,23,42,0.75);
+    }
+    .social-facebook { background: #1877F2; }
+    .social-whatsapp { background: #25D366; }
+    .social-instagram { background: linear-gradient(135deg,#F58529,#DD2A7B,#8134AF,#515BD4); }
+    .social-twitter { background: #1DA1F2; }
+    .social-linkedin { background: #0A66C2; }
+
+    .social-youtube { background: #FF0000; }
+    .social-github { background: #181717; }
+    .social-tiktok { background: linear-gradient(135deg,#010101 0%,#ff0050 50%,#00f2ea 100%); }
+    .social-snapchat { background: #FFFC00; color: #1f2937; }
+    .social-likee { background: linear-gradient(135deg,#FF0050 0%,#FF7A59 40%,#FFB347 70%,#FFE29F 100%); }
+    .social-pinterest { background: #E60023; }
+    .social-telegram { background: #229ED9; }
+    .social-threads { background: #101010; }
+    .social-behance { background: #1769FF; }
+    .social-dribbble { background: #EA4C89; }
+
+    .action-deck {
+        margin-top: 1.6rem;
+        display: grid;
+        gap: 0.9rem;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    }
+    .action-chip {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        padding: 0.8rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #f8fafc;
+        background: linear-gradient(135deg, rgba(59,130,246,0.85), rgba(14,165,233,0.85));
+        border: none;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        text-align: center;
+    }
+    .action-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 28px 55px -35px rgba(14,165,233,0.65);
+    }
+    .action-chip i {
+        width: 18px;
+        height: 18px;
+    }
+
+    @media (min-width: 640px) {
+        .capsule-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 1024px) {
+        .hero-grid {
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            align-items: stretch;
+        }
+        .hero-side { margin-left: 0.6rem; }
+        .capsule-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    }
+    @media (max-width: 768px) {
+        .hero-shell { padding: 1.5rem; border-radius: 1.8rem; }
+        .hero-holo { border-radius: 1.5rem; }
+        .hero-side { margin-left: 0; }
+        .hero-side__qr { border-radius: 1.4rem; }
+        .capsule-card { padding: 1.4rem 1.55rem; min-height: 148px; }
+        .capsule-card__icon { width: 52px; height: 52px; }
+        .social-dock { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+    }
+    @media (max-width: 640px) {
+        .hero-side { flex-direction: column; }
+        .hero-side__qr { width: 100%; }
+        .capsule-grid { grid-template-columns: 1fr; }
+        .capsule-card { padding: 1.35rem 1.5rem; min-height: 140px; }
+        .capsule-card__copy { width: 40px; height: 40px; }
+        .capsule-card__quick { flex: 1 1 100%; }
+        .action-deck { grid-template-columns: 1fr; }
+    }
+</style>
+
 <script>
     (function() {
-        const phoneToggle = document.getElementById('phoneToggle');
-        const phoneMenu = document.getElementById('phoneMenu');
-        if (phoneToggle && phoneMenu) {
-            phoneToggle.addEventListener('click', function(event) {
-                event.stopPropagation();
-                phoneMenu.classList.toggle('hidden');
-                if (!phoneMenu.classList.contains('hidden')) {
-                    phoneMenu.classList.add('phone-menu-visible');
-                }
+        const revealTargets = document.querySelectorAll('[data-reveal]');
+        if (revealTargets.length) {
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.25,
+                rootMargin: '0px 0px -10% 0px'
             });
-            document.addEventListener('click', function(event) {
-                if (!phoneMenu.classList.contains('hidden') && !phoneMenu.contains(event.target)) {
-                    phoneMenu.classList.add('hidden');
-                }
-            });
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape' && !phoneMenu.classList.contains('hidden')) {
-                    phoneMenu.classList.add('hidden');
-                }
-            });
+            revealTargets.forEach(target => revealObserver.observe(target));
         }
 
         const copyLinkBtn = document.getElementById('copyLink');
         if (copyLinkBtn) {
             copyLinkBtn.addEventListener('click', function() {
                 navigator.clipboard.writeText(window.location.href).then(function() {
-                    alert('E-Card link copied!');
+                    alert('V-card link copied!');
                 });
             });
         }
@@ -342,20 +1073,29 @@
                 if (!qrCodeImg) { return; }
                 const link = document.createElement('a');
                 link.href = qrCodeImg.src;
-                link.download = 'e-card-qrcode.png';
+                link.download = 'v-card-qrcode.png';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             });
         }
 
-        const copyEmailBtn = document.getElementById('copyEmailBtn');
-        if (copyEmailBtn && !copyEmailBtn.classList.contains('pointer-events-none')) {
-            copyEmailBtn.addEventListener('click', function() {
-                const email = '{{ card.card_data.email|escapejs }}';
-                if (!email) { return; }
-                navigator.clipboard.writeText(email).then(function() {
-                    alert('Email copied!');
+        const copyButtons = document.querySelectorAll('.capsule-card__copy[data-copy]');
+        if (copyButtons.length) {
+            copyButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const value = button.dataset.copy || '';
+                    if (!value) { return; }
+                    const label = button.dataset.copyLabel || 'Copied!';
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(value).then(() => {
+                            alert(label);
+                        }).catch(() => {
+                            alert('Unable to copy value.');
+                        });
+                    } else {
+                        window.prompt('Copy this value', value);
+                    }
                 });
             });
         }

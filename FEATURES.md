@@ -1,110 +1,70 @@
-# E-Card Project Features Documentation
+# V-Card Studio Feature Guide
 
-This document outlines the key features and functionalities implemented in the E-Card project.
+A snapshot of the capabilities that make V-Card Studio an immersive, secure, and shareable digital identity platform.
 
-## 1. User Authentication & Management
+## Core Experiences
+### Immersive Landing
+- Animated hero with hue-rotating gradients and interactive preview device.
+- Feature grid, workflow timeline, testimonial slider, and CTA deck inspired by high-end SaaS marketing pages.
+- Responsive navbar with mobile drawer, scroll-triggered reveals, and premium glassmorphism.
 
-### 1.1 User Registration
-- Allows new users to create an account with a username, password, and email.
-- Collects phone number during registration.
+### Builder & Preview
+- Two-panel layout with form inputs versus live animated preview.
+- Scroll-sync preview: as you scroll the builder, the preview glides in tandem on desktop.
+- Form sections: personal info, socials, styling, with icons and micro copy for clarity.
+- Background palette: 16 gradient presets spanning light, vibrant, and deep/dark themes plus custom color picker.
+- Smart contrast detection toggles text color for optimum readability.
+- Avatar and logo upload with instant preview + fallback badges.
 
-### 1.2 User Login
-- Standard login functionality for registered users.
+### Public V-Card View
+- Responsive layout with brand badge, contact chips, quick action buttons, and social icon grid.
+- Email/website copy buttons, phone call/SMS actions, and save-to-contacts (vCard) trigger.
+- QR download and share prompts with consistent glass styling.
+- Admin preview banner with “Back to dashboard” link when accessed by superusers.
 
-### 1.3 Password Reset (OTP-based)
-- Secure multi-step password reset process.
-- Users can request a password reset by providing their email address.
-- A 6-digit One-Time Password (OTP) is generated and sent to the user's registered email.
-- Users must verify the OTP before being allowed to set a new password.
-- (Note: SMS OTP sending is a placeholder and requires third-party integration.)
+## Security & Account Management
+### Direct Password Reset Flow
+1. User provides their email or phone number on the "Forgot Password" page.
+2. If the account exists, the user is immediately redirected to the "Set New Password" page.
+3. The user sets and confirms their new password.
+4. Upon success, the password is changed, and the user is prompted to log in.
+- This flow is direct and does not require any email or OTP verification.
 
-### 1.4 Admin Login & Dashboard
-- Separate login for superusers to access the admin dashboard.
-- Admin dashboard provides animated metric cards for total users, total cards, and moderation queue size.
-- Admins can view and delete any e-card, with quick navigation buttons for going home or logging out.
-- Glassmorphism styling, motion, and icons mirror the user dashboard so the admin console feels first-class.
+### Authentication/Authorization
+- Standard register/login flow with phone number capture.
+- Admin login gated to superusers with custom login view and brand-consistent UI.
+- Admin-only routes decorated with `user_passes_test` for security.
 
-## 2. E-Card Creation & Customization
+## Data Visibility & Export
+- Admin dashboard: glass panels display total users, cards, moderation queue counts.
+- Toggle stat cards reveal user and card tables; links to view/edit/delete.
+- CSV export: zipped bundle with `users.csv` + `cards.csv`, capturing dynamic card JSON fields.
+- Excel export: multi-sheet workbook (Users, Cards) using `openpyxl`.
 
-### 2.1 Create E-Card
-- Users can create personalized digital e-cards.
-- Collects comprehensive personal and professional information:
-    - First Name, Last Name
-    - Company, Job Title
-    - Email, Phone, Address
-    - Birthday (optional)
-    - Website URL
-    - Notes/Bio
-- Supports profile picture (avatar) upload.
+## Documentation Portal
+- `/documentation/` renders an animated documentation page with cards, gradient toggles, and README markdown.
+- Sections: interface overview, security layers, designer tips, quick reference snippets.
 
-### 2.2 Social Media Integration
-- Fields for various social media URLs: Facebook, WhatsApp, YouTube, Instagram, Twitter/X, LinkedIn.
-- Social media icons are displayed on the e-card, linking to the provided URLs.
+## Styling & Frontend
+- Tailwind foundation with custom CSS for gradients, blur, pulse, and scroll animations.
+- Lucide icon set throughout dashboards, forms, and marketing assets.
+- Hue-rotate animation on hero preview; nav fixed with blur/shadow, mobile drawer transitions.
 
-### 2.3 Card Design & Styling
-- Multiple pre-defined background gradient styles to choose from.
-- Automatic text color adjustment: Text color (black/white) dynamically changes based on the selected background to ensure readability.
-- Social media icons retain their brand colors and gain a subtle light background on dark card themes for visibility.
+## Testing
+- `cards.test_dashboards.DashboardTests`: covers dashboard access states, redirect logic, and counts.
+- Run with `python manage.py test cards.tests cards.test_dashboards`.
 
-### 2.4 Builder Experience Enhancements
-- Dual-panel builder with animated preview so changes are reflected instantly.
-- Smart styling system adjusts text contrast based on chosen backgrounds or custom colors.
-- Iconic form groups, gradient pickers, and avatar previews keep onboarding friendly.
-- Animated guidance badges and stats highlight the design journey while building.
+## Deployment Touchpoints
+- PostgreSQL-backed settings via `python-decouple` / `dj-database-url`.
+- Gunicorn + systemd units (`gunicorn.service`, `gunicorn.socket`).
+- Nginx reverse proxy (`nginx.conf`) with SSL recommendations.
+- `deploy.sh` bootstrap script for Ubuntu environment setup.
 
-## 3. E-Card Viewing & Sharing
+## Roadmap Ideas (Optional Enhancements)
+- Card analytics dashboard (views by day, device share).
+- Team workspaces for collaborative card creation.
+- Template marketplace with community gradients and layouts.
+- Webhooks / Zapier integration for automatic contact sync.
 
-### 3.1 View E-Card
-- Each created e-card has a unique, shareable URL (e.g., `/card/<unique_slug>/`).
-- Displays all the user's information, avatar, and selected design.
-
-### 3.2 QR Code Functionality
-- A unique QR code is generated for each e-card.
-- Scanning the QR code directs to the e-card's unique URL.
-- "Download QR Code" button allows users to save the QR code image.
-
-### 3.3 Sharing & Quick Actions
-- Buttons for easy sharing via WhatsApp and Facebook plus browser-native share support.
-- "Copy Link" button to quickly copy the e-card's URL to the clipboard.
-- Contact quick actions: copy email/phone, launch mailto, call now, or save as a downloadable vCard.
-- Insight cards surface helpful reminders (e.g., embed links, check analytics) beside the QR panel.
-- Admins can download fresh CSV or Excel exports of all cards directly from the dashboard.
-
-### 3.4 Edit E-Card
-- Users can edit their existing e-cards.
-- All fields are pre-populated with existing data for easy modification.
-
-## 4. Technical Details
-
-### 4.1 Django Framework
-- Built using the Django web framework (Python).
-- Utilizes Django's ORM for database interactions.
-
-### 4.2 Frontend Technologies
-- HTML templates with glassmorphism-inspired layouts.
-- Tailwind CSS and custom animation keyframes for gradients, floating cards, and interactive buttons.
-- JavaScript for dynamic functionalities (live preview, QR generation, contact quick actions, native sharing, tutorial modal).
-- Lucide Icons for consistent iconography across dashboards, forms, and cards.
-- qrcode.js library for client-side QR code generation in live preview.
-- Embedded tutorial modal on the home page to demonstrate the card creation flow.
-
-### 4.3 Database
-- PostgreSQL powers both development and production via a `DATABASE_URL` environment variable (configured through `python-decouple` and `dj-database-url`).
-
-### 4.4 Media Handling
-- Stores user avatars and generated QR codes in the `/media` directory.
-
-## 5. Project Structure
-
-- `ecard_project/`: Main Django project settings and URL configurations.
-- `cards/`: Django app containing models, views, forms, templates, and static files related to e-card functionality.
-    - `models.py`: Defines database models for `Profile`, `Card`.
-    - `views.py`: Handles application logic, rendering templates, and processing form data.
-    - `forms.py`: Defines Django forms for user input.
-    - `urls.py`: Defines URL patterns for the `cards` app.
-    - `templates/cards/`: HTML templates for various pages.
-    - `migrations/`: Database migration files.
-- `media/`: Directory for user-uploaded content (avatars, QR codes).
-- `venv/`: Python virtual environment.
-- `manage.py`: Django's command-line utility.
-- `requirements.txt`: Lists Python dependencies.
+---
+This feature guide represents the current UX + engineering state of V-Card Studio—from landing page wow-factor to direct account recovery and admin exports.

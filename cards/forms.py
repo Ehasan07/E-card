@@ -55,6 +55,7 @@ COUNTRY_CHOICES = [
     ("977", "🇳🇵 +977"),
 ]
 
+
 class CardForm(forms.ModelForm):
     firstName = forms.CharField(max_length=100, required=True)
     lastName = forms.CharField(max_length=100, required=True)
@@ -73,6 +74,7 @@ class CardForm(forms.ModelForm):
     website = forms.URLField(required=False)
     notes = forms.CharField(widget=forms.Textarea, required=False)
     facebook = forms.URLField(required=False)
+    logo_name = forms.CharField(max_length=120, required=False)
     whatsapp = forms.CharField(required=False, widget=forms.HiddenInput())
     whatsapp_country = forms.CharField(required=False, widget=forms.HiddenInput())
     whatsapp_number = forms.CharField(required=False, max_length=20)
@@ -80,6 +82,16 @@ class CardForm(forms.ModelForm):
     instagram = forms.URLField(required=False)
     twitter = forms.URLField(required=False)
     linkedin = forms.URLField(required=False)
+    github = forms.URLField(required=False)
+    tiktok = forms.URLField(required=False)
+    snapchat = forms.URLField(required=False)
+    likee = forms.URLField(required=False)
+    pinterest = forms.URLField(required=False)
+    telegram = forms.URLField(required=False)
+    threads = forms.URLField(required=False)
+    behance = forms.URLField(required=False)
+    dribbble = forms.URLField(required=False)
+
     background_style = forms.CharField(
         max_length=255,
         required=False,
@@ -88,7 +100,7 @@ class CardForm(forms.ModelForm):
 
     class Meta:
         model = Card
-        fields = ['avatar']
+        fields = ['avatar', 'logo']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -100,6 +112,7 @@ class CardForm(forms.ModelForm):
             else:
                 existing = widget.attrs.get('class', '')
                 widget.attrs['class'] = f"{existing} {base_classes}".strip()
+        self.fields['logo_name'].widget.attrs.setdefault('placeholder', 'Brand or company name')
         self.initial_whatsapp = ''
         self.initial_phone = ''
         existing_whatsapp = self.initial.get('whatsapp') or ''
@@ -113,9 +126,9 @@ class CardForm(forms.ModelForm):
             self.initial_whatsapp = existing_whatsapp.strip()
             parsed_number = self.initial_whatsapp
             if parsed_number.startswith('https://wa.me/'):
-                parsed_number = parsed_number[len('https://wa.me/'):]
+                parsed_number = parsed_number[len('https://wa.me/') :]
             elif parsed_number.startswith('http://wa.me/'):
-                parsed_number = parsed_number[len('http://wa.me/'):]
+                parsed_number = parsed_number[len('http://wa.me/') :]
             parsed_number = parsed_number.lstrip('+')
             digits_only = re.sub(r'\D', '', parsed_number)
             self.initial['whatsapp'] = self.initial_whatsapp
@@ -127,7 +140,7 @@ class CardForm(forms.ModelForm):
                         break
                 if match_code:
                     self.initial.setdefault('whatsapp_country', match_code)
-                    self.initial.setdefault('whatsapp_number', digits_only[len(match_code):])
+                    self.initial.setdefault('whatsapp_number', digits_only[len(match_code) :])
                 else:
                     self.initial.setdefault('whatsapp_number', digits_only)
 
@@ -141,7 +154,7 @@ class CardForm(forms.ModelForm):
                         match_code = code
                         break
                 if match_code:
-                    remainder = digits_only_phone[len(match_code):]
+                    remainder = digits_only_phone[len(match_code) :]
                     self.initial.setdefault('phone_country', match_code)
                     self.initial.setdefault('phone_number', remainder)
                     digits_full = match_code + remainder
@@ -161,7 +174,7 @@ class CardForm(forms.ModelForm):
 
         self.initial.setdefault('phone_country', self.initial.get('phone_country') or '880')
         self.initial.setdefault('whatsapp_country', self.initial.get('whatsapp_country') or '880')
-        
+
         select_classes = 'h-12 w-24 bg-white border border-gray-200 rounded-l-xl px-3 text-sm text-gray-700 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 hover:bg-pink-50 transition'
         number_classes = 'h-12 flex-1 rounded-r-xl border border-l-0 border-gray-200 bg-white text-gray-700 text-sm px-4 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 hover:bg-pink-50 transition'
         self.fields['whatsapp_country'].widget.attrs.update({'class': select_classes})
@@ -202,27 +215,92 @@ class CardForm(forms.ModelForm):
             self.add_error('phone_number', 'Enter digits only for the phone number.')
 
         if phone_digits and not phone_country:
-            self.add_error('phone_country', 'Select a country code for the phone number.')
+            self.add_error('phone_country', 'Select a country code.')
 
         if phone_digits and phone_country:
             cleaned_data['phone'] = f"{phone_country}{phone_digits}"
-        elif self.initial_phone and 'phone_country' not in self.data and 'phone_number' not in self.data:
+        elif self.initial_phone and not phone_digits and not phone_country:
             cleaned_data['phone'] = self.initial_phone
         else:
-            cleaned_data['phone'] = phone_digits
+            cleaned_data['phone'] = ''
 
         return cleaned_data
 
+
 class UserForm(forms.ModelForm):
-    password = forms.CharField(widget=forms.PasswordInput)
     class Meta:
         model = User
-        fields = ('username', 'password', 'email')
+        fields = ["username", "email", "password"]
+
 
 class ProfileForm(forms.ModelForm):
+    phone_country = forms.CharField(required=False, widget=forms.HiddenInput())
+    phone_number_local = forms.CharField(required=False, max_length=20)
+
     class Meta:
         model = Profile
-        fields = ('phone_number',)
+        fields = ["phone_number"]
 
-class OTPForm(forms.Form):
-    otp = forms.CharField(max_length=6, widget=forms.TextInput(attrs={'placeholder': 'Enter 6-digit OTP'}))
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Hide the combined phone field; the UI captures country + local number separately.
+        self.fields['phone_number'].widget = forms.HiddenInput()
+
+        base_classes = 'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition'
+        for name, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, forms.FileInput):
+                continue
+            existing = widget.attrs.get('class', '')
+            widget.attrs['class'] = f"{existing} {base_classes}".strip()
+
+        self.fields['phone_number_local'].widget.attrs.setdefault('placeholder', 'Phone number')
+        self.fields['phone_number_local'].widget.attrs.setdefault('inputmode', 'numeric')
+        self.fields['phone_number_local'].widget.attrs.setdefault('pattern', '[0-9]*')
+
+        # Prepare defaults for the picker widgets.
+        existing_phone = self.initial.get('phone_number') or ''
+        if not existing_phone and self.instance.pk:
+            existing_phone = (self.instance.phone_number or '').strip()
+
+        digits_only_phone = re.sub(r'\D', '', existing_phone.lstrip('+')) if existing_phone else ''
+        if digits_only_phone:
+            match_code = ''
+            for code, _label in sorted(COUNTRY_CHOICES, key=lambda item: len(item[0]), reverse=True):
+                if digits_only_phone.startswith(code):
+                    match_code = code
+                    break
+            if match_code:
+                remainder = digits_only_phone[len(match_code):]
+                self.initial.setdefault('phone_country', match_code)
+                self.initial.setdefault('phone_number_local', remainder)
+            else:
+                self.initial.setdefault('phone_number_local', digits_only_phone)
+        self.initial.setdefault('phone_country', self.initial.get('phone_country') or '880')
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        country_code = (cleaned_data.get('phone_country') or '').strip()
+        local_raw = cleaned_data.get('phone_number_local') or ''
+        local_digits = re.sub(r'\D', '', local_raw)
+
+        if local_raw and not local_digits:
+            self.add_error('phone_number_local', 'Enter digits only for the phone number.')
+
+        if local_digits and not country_code:
+            self.add_error('phone_country', 'Select a country code.')
+
+        if local_digits and country_code:
+            cleaned_data['phone_number'] = f"{country_code}{local_digits}"
+        elif self.instance.pk and self.instance.phone_number:
+            cleaned_data['phone_number'] = self.instance.phone_number
+        else:
+            cleaned_data['phone_number'] = ''
+
+        return cleaned_data
+
+
+class ForgotPasswordForm(forms.Form):
+    email_or_phone = forms.CharField(label="Email or Phone Number", max_length=254)

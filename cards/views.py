@@ -1,15 +1,17 @@
 import csv
 import json
 import re
+import zipfile
+import random
+from io import BytesIO, StringIO
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import UserForm, ProfileForm, OTPForm, CardForm, COUNTRY_CHOICES
+from .forms import UserForm, ProfileForm, ForgotPasswordForm, CardForm, COUNTRY_CHOICES
 from .models import Card, Profile
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth.forms import PasswordResetForm
+from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
@@ -19,8 +21,18 @@ import markdown
 import os
 from django.contrib import messages
 from django.http import HttpResponse
+from django.utils import timezone
+from django.contrib.auth.hashers import make_password, check_password
+
+from datetime import timedelta
 
 from openpyxl import Workbook
+
+
+OTP_EXPIRY_MINUTES = 5
+OTP_RATE_LIMIT_SECONDS = 60
+OTP_MAX_ATTEMPTS = 5
+OTP_EMAIL_FROM = 'dss@dupno.com'
 
 
 def _normalize_whatsapp_link(value: str) -> str:
@@ -56,8 +68,10 @@ def _normalize_phone_number(value: str, default_code: str = '880') -> tuple[str,
     return digits, display
 
 
+
 def index(request):
     return render(request, 'cards/index.html')
+
 
 def register(request):
     if request.method == 'POST':
@@ -100,17 +114,6 @@ def dashboard(request):
     cards = Card.objects.filter(user=request.user).order_by('-created_at')
     return render(request, 'cards/dashboard.html', {'cards': cards})
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
-def admin_dashboard(request):
-    from django.contrib.auth.models import User
-    all_cards = Card.objects.select_related('user').order_by('-created_at')
-    ctx = {
-        'total_users': User.objects.count(),
-        'total_cards': all_cards.count(),
-        'all_cards': all_cards
-    }
-    return render(request, 'cards/admin_dashboard.html', ctx)
-
 @login_required
 def create_card(request):
     # Check if user already has an active card
@@ -122,7 +125,7 @@ def create_card(request):
     if request.method == 'POST':
         form = CardForm(request.POST, request.FILES)
         if form.is_valid():
-            excluded_keys = {'avatar', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
+            excluded_keys = {'avatar', 'logo', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
             card_data = {key: value for key, value in form.cleaned_data.items() if key not in excluded_keys}
             
             card = form.save(commit=False)
@@ -140,36 +143,62 @@ def create_card(request):
 @login_required
 def edit_card(request, slug):
     card = get_object_or_404(Card, slug=slug, user=request.user, is_active=True)
-    
+
     if request.method == 'POST':
         form = CardForm(request.POST, request.FILES, instance=card)
         if form.is_valid():
-            # Update card_data from form
-            excluded_keys = {'avatar', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
-            for key, value in form.cleaned_data.items():
-                if key in excluded_keys:
-                    continue
-                if value:
-                    card.card_data[key] = value
-                elif key in card.card_data:
-                    card.card_data[key] = value
-            
-            # The form's save() will handle the avatar update
+            _apply_card_form_updates(card, form)
             form.save() # This re-triggers the model's save method, updating QR code etc.
 
             return redirect(card.get_absolute_url())
     else:
         # Pre-populate form with existing data
-        initial_data = card.card_data.copy()
+        initial_data = _card_initial_data(card)
         form = CardForm(instance=card, initial=initial_data)
 
     return render(request, 'cards/create_card.html', {'form': form, 'card': card})
 
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def admin_edit_card(request, slug):
+    card = get_object_or_404(Card, slug=slug)
+
+    if request.method == 'POST':
+        form = CardForm(request.POST, request.FILES, instance=card)
+        if form.is_valid():
+            _apply_card_form_updates(card, form)
+            form.save()
+            return redirect('admin_dashboard')
+    else:
+        initial_data = _card_initial_data(card)
+        form = CardForm(instance=card, initial=initial_data)
+
+    return render(request, 'cards/create_card.html', {'form': form, 'card': card, 'admin_edit': True})
+
 def view_card(request, slug):
     card = get_object_or_404(Card, slug=slug, is_active=True)
     is_owner = request.user.is_authenticated and request.user == card.user
+    is_admin = request.user.is_authenticated and request.user.is_superuser
     from_qr = request.GET.get('qr') == '1'
-    
+
+    visited_cards = request.session.get('visited_cards', [])
+    if card.slug not in visited_cards:
+        visited_cards.append(card.slug)
+        request.session['visited_cards'] = visited_cards
+        current_count = card.card_data.get('unique_views') or 0
+        try:
+            current_count = int(current_count)
+        except (TypeError, ValueError):
+            current_count = 0
+        card.card_data['unique_views'] = current_count + 1
+        card.save(update_fields=['card_data'])
+
+    profile_views = card.card_data.get('unique_views') or 0
+    try:
+        profile_views = int(profile_views)
+    except (TypeError, ValueError):
+        profile_views = 0
+
     # The QR code URL is now generated in the model, but we pass it for consistency
     # Note: The model-generated QR already has ?qr=1.
     qr_code_url = request.build_absolute_uri(card.get_absolute_url()) + "?qr=1"
@@ -181,12 +210,15 @@ def view_card(request, slug):
     context = {
         'card': card,
         'is_owner': is_owner,
+        'is_admin_viewer': is_admin,
+        'show_guest_cta': not is_owner and not is_admin,
         'from_qr': from_qr,
         'qr_code_url': qr_code_url,
         'whatsapp_link': whatsapp_link,
         'phone_digits': phone_digits,
         'phone_display': phone_display,
         'phone_tel': phone_tel,
+        'profile_views': profile_views,
     }
     return render(request, 'cards/view_card.html', context)
 
@@ -204,16 +236,27 @@ def admin_login_view(request):
         form = AuthenticationForm(request)
     return render(request, 'cards/admin_login.html', {'form': form})
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
 def admin_dashboard(request):
-    total_users = User.objects.count()
-    total_cards = Card.objects.count()
-    all_cards = Card.objects.all().order_by('-created_at')
+    users = User.objects.select_related('profile').order_by('-date_joined')
+    cards = Card.objects.select_related('user', 'user__profile').order_by('-created_at')
+    user_records = []
+    for user in users:
+        user_records.append({
+            'id': user.id,
+            'name': (user.get_full_name() or '').strip() or user.username,
+            'email': user.email or '',
+            'phone': _get_user_phone(user),
+            'registered': user.date_joined,
+            'is_active': user.is_active,
+            'status_label': 'Active' if user.is_active else 'Inactive',
+        })
 
     context = {
-        'total_users': total_users,
-        'total_cards': total_cards,
-        'all_cards': all_cards,
+        'total_users': len(user_records),
+        'total_cards': cards.count(),
+        'all_cards': cards,
+        'all_users': user_records,
     }
     return render(request, 'cards/admin_dashboard.html', context)
 
@@ -224,7 +267,8 @@ def delete_card_admin(request, slug):
     return redirect('admin_dashboard')
 
 
-BASE_EXPORT_HEADERS = ['ID', 'Name', 'Email', 'Phone', 'Slug', 'Created Date']
+CARD_EXPORT_HEADERS = ['ID', 'Name', 'Email', 'Phone', 'Slug', 'Created Date']
+USER_EXPORT_HEADERS = ['User ID', 'Full Name', 'Email', 'Phone', 'Registered Date', 'Status']
 
 
 def _collect_card_data_keys(cards):
@@ -241,6 +285,33 @@ def _format_card_data_value(value):
     if isinstance(value, (dict, list)):
         return json.dumps(value, ensure_ascii=False)
     return str(value)
+
+
+def _get_user_phone(user):
+    try:
+        return user.profile.phone_number or ''
+    except (Profile.DoesNotExist, AttributeError):
+        return ''
+
+
+def _card_initial_data(card):
+    if isinstance(card.card_data, dict):
+        return card.card_data.copy()
+    return {}
+
+
+def _apply_card_form_updates(card, form):
+    if not isinstance(card.card_data, dict):
+        card.card_data = {}
+
+    excluded_keys = {'avatar', 'logo', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
+    for key, value in form.cleaned_data.items():
+        if key in excluded_keys:
+            continue
+        if value:
+            card.card_data[key] = value
+        elif key in card.card_data:
+            card.card_data[key] = value
 
 
 def _build_card_row(card: Card, extra_keys):
@@ -273,6 +344,21 @@ def _build_card_row(card: Card, extra_keys):
     return base_row + data_values
 
 
+def _build_user_row(user):
+    full_name = user.get_full_name() or user.username
+    phone = _get_user_phone(user)
+    registered = user.date_joined.strftime('%Y-%m-%d %H:%M:%S') if user.date_joined else ''
+    status = 'Active' if user.is_active else 'Inactive'
+    return [
+        str(user.id),
+        full_name,
+        user.email or '',
+        phone,
+        registered,
+        status,
+    ]
+
+
 def _superuser_only(request):
     return request.user.is_authenticated and request.user.is_superuser
 
@@ -281,18 +367,30 @@ def export_cards_csv(request):
     if not _superuser_only(request):
         return HttpResponse('Unauthorized', status=401)
 
+    users = list(User.objects.select_related('profile').order_by('id'))
     cards = list(Card.objects.select_related('user', 'user__profile').order_by('id'))
     card_data_keys = _collect_card_data_keys(cards)
-    headers = BASE_EXPORT_HEADERS + card_data_keys
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="cards.csv"'
+    headers = CARD_EXPORT_HEADERS + card_data_keys
 
-    writer = csv.writer(response)
-    writer.writerow(headers)
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as archive:
+        users_buffer = StringIO()
+        users_writer = csv.writer(users_buffer)
+        users_writer.writerow(USER_EXPORT_HEADERS)
+        for user in users:
+            users_writer.writerow(_build_user_row(user))
+        archive.writestr('users.csv', users_buffer.getvalue())
 
-    for card in cards:
-        writer.writerow(_build_card_row(card, card_data_keys))
+        cards_buffer = StringIO()
+        cards_writer = csv.writer(cards_buffer)
+        cards_writer.writerow(headers)
+        for card in cards:
+            cards_writer.writerow(_build_card_row(card, card_data_keys))
+        archive.writestr('cards.csv', cards_buffer.getvalue())
 
+    zip_buffer.seek(0)
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = 'attachment; filename="dashboard_csv_exports.zip"'
     return response
 
 
@@ -300,21 +398,27 @@ def export_cards_excel(request):
     if not _superuser_only(request):
         return HttpResponse('Unauthorized', status=401)
 
+    users = list(User.objects.select_related('profile').order_by('id'))
     cards = list(Card.objects.select_related('user', 'user__profile').order_by('id'))
     card_data_keys = _collect_card_data_keys(cards)
-    headers = BASE_EXPORT_HEADERS + card_data_keys
-    wb = Workbook()
-    ws = wb.active
-    ws.title = 'Cards'
-    ws.append(headers)
+    card_headers = CARD_EXPORT_HEADERS + card_data_keys
 
+    wb = Workbook()
+    users_ws = wb.active
+    users_ws.title = 'Users'
+    users_ws.append(USER_EXPORT_HEADERS)
+    for user in users:
+        users_ws.append(_build_user_row(user))
+
+    cards_ws = wb.create_sheet(title='Cards')
+    cards_ws.append(card_headers)
     for card in cards:
-        ws.append(_build_card_row(card, card_data_keys))
+        cards_ws.append(_build_card_row(card, card_data_keys))
 
     response = HttpResponse(
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
-    response['Content-Disposition'] = 'attachment; filename="cards.xlsx"'
+    response['Content-Disposition'] = 'attachment; filename="dashboard.xlsx"'
     wb.save(response)
     return response
 
@@ -328,60 +432,44 @@ def documentation_view(request):
         html_content = "<h1>README.md not found</h1>"
     return render(request, 'cards/documentation.html', {'html_content': html_content})
 
-# The password reset views remain complex and may need further review,
-# but are left as-is to focus on the primary goals.
-def password_reset_request_otp(request):
+def forgot_password(request):
     if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
+        form = ForgotPasswordForm(request.POST)
         if form.is_valid():
-            email = form.cleaned_data['email']
-            try:
-                user = User.objects.get(email=email)
-                profile, _ = Profile.objects.get_or_create(user=user)
+            email_or_phone = form.cleaned_data['email_or_phone']
+            from django.db.models import Q
+            user = User.objects.filter(Q(email__iexact=email_or_phone) | Q(profile__phone_number=email_or_phone)).distinct().first()
 
-                import random
-                otp = str(random.randint(100000, 999999))
-                profile.otp = otp
-                profile.save()
-
-                subject = 'Your Password Reset OTP'
-                html_message = render_to_string('cards/password_reset_otp_email.html', {'otp': otp, 'user': user})
-                plain_message = strip_tags(html_message)
-                from_email = settings.DEFAULT_FROM_EMAIL
-                send_mail(subject, plain_message, from_email, [email], html_message=html_message)
-
+            if user:
                 request.session['password_reset_user_id'] = user.id
-                return redirect('password_reset_verify_otp')
-            except User.DoesNotExist:
-                form.add_error('email', 'No user found with that email address.')
+                if request.user.is_authenticated:
+                    logout(request)
+                return redirect('reset_password')
+            else:
+                form.add_error(None, "If this email or phone number exists in our system, you will be able to reset your password.")
     else:
-        form = PasswordResetForm()
-    return render(request, 'cards/password_reset_form.html', {'form': form})
+        form = ForgotPasswordForm()
+    return render(request, 'cards/forgot_password.html', {'form': form})
 
-def password_reset_verify_otp(request):
+def reset_password(request):
     user_id = request.session.get('password_reset_user_id')
     if not user_id:
-        return redirect('password_reset_request_otp')
+        return redirect('forgot_password')
 
-    user = get_object_or_404(User, id=user_id)
-    profile = get_object_or_404(Profile, user=user)
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        request.session.pop('password_reset_user_id', None)
+        return redirect('forgot_password')
 
     if request.method == 'POST':
-        form = OTPForm(request.POST)
+        form = SetPasswordForm(user, request.POST)
         if form.is_valid():
-            if form.cleaned_data['otp'] == profile.otp:
-                profile.otp = None
-                profile.save()
-                
-                from django.contrib.auth.tokens import default_token_generator
-                from django.utils.http import urlsafe_base64_encode
-                from django.utils.encoding import force_bytes
-                uid = urlsafe_base64_encode(force_bytes(user.pk))
-                token = default_token_generator.make_token(user)
-                
-                return redirect('password_reset_confirm', uidb64=uid, token=token)
-            else:
-                form.add_error('otp', 'Invalid OTP.')
+            form.save()
+            request.session.pop('password_reset_user_id', None)
+            messages.success(request, 'Your password has been reset successfully. Please log in with your new password.')
+            return redirect('login')
     else:
-        form = OTPForm()
-    return render(request, 'cards/password_reset_otp_form.html', {'form': form})
+        form = SetPasswordForm(user)
+
+    return render(request, 'cards/reset_password.html', {'form': form})

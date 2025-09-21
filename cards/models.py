@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=20, unique=True)
-    otp = models.CharField(max_length=6, blank=True, null=True)
+    otp = models.CharField(max_length=128, blank=True, null=True)
+    otp_expires_at = models.DateTimeField(blank=True, null=True)
+    otp_requested_at = models.DateTimeField(blank=True, null=True)
+    otp_attempts = models.PositiveSmallIntegerField(default=0)
 
     def __str__(self):
         return self.user.username
@@ -19,6 +22,7 @@ class Card(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     card_data = models.JSONField(default=dict)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    logo = models.ImageField(upload_to='logos/', blank=True, null=True)
     qr_code = models.ImageField(upload_to='qrcodes/', blank=True, null=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     is_active = models.BooleanField(default=True)

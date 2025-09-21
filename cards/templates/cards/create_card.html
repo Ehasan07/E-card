@@ -1,21 +1,27 @@
 {% extends 'cards/base.html' %}
 {% load static %}
 
-{% block title %}{% if card %}Edit E-Card{% else %}Create E-Card{% endif %}{% endblock %}
+{% block title %}{% if card %}Edit V-Card{% else %}Create V-Card{% endif %}{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-6xl glassmorphism rounded-3xl shadow-2xl overflow-hidden border border-white/40">
-        <div class="flex flex-col lg:flex-row items-stretch">
-            <div class="w-full lg:w-7/12 p-8 lg:p-12 bg-white/70">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+<div class="editor-canvas relative min-h-screen px-4 py-16 overflow-hidden">
+    <div class="editor-glow editor-glow--one"></div>
+    <div class="editor-glow editor-glow--two"></div>
+    <div class="editor-glow editor-glow--three"></div>
+
+    <div class="relative max-w-7xl mx-auto">
+        <div class="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-start">
+            <section class="builder-panel glass-surface" id="builderPanel">
+                <div class="builder-header">
                     <div>
-                        <p class="text-sm uppercase tracking-[0.35rem] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %}</p>
-                        <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Design your interactive e-card</h1>
+                        <p class="text-xs uppercase tracking-[0.4em] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %} your card</p>
+                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Craft your interactive identity</h1>
+                        <p class="text-sm text-slate-500 mt-1">Fill out the details on the left and scroll the live preview to explore the result.</p>
                     </div>
-                    <span class="inline-flex items-center gap-2 bg-pink-100 text-pink-600 text-xs font-semibold tracking-wide px-4 py-2 rounded-full shadow-sm">
+                    <span class="builder-badge">
+                        <span class="builder-badge__pulse"></span>
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        Live preview enabled
+                        Live preview
                     </span>
                 </div>
 
@@ -107,8 +113,9 @@
                     <section class="space-y-6">
                         <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
                             <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">2</span>
-                            Social presence
+                            Social connections
                         </h2>
+                        <p class="text-sm text-gray-500">Links spring to life on the preview with colour-coded badges.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Facebook</label>
@@ -159,6 +166,42 @@
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">LinkedIn</label>
                                 {{ form.linkedin }}
                             </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">GitHub</label>
+                                {{ form.github }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">TikTok</label>
+                                {{ form.tiktok }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Snapchat</label>
+                                {{ form.snapchat }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Likee</label>
+                                {{ form.likee }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Pinterest</label>
+                                {{ form.pinterest }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Telegram</label>
+                                {{ form.telegram }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Threads</label>
+                                {{ form.threads }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Behance</label>
+                                {{ form.behance }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Dribbble</label>
+                                {{ form.dribbble }}
+                            </div>
                         </div>
                     </section>
 
@@ -175,30 +218,44 @@
                                     <p class="text-xs text-gray-500 mt-2">Current avatar: <a href="{{ card.avatar.url }}" target="_blank" class="underline">{{ card.avatar.name }}</a></p>
                                 {% endif %}
                             </div>
+                            <div class="md:col-span-2">
+                                <div class="grid md:grid-cols-2 gap-6 items-start">
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-600 mb-1">Brand logo</label>
+                                        {{ form.logo }}
+                                        {% if card and card.logo %}
+                                            <p class="text-xs text-gray-500 mt-2">Current logo: <a href="{{ card.logo.url }}" target="_blank" class="underline">{{ card.logo.name }}</a></p>
+                                        {% endif %}
+                                        <p class="text-xs text-gray-400 mt-1">Upload a square image. It will display in a compact circle on the card.</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-gray-600 mb-1">Logo / Company name</label>
+                                        {{ form.logo_name }}
+                                    </div>
+                                </div>
+                            </div>
                             <div class="md:col-span-2 space-y-4">
                                 <div class="flex items-center justify-between">
                                     <p class="text-sm font-semibold text-gray-600">Pick a background</p>
                                     <span class="text-xs text-gray-400">Tap an option or use the colour picker</span>
                                 </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-4" id="background-options">
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)">
-                                        <span>Blush Sunrise</span>
-                                    </button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)">
-                                        <span>Lavender Dream</span>
-                                    </button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #43cea2 0%, #185a9d 100%)">
-                                        <span>Emerald Ocean</span>
-                                    </button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)">
-                                        <span>Royal Velvet</span>
-                                    </button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9569 0%, #e92758 100%)">
-                                        <span>Sunset Blaze</span>
-                                    </button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #232526 0%, #414345 100%)">
-                                        <span>Midnight Slate</span>
-                                    </button>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4" id="background-options">
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"><span>Blush Sunrise</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"><span>Lavender Dream</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #43cea2 0%, #185a9d 100%)"><span>Emerald Ocean</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)"><span>Royal Velvet</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #e46b7f 0%, #24152f 100%)"><span>Crimson Nebula</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #1f1c2c 0%, #928dab 100%)"><span>Moonlit Orchid</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)"><span>Abyssal Tide</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #20002c 0%, #cbb4d4 100%)"><span>Amethyst Veil</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #000428 0%, #004e92 100%)"><span>Midnight Azure</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)"><span>Celestial Noir</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #b3ffab 0%, #12fff7 100%)"><span>Mint Aura</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)"><span>Dreamscape</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #f6d365 0%, #fda085 100%)"><span>Golden Hour</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)"><span>Tropical Mist</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%)"><span>Cosmic Bloom</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ba5370 0%, #f4e2d8 100%)"><span>Rosé Cloud</span></button>
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <label for="customBackgroundPicker" class="text-sm font-semibold text-gray-600">Or choose a custom colour</label>
@@ -212,34 +269,55 @@
                     </section>
 
                     <div class="flex flex-wrap justify-end gap-3 pt-4">
-                        <a href="{% url 'dashboard' %}" class="px-5 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition">Cancel</a>
-                        <button type="submit" class="px-6 py-3 rounded-xl accent-gradient text-white font-semibold shadow-lg shadow-pink-200/70 hover:shadow-pink-300/80 transform hover:-translate-y-0.5 hover:scale-[1.01] transition">
-                            {% if card %}Save changes{% else %}Create e-card{% endif %}
+                        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-800 transition">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                            Cancel
+                        </a>
+                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 shadow-lg hover:shadow-xl transition">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Save card
                         </button>
                     </div>
                 </form>
-            </div>
-            <div class="w-full lg:w-5/12 bg-gradient-to-br from-white/20 via-white/10 to-white/5 relative overflow-hidden">
-                <div class="absolute -top-12 -right-12 w-56 h-56 bg-pink-200/40 rounded-full blur-3xl"></div>
-                <div class="absolute bottom-0 left-0 w-72 h-72 bg-indigo-200/40 rounded-full blur-3xl"></div>
-                <div class="relative h-full flex items-center justify-center px-6 py-12">
-                    <div class="w-full max-w-md preview-wrapper">
+            </section>
+
+            <aside class="preview-panel">
+                <div class="preview-panel__header">
+                    <div>
+                        <p class="text-xs uppercase tracking-[0.35rem] text-white/60">Live preview</p>
+                        <h2 class="text-2xl font-semibold text-white">Your card in motion</h2>
+                    </div>
+                    <div class="preview-status">
+                        <span class="preview-status__dot"></span>
+                        Auto-sync
+                    </div>
+                </div>
+                <div class="preview-stage">
+                    <div class="preview-scroll" id="previewScroll">
                         <div id="previewCard" class="preview-card rounded-3xl shadow-2xl overflow-hidden text-white">
                             <div class="p-8 backdrop-blur-sm bg-white/0" id="previewContent">
-                                <div class="flex flex-col items-center text-center gap-4">
+                                <div class="flex flex-col items-center text-center gap-5">
                                     <div class="relative">
                                         <div id="previewAvatarFallback" class="w-28 h-28 rounded-full bg-white/25 border border-white/70 flex items-center justify-center text-white/80 text-4xl font-semibold tracking-wide">
-                                            <i data-lucide="user" class="w-14 h-14"></i>
+                                            <i data-lucide="user" class="w-10 h-10"></i>
                                         </div>
                                         <img id="previewAvatarImg" src="{% if card and card.avatar %}{{ card.avatar.url }}{% endif %}" alt="Avatar preview" class="hidden w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl">
                                     </div>
-                                    <div class="space-y-1">
+                                    <div>
                                         <h2 id="previewName" class="text-2xl font-bold tracking-tight">Your Name</h2>
                                         <p id="previewJob" class="text-sm uppercase tracking-[0.3em] text-white/80">Your role</p>
                                         <p id="previewCompany" class="text-base text-white/80">Company</p>
                                     </div>
                                 </div>
-
+                                <div id="previewLogoRow" class="preview-brand hidden">
+                                    <div class="preview-brand__badge">
+                                        <div id="previewLogoFallback" class="preview-brand__fallback">
+                                            <i data-lucide="building-2"></i>
+                                        </div>
+                                        <img id="previewLogoImg" src="{% if card and card.logo %}{{ card.logo.url }}{% endif %}" alt="Logo preview" class="preview-brand__image {% if not card or not card.logo %}hidden{% endif %}">
+                                    </div>
+                                    <span id="previewLogoText" class="preview-brand__text">Brand name</span>
+                                </div>
                                 <div class="mt-8 space-y-3" id="previewContacts">
                                     <p id="previewEmailRow" class="preview-contact"><i data-lucide="mail" class="w-5 h-5"></i><span id="previewEmail">hello@example.com</span></p>
                                     <p id="previewPhoneRow" class="preview-contact"><i data-lucide="phone" class="w-5 h-5"></i><span id="previewPhone">+00 000 000</span></p>
@@ -247,9 +325,7 @@
                                     <p id="previewAddressRow" class="preview-contact"><i data-lucide="map-pin" class="w-5 h-5"></i><span id="previewAddress">City, Country</span></p>
                                     <p id="previewBirthdayRow" class="preview-contact"><i data-lucide="cake" class="w-5 h-5"></i><span id="previewBirthday">Birthday</span></p>
                                 </div>
-
                                 <p id="previewNotes" class="mt-6 text-sm italic text-white/90 hidden"></p>
-
                                 <div id="previewSocials" class="mt-8 flex flex-wrap justify-center gap-3">
                                     <span class="preview-social" data-social-preview="facebook" style="--brand-color:#1877F2;">
                                         <i data-lucide="facebook" class="w-5 h-5"></i>
@@ -269,35 +345,238 @@
                                     <span class="preview-social" data-social-preview="linkedin" style="--brand-color:#0A66C2;">
                                         <i data-lucide="linkedin" class="w-5 h-5"></i>
                                     </span>
+                                    <span class="preview-social" data-social-preview="github" style="--brand-color:#181717;">
+                                        <i data-lucide="github" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="tiktok" style="--brand-color:#FF0050;">
+                                        <i data-lucide="music-2" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="snapchat" style="--brand-color:#FFFC00;">
+                                        <i data-lucide="ghost" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="likee" style="--brand-color:#FF6F61;">
+                                        <i data-lucide="heart" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="pinterest" style="--brand-color:#E60023;">
+                                        <i data-lucide="pin" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="telegram" style="--brand-color:#229ED9;">
+                                        <i data-lucide="send" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="threads" style="--brand-color:#111111;">
+                                        <i data-lucide="at-sign" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="behance" style="--brand-color:#1769FF;">
+                                        <i data-lucide="palette" class="w-5 h-5"></i>
+                                    </span>
+                                    <span class="preview-social" data-social-preview="dribbble" style="--brand-color:#EA4C89;">
+                                        <i data-lucide="basketball" class="w-5 h-5"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-6 bg-white/70 border border-white/40 rounded-2xl px-6 py-4 text-gray-600 text-sm shadow-md flex items-center gap-3">
-                            <i data-lucide="info" class="w-5 h-5 text-pink-500"></i>
-                            Changes appear instantly on the preview. Background choice is saved automatically.
+                        <div class="preview-card trail-card text-white/80">
+                            <div class="p-8 space-y-4">
+                                <h3 class="text-lg font-semibold">Scroll for more ✦</h3>
+                                <p class="text-sm leading-relaxed">Populate more fields to watch this preview animate in real time. Social badges pulse when a link is active, and backgrounds morph instantly.</p>
+                                <div class="flex gap-2 flex-wrap">
+                                    <span class="trail-pill">Responsive preview</span>
+                                    <span class="trail-pill">Animated gradients</span>
+                                    <span class="trail-pill">Scroll snap</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                <p class="preview-footer">Changes appear instantly. Backgrounds are saved automatically.</p>
+            </aside>
         </div>
     </div>
 </div>
 
 <style>
+    .editor-canvas {
+        background: radial-gradient(120% 120% at 10% 10%, rgba(236, 72, 153, 0.12), transparent 60%),
+                    radial-gradient(120% 140% at 90% 20%, rgba(56, 189, 248, 0.1), transparent 70%),
+                    #f8fafc;
+    }
+    .editor-glow {
+        position: absolute;
+        border-radius: 9999px;
+        filter: blur(0px);
+        opacity: 0.5;
+        animation: glowFloat 20s ease-in-out infinite;
+    }
+    .editor-glow--one { width: 420px; height: 420px; top: -180px; left: -140px; background: rgba(236, 72, 153, 0.25); }
+    .editor-glow--two { width: 360px; height: 360px; bottom: -160px; right: -160px; background: rgba(59, 130, 246, 0.2); animation-delay: 6s; }
+    .editor-glow--three { width: 520px; height: 520px; top: 45%; left: 40%; background: rgba(125, 211, 252, 0.18); animation-delay: 3s; }
+    @keyframes glowFloat { 0%, 100% { transform: translate3d(0,0,0); opacity: 0.45; } 50% { transform: translate3d(0,-18px,0); opacity: 0.65; } }
+
+    .glass-surface {
+        background: rgba(255, 255, 255, 0.78);
+        border-radius: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 40px 90px -45px rgba(15, 23, 42, 0.35);
+        backdrop-filter: blur(14px);
+        padding: clamp(1.75rem, 3vw, 3rem);
+    }
+    .builder-header {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2.5rem;
+    }
+    @media (min-width: 768px) {
+        .builder-header { flex-direction: row; justify-content: space-between; align-items: flex-start; }
+    }
+    .builder-badge {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.55rem 0.9rem 0.55rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid rgba(236, 72, 153, 0.35);
+        background: rgba(236, 72, 153, 0.12);
+        color: #be123c;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+    }
+    .builder-badge__pulse {
+        position: absolute;
+        inset: -4px;
+        border-radius: inherit;
+        background: radial-gradient(circle at center, rgba(236, 72, 153, 0.2), transparent 65%);
+        opacity: 0;
+        animation: pulseBadge 2.6s ease-in-out infinite;
+    }
+    @keyframes pulseBadge { 0%, 70% { opacity: 0; transform: scale(0.9); } 80% { opacity: 0.6; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.1); } }
+
+    .builder-panel input, .builder-panel textarea, .builder-panel select {
+        width: 100%;
+        border-radius: 1rem;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        background: rgba(255, 255, 255, 0.92);
+        transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+    }
+    .builder-panel input:focus, .builder-panel textarea:focus, .builder-panel select:focus {
+        outline: none;
+        border-color: rgba(99, 102, 241, 0.45);
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .preview-panel {
+        position: relative;
+        border-radius: 32px;
+        padding: clamp(1.8rem, 3vw, 2.6rem);
+        background: linear-gradient(160deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.98));
+        box-shadow: 0 40px 70px -40px rgba(15, 23, 42, 0.6);
+        display: flex;
+        flex-direction: column;
+        gap: 1.6rem;
+        overflow: hidden;
+    }
+    .preview-panel::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(60% 60% at 20% 10%, rgba(236, 72, 153, 0.25), transparent 65%),
+                    radial-gradient(50% 70% at 80% 15%, rgba(56, 189, 248, 0.18), transparent 70%);
+        opacity: 0.6;
+        pointer-events: none;
+    }
+    .preview-panel > * { position: relative; z-index: 1; }
+
+    .preview-panel__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+    }
+    .preview-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.26em;
+        color: rgba(226, 232, 240, 0.75);
+    }
+    .preview-status__dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #22c55e;
+        box-shadow: 0 0 12px #22c55e;
+        animation: pulseStatus 1.8s ease-in-out infinite;
+    }
+    @keyframes pulseStatus { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+
+    .preview-stage {
+        position: relative;
+        border-radius: 28px;
+        background: rgba(15, 23, 42, 0.55);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        padding: clamp(1.2rem, 2vw, 1.8rem);
+    }
+    .preview-scroll {
+        max-height: clamp(420px, 72vh, 760px);
+        overflow-y: auto;
+        scroll-snap-type: y proximity;
+        padding-right: clamp(0.25rem, 0.8vw, 0.75rem);
+    }
+    .preview-scroll::-webkit-scrollbar { width: 6px; }
+    .preview-scroll::-webkit-scrollbar-track { background: transparent; }
+    .preview-scroll::-webkit-scrollbar-thumb { background: rgba(226, 232, 240, 0.25); border-radius: 999px; }
+
     .preview-card {
         background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
         transition: background 0.8s ease, transform 0.4s ease, box-shadow 0.4s ease;
         animation: floaty 10s ease-in-out infinite;
+        scroll-snap-align: center;
+        margin-bottom: 1.5rem;
     }
     .preview-card:hover {
         transform: translateY(-8px) scale(1.01);
         box-shadow: 0 30px 60px -20px rgba(239, 68, 68, 0.35);
     }
+    .trail-card {
+        background: linear-gradient(135deg, rgba(14, 116, 144, 0.55), rgba(30, 64, 175, 0.55));
+        border: 1px solid rgba(148, 197, 255, 0.2);
+        animation: none;
+        margin-bottom: 0;
+    }
+    .trail-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.45rem 0.85rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+    }
+    .preview-footer {
+        margin-top: 0.5rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        color: rgba(226, 232, 240, 0.55);
+        text-align: center;
+    }
+
     @keyframes floaty {
         0% { transform: translateY(0px); }
         50% { transform: translateY(-6px); }
         100% { transform: translateY(0px); }
     }
+
     .bg-option {
         position: relative;
         border-radius: 1rem;
@@ -316,11 +595,7 @@
         box-shadow: 0 10px 25px -15px rgba(15, 23, 42, 0.4);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .bg-option span {
-        position: relative;
-        z-index: 2;
-        padding-bottom: 0.9rem;
-    }
+    .bg-option span { position: relative; z-index: 2; padding-bottom: 0.9rem; }
     .bg-option::before {
         content: '';
         position: absolute;
@@ -344,6 +619,7 @@
         border: 2px solid rgba(255, 255, 255, 0.6);
         z-index: 2;
     }
+
     .preview-contact {
         display: flex;
         align-items: center;
@@ -356,10 +632,30 @@
         font-weight: 500;
         letter-spacing: 0.02em;
     }
-    .preview-contact a {
-        text-decoration: none;
-        color: inherit;
+    .preview-contact a { text-decoration: none; color: inherit; }
+    .preview-brand {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        margin-top: 0.75rem;
     }
+    .preview-brand__badge {
+        width: 48px;
+        height: 48px;
+        border-radius: 9999px;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.22);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        box-shadow: 0 14px 32px -20px rgba(15, 23, 42, 0.6);
+    }
+    .preview-brand__fallback { display: grid; place-items: center; color: rgba(255, 255, 255, 0.85); }
+    .preview-brand__fallback i { width: 22px; height: 22px; }
+    .preview-brand__image { width: 100%; height: 100%; object-fit: cover; }
+    .preview-brand__text { font-size: 0.9rem; font-weight: 600; }
+
     .preview-social {
         width: 44px;
         height: 44px;
@@ -378,8 +674,10 @@
         transform: translateY(-3px) scale(1.05);
         box-shadow: 0 15px 30px -20px rgba(15, 23, 42, 0.45);
     }
+
     @media (max-width: 1023px) {
         .preview-card { animation: none; }
+        .preview-scroll { max-height: none; }
     }
 </style>
 
@@ -388,8 +686,10 @@
         const form = document.getElementById('card-builder-form');
         if (!form) { return; }
 
+        const builderPanel = document.getElementById('builderPanel');
+        const previewScroll = document.getElementById('previewScroll');
         const fallbackBackground = 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)';
-        const fieldIds = ['firstName','lastName','jobTitle','company','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin'];
+        const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','pinterest','telegram','threads','behance','dribbble'];
         const inputs = {};
         fieldIds.forEach(name => {
             const el = document.getElementById(`id_${name}`);
@@ -402,6 +702,10 @@
         const previewName = document.getElementById('previewName');
         const previewJob = document.getElementById('previewJob');
         const previewCompany = document.getElementById('previewCompany');
+        const previewLogoRow = document.getElementById('previewLogoRow');
+        const previewLogoImg = document.getElementById('previewLogoImg');
+        const previewLogoFallback = document.getElementById('previewLogoFallback');
+        const previewLogoText = document.getElementById('previewLogoText');
         const previewEmailRow = document.getElementById('previewEmailRow');
         const previewPhoneRow = document.getElementById('previewPhoneRow');
         const previewWebsiteRow = document.getElementById('previewWebsiteRow');
@@ -418,6 +722,7 @@
         const backgroundField = document.getElementById('id_background_style');
         const backgroundOptions = document.querySelectorAll('[data-bg-option]');
         const customPicker = document.getElementById('customBackgroundPicker');
+        const logoInput = document.getElementById('id_logo');
         const socialElements = document.querySelectorAll('[data-social-preview]');
         const whatsappCountryField = document.getElementById('id_whatsapp_country');
         const whatsappNumberField = document.getElementById('id_whatsapp_number');
@@ -490,406 +795,269 @@
             if (config.buttonCode) {
                 config.buttonCode.textContent = country.dial_code;
             }
-            if (config.button) {
-                config.button.setAttribute('aria-label', `${country.name} ${country.dial_code}`);
-            }
-
-            if (config.type === 'phone' && trigger) {
-                syncPhoneValue();
-            }
-            if (config.type === 'whatsapp' && trigger) {
-                syncWhatsappLink();
+            if (trigger && config.hiddenInput) {
+                config.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
             }
         };
 
-        const renderCountryOptions = (config, term = '', preserveActive = false) => {
-            if (!config?.listEl) { return; }
-            const normalized = term.trim().toLowerCase();
-            const results = !normalized ? config.allCountries : config.allCountries.filter(country => country.search.includes(normalized));
-            config.filteredCountries = results.slice(0, 80);
-            if (!preserveActive) {
-                config.activeIndex = config.filteredCountries.findIndex(country => country.dialDigits === config.hiddenInput.value);
+        const applyBackground = (backgroundValue) => {
+            const value = backgroundValue || fallbackBackground;
+            if (previewCard) {
+                previewCard.style.setProperty('background', value);
             }
-            if (config.activeIndex < 0 || config.activeIndex >= config.filteredCountries.length) {
-                config.activeIndex = config.filteredCountries.length ? 0 : -1;
-            }
-
-            if (!config.filteredCountries.length) {
-                config.listEl.innerHTML = '';
-                if (config.emptyState) {
-                    config.emptyState.classList.remove('hidden');
-                }
-                return;
-            }
-
-            if (config.emptyState) {
-                config.emptyState.classList.add('hidden');
-            }
-            const termDisplay = normalized.startsWith('+') ? normalized : normalized.replace(/^[+]/, '');
-            config.listEl.innerHTML = config.filteredCountries.map((country, index) => {
-                const isActive = index === config.activeIndex;
-                const itemClasses = ['flex items-center gap-3 px-3 py-2 text-sm cursor-pointer transition', 'hover:bg-pink-50'];
-                if (isActive) {
-                    itemClasses.push('bg-pink-50 text-pink-600');
-                }
-                const nameHtml = highlightMatch(country.name, normalized);
-                const dialHtml = highlightMatch(country.dial_code, termDisplay);
-                return `
-                    <li class="${itemClasses.join(' ')}" data-country-item data-index="${index}" data-dial="${country.dialDigits}">
-                        <span class="text-lg select-none">${country.flag}</span>
-                        <div class="flex flex-col leading-tight select-none">
-                            <span class="text-sm font-medium">${nameHtml}</span>
-                            <span class="text-xs text-gray-500">${dialHtml}</span>
-                        </div>
-                    </li>
-                `;
-            }).join('');
-        };
-
-        const openCountryDropdown = (config) => {
-            if (!config?.dropdown) { return; }
-            if (openCountryPicker && openCountryPicker !== config) {
-                closeCountryDropdown(openCountryPicker);
-            }
-            config.dropdown.classList.remove('hidden');
-            config.button?.setAttribute('aria-expanded', 'true');
-            renderCountryOptions(config, '');
-            config.searchInput.value = '';
-            setTimeout(() => config.searchInput.focus(), 0);
-            openCountryPicker = config;
-        };
-
-        const initCountryPicker = (config) => {
-            if (!config?.container || !config.hiddenInput || !countryDataset.length) { return; }
-
-            config.button = config.container.querySelector('[data-country-button]');
-            config.buttonFlag = config.container.querySelector('[data-country-flag]');
-            config.buttonCode = config.container.querySelector('[data-country-code]');
-            config.dropdown = config.container.querySelector('[data-country-dropdown]');
-            config.searchInput = config.container.querySelector('[data-country-search]');
-            config.listEl = config.container.querySelector('[data-country-list]');
-            config.emptyState = config.container.querySelector('[data-country-empty]');
-            config.allCountries = countryDataset;
-            config.filteredCountries = countryDataset;
-            config.activeIndex = -1;
-
-            const initialCode = config.container.dataset.selectedCode || config.hiddenInput.value || config.defaultCode || '880';
-            const initialCountry = countryDataset.find(country => country.dialDigits === initialCode) || countryDataset[0];
-            setCountrySelection(config, initialCountry, false);
-
-            const handleSelection = (index) => {
-                const country = config.filteredCountries[index];
-                if (!country) { return; }
-                setCountrySelection(config, country);
-                closeCountryDropdown(config);
-                config.button?.focus();
-            };
-
-            if (config.button) {
-                config.button.addEventListener('click', () => {
-                    if (config.dropdown.classList.contains('hidden')) {
-                        openCountryDropdown(config);
-                    } else {
-                        closeCountryDropdown(config);
-                    }
-                });
-                config.button.addEventListener('keydown', (event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault();
-                        if (config.dropdown.classList.contains('hidden')) {
-                            openCountryDropdown(config);
-                        } else {
-                            closeCountryDropdown(config);
-                        }
-                    }
-                });
-            }
-
-            if (config.searchInput) {
-                config.searchInput.addEventListener('input', (event) => {
-                    renderCountryOptions(config, event.target.value);
-                });
-                config.searchInput.addEventListener('keydown', (event) => {
-                    if (!config.filteredCountries.length) { return; }
-                    if (event.key === 'ArrowDown') {
-                        event.preventDefault();
-                        config.activeIndex = (config.activeIndex + 1) % config.filteredCountries.length;
-                        renderCountryOptions(config, event.target.value, true);
-                    }
-                    if (event.key === 'ArrowUp') {
-                        event.preventDefault();
-                        config.activeIndex = (config.activeIndex - 1 + config.filteredCountries.length) % config.filteredCountries.length;
-                        renderCountryOptions(config, event.target.value, true);
-                    }
-                    if (event.key === 'Enter') {
-                        event.preventDefault();
-                        handleSelection(config.activeIndex >= 0 ? config.activeIndex : 0);
-                    }
-                    if (event.key === 'Escape') {
-                        event.preventDefault();
-                        closeCountryDropdown(config);
-                        config.button?.focus();
-                    }
-                });
-            }
-
-            if (config.listEl) {
-                config.listEl.addEventListener('mousedown', (event) => {
-                    const item = event.target.closest('[data-country-item]');
-                    if (!item) { return; }
-                    event.preventDefault();
-                    handleSelection(Number(item.dataset.index));
-                });
-                config.listEl.addEventListener('mousemove', (event) => {
-                    const item = event.target.closest('[data-country-item]');
-                    if (!item) { return; }
-                    const index = Number(item.dataset.index);
-                    if (!Number.isNaN(index)) {
-                        config.activeIndex = index;
-                        config.listEl.querySelectorAll('[data-country-item]').forEach((li, idx) => {
-                            li.classList.toggle('bg-pink-50', idx === config.activeIndex);
-                            li.classList.toggle('text-pink-600', idx === config.activeIndex);
-                        });
-                    }
-                });
-            }
-        };
-
-        document.addEventListener('click', (event) => {
-            if (openCountryPicker && !openCountryPicker.container.contains(event.target)) {
-                closeCountryDropdown(openCountryPicker);
-            }
-        });
-
-        fetch(COUNTRY_DATA_URL)
-            .then(response => response.json())
-            .then(data => {
-                countryDataset = data.map(country => ({
-                    ...country,
-                    dialDigits: country.dial_code.replace(/[^0-9]/g, ''),
-                    search: `${country.name.toLowerCase()} ${country.dial_code.replace('+', '')} ${country.code.toLowerCase()}`
-                }));
-                Object.values(countryPickerConfigs).forEach(config => initCountryPicker(config));
-                syncPhoneValue(false);
-                syncWhatsappLink(false);
-                updatePreview();
-            })
-            .catch(() => {
-                syncPhoneValue(false);
-                syncWhatsappLink(false);
-                updatePreview();
-            });
-
-        function extractRgb(value) {
-            if (!value) { return null; }
-            const hexMatch = value.match(/#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})/);
-            if (hexMatch) {
-                let hex = hexMatch[0].replace('#', '');
-                if (hex.length === 3) {
-                    hex = hex.split('').map(ch => ch + ch).join('');
-                }
-                const r = parseInt(hex.slice(0, 2), 16);
-                const g = parseInt(hex.slice(2, 4), 16);
-                const b = parseInt(hex.slice(4, 6), 16);
-                if ([r, g, b].some(isNaN)) { return null; }
-                return [r, g, b];
-            }
-            const rgbMatch = value.match(/rgb\s*\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)/);
-            if (rgbMatch) {
-                return [parseInt(rgbMatch[1], 10), parseInt(rgbMatch[2], 10), parseInt(rgbMatch[3], 10)];
-            }
-            return null;
-        }
-
-        function chooseTextColor(value) {
-            const rgb = extractRgb(value);
-            if (!rgb) { return '#333333'; }
-            const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
-            return luminance < 0.55 ? '#FFFFFF' : '#1f2937';
-        }
-
-        function applyBackground(value) {
-            const backgroundValue = value || fallbackBackground;
-            previewCard.style.background = backgroundValue;
-            const contrast = chooseTextColor(backgroundValue);
-            previewCard.style.color = contrast;
-            previewCard.querySelectorAll('.preview-contact, .preview-contact a, #previewName, #previewJob, #previewCompany, #previewNotes').forEach(el => {
-                el.style.color = contrast;
-            });
-            previewCard.querySelectorAll('.preview-contact').forEach(el => {
-                el.style.borderColor = contrast === '#FFFFFF' ? 'rgba(255,255,255,0.3)' : 'rgba(17,24,39,0.15)';
-                el.style.backgroundColor = contrast === '#FFFFFF' ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.7)';
-            });
-            previewCard.querySelectorAll('.preview-social').forEach(el => {
-                const isLight = contrast === '#1f2937';
-                el.style.backgroundColor = isLight ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.18)';
-                el.style.borderColor = isLight ? 'rgba(17,24,39,0.1)' : 'rgba(255,255,255,0.35)';
-            });
             if (backgroundField) {
-                backgroundField.value = backgroundValue;
+                backgroundField.value = value;
             }
-        }
+        };
 
-        function setActiveBackground(option) {
+        const setActiveBackground = (option) => {
             backgroundOptions.forEach(btn => btn.classList.remove('active'));
             if (option) {
                 option.classList.add('active');
-                const gradient = option.getAttribute('data-bg-option');
-                option.style.setProperty('--gradient', gradient);
             }
-        }
+        };
 
-        function formatDate(value) {
-            if (!value) { return ''; }
-            const date = new Date(value);
-            if (Number.isNaN(date.getTime())) {
-                return value;
+        const updatePreview = () => {
+            const values = {};
+            Object.entries(inputs).forEach(([name, el]) => {
+                if (!el) { return; }
+                if (el.type === 'file') { return; }
+                const value = el.value?.trim() || '';
+                values[name] = value;
+            });
+
+            const fullName = [values.firstName, values.lastName].filter(Boolean).join(' ').trim() || 'Your Name';
+            previewName.textContent = fullName;
+            previewJob.textContent = values.jobTitle || 'Your role';
+            previewCompany.textContent = values.company || 'Company';
+
+            const logoName = values.logo_name;
+            if (logoName || (previewLogoImg && !previewLogoImg.classList.contains('hidden'))) {
+                previewLogoRow.classList.remove('hidden');
+                previewLogoText.textContent = logoName || 'Brand name';
+                if (!logoName) {
+                    previewLogoText.classList.add('opacity-70');
+                } else {
+                    previewLogoText.classList.remove('opacity-70');
+                }
+                if (previewLogoFallback) {
+                    previewLogoFallback.classList.toggle('hidden', Boolean(previewLogoImg && !previewLogoImg.classList.contains('hidden')));
+                }
+            } else {
+                previewLogoRow.classList.add('hidden');
             }
-            return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
-        }
 
-        function cleanUrl(url) {
-            if (!url) { return ''; }
+            const toggleRow = (rowElement, hasValue) => {
+                if (!rowElement) { return; }
+                rowElement.classList.toggle('hidden', !hasValue);
+            };
+
+            toggleRow(previewEmailRow, Boolean(values.email));
+            toggleRow(previewPhoneRow, Boolean(values.phone));
+            toggleRow(previewWebsiteRow, Boolean(values.website));
+            toggleRow(previewAddressRow, Boolean(values.address));
+            toggleRow(previewBirthdayRow, Boolean(values.birthday));
+
+            previewEmail.textContent = values.email || 'hello@example.com';
+            previewPhone.textContent = values.phone || '+00 000 000';
+            previewWebsite.textContent = values.website || 'example.com';
+            if (values.website) {
+                previewWebsite.href = values.website.startsWith('http') ? values.website : `https://${values.website}`;
+            } else {
+                previewWebsite.removeAttribute('href');
+            }
+            previewAddress.textContent = values.address || 'City, Country';
+            previewBirthday.textContent = values.birthday || 'Birthday';
+
+            if (values.notes) {
+                previewNotes.textContent = values.notes;
+                previewNotes.classList.remove('hidden');
+            } else {
+                previewNotes.textContent = '';
+                previewNotes.classList.add('hidden');
+            }
+
+            socialElements.forEach(elem => {
+                const network = elem.dataset.socialPreview;
+                const value = values[network] || '';
+                elem.classList.toggle('hidden', !value);
+            });
+        };
+
+        const syncWhatsappLink = (updateField = true) => {
+            if (!whatsappCountryField || !whatsappNumberField || !whatsappHiddenField) { return; }
+            const country = whatsappCountryField.value.trim();
+            const number = whatsappNumberField.value.replace(/\D/g, '');
+            if (country && number) {
+                const full = `${country}${number}`;
+                if (updateField) {
+                    whatsappHiddenField.value = `https://wa.me/${full}`;
+                    whatsappHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
+                } else {
+                    whatsappHiddenField.value = `https://wa.me/${full}`;
+                }
+            } else if (updateField) {
+                whatsappHiddenField.value = whatsappHiddenField.dataset.initialValue || '';
+                whatsappHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+
+        const syncPhoneValue = (updateField = true) => {
+            if (!phoneCountryField || !phoneNumberField || !phoneHiddenField) { return; }
+            const country = phoneCountryField.value.trim();
+            const number = phoneNumberField.value.replace(/\D/g, '');
+            if (country && number) {
+                const full = `+${country} ${number}`;
+                if (updateField) {
+                    phoneHiddenField.value = full;
+                    phoneHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
+                } else {
+                    phoneHiddenField.value = full;
+                }
+            } else if (updateField) {
+                phoneHiddenField.value = phoneHiddenField.dataset.initialValue || '';
+                phoneHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+        };
+
+        const loadCountryData = async () => {
+            if (countryDataset.length) { return countryDataset; }
             try {
-                const parsed = new URL(url, window.location.origin);
-                return parsed.host + parsed.pathname.replace(/\/$/, '');
-            } catch (e) {
-                return url.replace(/^https?:\/\//, '');
+                const response = await fetch(COUNTRY_DATA_URL, { cache: 'force-cache' });
+                const data = await response.json();
+                countryDataset = data;
+            } catch (err) {
+                console.warn('Unable to load country data', err);
+                countryDataset = [];
             }
-        }
+            return countryDataset;
+        };
 
-        function updateSocials() {
-            socialElements.forEach(el => {
-                const network = el.getAttribute('data-social-preview');
-                const field = inputs[network];
-                const value = field ? field.value.trim() : '';
-                el.classList.toggle('hidden', !value);
-                if (value) {
-                    el.setAttribute('title', value);
+        const initCountryPicker = async (config) => {
+            if (!config?.container || !config.hiddenInput) { return; }
+            const allCountries = await loadCountryData();
+            if (!allCountries.length) { return; }
+            config.allCountries = allCountries;
+            config.filteredCountries = allCountries;
+            config.dropdown = config.container.querySelector('[data-country-dropdown]');
+            config.button = config.container.querySelector('[data-country-button]');
+            config.searchInput = config.container.querySelector('[data-country-search]');
+            config.list = config.container.querySelector('[data-country-list]');
+            config.emptyState = config.container.querySelector('[data-country-empty]');
+            config.buttonFlag = config.button?.querySelector('[data-country-flag]');
+            config.buttonCode = config.button?.querySelector('[data-country-code]');
+            config.activeIndex = -1;
+
+            const renderCountries = () => {
+                if (!config.list) { return; }
+                config.list.innerHTML = '';
+                if (!config.filteredCountries.length) {
+                    config.emptyState?.classList.remove('hidden');
+                    return;
+                }
+                config.emptyState?.classList.add('hidden');
+                config.filteredCountries.forEach((country, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <button type="button" class="flex items-center gap-3 w-full px-3 py-2 text-left text-sm hover:bg-pink-50">
+                            <span class="text-lg">${country.flag}</span>
+                            <span class="flex-1">${highlightMatch(country.name, config.searchInput.value)}</span>
+                            <span class="text-xs text-gray-400">${country.dial_code}</span>
+                        </button>
+                    `;
+                    li.querySelector('button').addEventListener('click', () => {
+                        setCountrySelection(config, country);
+                        closeCountryDropdown(config);
+                    });
+                    config.list.appendChild(li);
+                    if (config.activeIndex === index) {
+                        li.querySelector('button').classList.add('bg-pink-100');
+                    }
+                });
+            };
+
+            const openDropdown = () => {
+                if (!config.dropdown) { return; }
+                if (openCountryPicker && openCountryPicker !== config) {
+                    closeCountryDropdown(openCountryPicker);
+                }
+                config.dropdown.classList.remove('hidden');
+                config.button?.setAttribute('aria-expanded', 'true');
+                config.searchInput?.focus({ preventScroll: true });
+                openCountryPicker = config;
+            };
+
+            config.button?.addEventListener('click', () => {
+                if (config.dropdown?.classList.contains('hidden')) {
+                    openDropdown();
+                } else {
+                    closeCountryDropdown(config);
                 }
             });
-        }
 
-        function syncWhatsappLink(triggerPreview = true) {
-            if (!whatsappHiddenField || !inputs.whatsapp) { return; }
-            const countryDigits = whatsappCountryField && whatsappCountryField.value ? whatsappCountryField.value.replace(/\D/g, '') : '';
-            let numberDigits = '';
-            if (whatsappNumberField) {
-                const sanitized = whatsappNumberField.value.replace(/\D/g, '');
-                if (whatsappNumberField.value !== sanitized) {
-                    whatsappNumberField.value = sanitized;
+            config.searchInput?.addEventListener('input', () => {
+                const term = config.searchInput.value.trim().toLowerCase();
+                config.filteredCountries = config.allCountries.filter(country =>
+                    country.name.toLowerCase().includes(term) || country.dialDigits.includes(term)
+                );
+                config.activeIndex = config.filteredCountries.length ? 0 : -1;
+                renderCountries();
+            });
+
+            if (config.dropdown) {
+                config.dropdown.addEventListener('keydown', event => {
+                    if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) { return; }
+                    if (event.key === 'Escape') {
+                        closeCountryDropdown(config);
+                        config.button?.focus();
+                        return;
+                    }
+                    if (event.key === 'Enter' && config.activeIndex >= 0) {
+                        const country = config.filteredCountries[config.activeIndex];
+                        setCountrySelection(config, country);
+                        closeCountryDropdown(config);
+                        config.button?.focus();
+                        event.preventDefault();
+                        return;
+                    }
+                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                        event.preventDefault();
+                        if (!config.filteredCountries.length) { return; }
+                        if (event.key === 'ArrowDown') {
+                            config.activeIndex = (config.activeIndex + 1) % config.filteredCountries.length;
+                        } else {
+                            config.activeIndex = (config.activeIndex - 1 + config.filteredCountries.length) % config.filteredCountries.length;
+                        }
+                        renderCountries();
+                        const buttons = config.list?.querySelectorAll('button');
+                        const active = buttons?.[config.activeIndex];
+                        active?.scrollIntoView({ block: 'nearest' });
+                    }
+                });
+            }
+
+            document.addEventListener('click', event => {
+                if (!config.dropdown || config.dropdown.classList.contains('hidden')) { return; }
+                if (!config.container.contains(event.target)) {
+                    closeCountryDropdown(config);
                 }
-                numberDigits = sanitized;
-                if (countryDigits && numberDigits.startsWith(countryDigits)) {
-                    numberDigits = numberDigits.slice(countryDigits.length);
-                    whatsappNumberField.value = numberDigits;
+            });
+
+            config.allCountries.forEach(country => {
+                if (country.dialDigits === config.hiddenInput.value) {
+                    setCountrySelection(config, country, false);
                 }
+            });
+
+            if (!config.selectedCountry) {
+                const fallback = config.allCountries.find(country => country.dialDigits === config.defaultCode) || config.allCountries[0];
+                setCountrySelection(config, fallback, false);
             }
 
-            let linkValue = '';
-            if (countryDigits && numberDigits) {
-                linkValue = `https://wa.me/${countryDigits}${numberDigits}`;
-            } else if (whatsappHiddenField.dataset.initialValue && !numberDigits && !countryDigits) {
-                linkValue = whatsappHiddenField.dataset.initialValue;
-            }
+            renderCountries();
+        };
 
-            whatsappHiddenField.value = linkValue;
-            inputs.whatsapp.value = linkValue;
-
-            if (triggerPreview) {
-                updateSocials();
-            }
-        }
-
-        function syncPhoneValue(triggerPreview = true) {
-            if (!phoneHiddenField || !inputs.phone) { return; }
-            const countryDigits = phoneCountryField && phoneCountryField.value ? phoneCountryField.value.replace(/\D/g, '') : '';
-            let numberDigits = '';
-            if (phoneNumberField) {
-                const sanitized = phoneNumberField.value.replace(/\D/g, '');
-                if (phoneNumberField.value !== sanitized) {
-                    phoneNumberField.value = sanitized;
-                }
-                numberDigits = sanitized;
-                if (countryDigits && numberDigits.startsWith(countryDigits)) {
-                    numberDigits = numberDigits.slice(countryDigits.length);
-                    phoneNumberField.value = numberDigits;
-                }
-            }
-
-            let stored = '';
-            if (countryDigits && numberDigits) {
-                stored = `${countryDigits}${numberDigits}`;
-            } else if (phoneHiddenField.dataset.initialValue && !countryDigits && !numberDigits) {
-                stored = phoneHiddenField.dataset.initialValue;
-            } else {
-                stored = numberDigits;
-            }
-
-            phoneHiddenField.value = stored;
-            inputs.phone.value = stored;
-
-            if (triggerPreview) {
-                updatePreview();
-            }
-        }
-
-        function formatPhoneDisplay(raw) {
-            const digits = raw ? raw.replace(/\D/g, '') : '';
-            if (!digits) { return ''; }
-            const countryDigits = phoneCountryField && phoneCountryField.value ? phoneCountryField.value.replace(/\D/g, '') : '';
-            if (countryDigits && digits.startsWith(countryDigits)) {
-                const remainder = digits.slice(countryDigits.length);
-                return remainder ? `+${countryDigits} ${remainder}` : `+${countryDigits}`;
-            }
-            return `+${digits}`;
-        }
-
-        function updatePreview() {
-            const name = [inputs.firstName?.value || '', inputs.lastName?.value || ''].join(' ').trim();
-            previewName.textContent = name || 'Your Name';
-
-            const job = inputs.jobTitle?.value.trim();
-            previewJob.textContent = job || 'Your role';
-            previewJob.style.opacity = job ? '1' : '0.55';
-
-            const company = inputs.company?.value.trim();
-            previewCompany.textContent = company || 'Company';
-            previewCompany.style.opacity = company ? '1' : '0.6';
-
-            const email = inputs.email?.value.trim();
-            previewEmailRow.classList.toggle('hidden', !email);
-            previewEmail.textContent = email || '';
-
-            const phoneValue = inputs.phone?.value.trim();
-            const phoneDisplay = formatPhoneDisplay(phoneValue);
-            previewPhoneRow.classList.toggle('hidden', !phoneDisplay);
-            previewPhone.textContent = phoneDisplay || '';
-
-            const website = inputs.website?.value.trim();
-            previewWebsiteRow.classList.toggle('hidden', !website);
-            if (website) {
-                previewWebsite.textContent = cleanUrl(website);
-                previewWebsite.href = website;
-            } else {
-                previewWebsite.href = '#';
-            }
-
-            const address = inputs.address?.value.trim();
-            previewAddressRow.classList.toggle('hidden', !address);
-            previewAddress.textContent = address || '';
-
-            const birthday = inputs.birthday?.value.trim();
-            const formattedBirthday = formatDate(birthday);
-            previewBirthdayRow.classList.toggle('hidden', !formattedBirthday);
-            previewBirthday.textContent = formattedBirthday;
-
-            const notes = inputs.notes?.value.trim();
-            previewNotes.classList.toggle('hidden', !notes);
-            previewNotes.textContent = notes || '';
-
-            updateSocials();
-        }
+        Object.values(countryPickerConfigs).forEach(config => initCountryPicker(config));
 
         backgroundOptions.forEach(option => {
             const gradient = option.getAttribute('data-bg-option');
@@ -963,6 +1131,42 @@
             phoneNumberField.addEventListener('blur', () => syncPhoneValue());
         }
 
+        let initialLogoSrc = previewLogoImg ? (previewLogoImg.getAttribute('src') || '') : '';
+        if (logoInput && previewLogoImg && previewLogoFallback) {
+            logoInput.addEventListener('change', event => {
+                const [file] = event.target.files || [];
+                if (!file) {
+                    if (initialLogoSrc) {
+                        previewLogoImg.src = initialLogoSrc;
+                        previewLogoImg.classList.remove('hidden');
+                        previewLogoFallback.classList.add('hidden');
+                    } else {
+                        previewLogoImg.src = '';
+                        previewLogoImg.classList.add('hidden');
+                        previewLogoFallback.classList.remove('hidden');
+                    }
+                    updatePreview();
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    previewLogoImg.src = e.target.result;
+                    previewLogoImg.classList.remove('hidden');
+                    previewLogoFallback.classList.add('hidden');
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+        if (previewLogoImg && previewLogoImg.getAttribute('src') && !previewLogoImg.classList.contains('hidden')) {
+            if (previewLogoFallback) {
+                previewLogoFallback.classList.add('hidden');
+            }
+            if (previewLogoRow) {
+                previewLogoRow.classList.remove('hidden');
+            }
+        }
+
         const avatarInput = document.getElementById('id_avatar');
         if (avatarInput) {
             avatarInput.addEventListener('change', event => {
@@ -988,9 +1192,40 @@
             previewAvatarFallback.classList.add('hidden');
         }
 
+        const syncPreviewScrollWithPage = () => {
+            if (!builderPanel || !previewScroll) { return; }
+            if (window.innerWidth < 1024) {
+                previewScroll.scrollTop = 0;
+                return;
+            }
+
+            const docScrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+            const progress = Math.min(Math.max(window.scrollY / docScrollable, 0), 1);
+            const previewRange = Math.max(previewScroll.scrollHeight - previewScroll.clientHeight, 0);
+            previewScroll.scrollTop = previewRange * progress;
+        };
+
+        let isTicking = false;
+        const handleScroll = () => {
+            if (isTicking) { return; }
+            isTicking = true;
+            requestAnimationFrame(() => {
+                syncPreviewScrollWithPage();
+                isTicking = false;
+            });
+        };
+
+        const handleResize = () => {
+            syncPreviewScrollWithPage();
+        };
+
         syncPhoneValue(false);
         syncWhatsappLink(false);
         updatePreview();
+        syncPreviewScrollWithPage();
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleResize);
     })();
 </script>
 {% endblock %}

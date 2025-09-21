@@ -1,0 +1,303 @@
+{% extends 'cards/base.html' %}
+{% load static %}
+
+{% block title %}V-Card Studio Documentation{% endblock %}
+
+{% block content %}
+<div class="doc-root min-h-screen px-4 py-16">
+    <div class="doc-nebula doc-nebula--one"></div>
+    <div class="doc-nebula doc-nebula--two"></div>
+    <div class="max-w-7xl mx-auto space-y-16">
+        <header class="doc-hero">
+            <div>
+                <span class="doc-badge">
+                    <span class="doc-badge__pulse"></span>
+                    <i data-lucide="book-open" class="w-4 h-4"></i>
+                    Developer notes
+                </span>
+                <h1>Welcome to the <span class="doc-gradient">V-Card Studio</span> knowledge base</h1>
+                <p>Everything you need to tailor, deploy, and extend the V-Card experience—complete with live components, themed palettes, and OTP-secured flows.</p>
+            </div>
+            <div class="doc-cta">
+                <a class="doc-btn primary" href="{% url 'index' %}">
+                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+                    Back to experience
+                </a>
+                <button class="doc-btn ghost" type="button" data-doc-scroll>
+                    <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    Jump to sections
+                </button>
+            </div>
+        </header>
+
+        <section class="doc-grid" id="doc-sections">
+            <article class="doc-card animate-card">
+                <header>
+                    <span class="doc-icon" style="--accent:#ec4899"><i data-lucide="layout-dashboard"></i></span>
+                    <h2>Interface overview</h2>
+                </header>
+                <ul>
+                    <li><i data-lucide="sparkle"></i>Glass UI with gradient orbs and magnetic buttons</li>
+                    <li><i data-lucide="arrow-left-right"></i>Scroll-sync preview for create/edit cards</li>
+                    <li><i data-lucide="sparkles"></i>Deep gradient library including Celestial Noir & Crimson Nebula</li>
+                </ul>
+            </article>
+            <article class="doc-card animate-card" style="--delay:0.1s">
+                <header>
+                    <span class="doc-icon" style="--accent:#6366f1"><i data-lucide="shield-check"></i></span>
+                    <h2>Security layers</h2>
+                </header>
+                <ul>
+                    <li><i data-lucide="lock"></i>OTP-based password reset with hashed tokens + rate limiting</li>
+                    <li><i data-lucide="timer"></i>5-minute OTP expiry and attempt tracking</li>
+                    <li><i data-lucide="mail"></i>System mailer anchored to <code>dss@dupno.com</code></li>
+                </ul>
+            </article>
+            <article class="doc-card animate-card" style="--delay:0.2s">
+                <header>
+                    <span class="doc-icon" style="--accent:#22c55e"><i data-lucide="wand"></i></span>
+                    <h2>Design system</h2>
+                </header>
+                <ul>
+                    <li><i data-lucide="palette"></i>Tailwind + custom CSS blend with hue animations</li>
+                    <li><i data-lucide="qr-code"></i>Live QR generation upon card save</li>
+                    <li><i data-lucide="layers"></i>Reusable preview + builder components</li>
+                </ul>
+            </article>
+            <article class="doc-card animate-card" style="--delay:0.3s">
+        </section>
+
+        <section class="doc-showcase animate-card">
+            <div class="doc-showcase__orbit"></div>
+            <div class="doc-showcase__content">
+                <h3>Live component playground</h3>
+                <p>Preview how hero gradients, parallax cards, and mobile drawers animate together. Use the toggle to experience both light and dark schemes.</p>
+                <div class="doc-showcase__controls">
+                    <button type="button" class="doc-toggle" data-theme-toggle>
+                        <span class="doc-toggle__thumb"></span>
+                        <span class="doc-toggle__label">Switch theme</span>
+                    </button>
+                    <a class="doc-btn ghost" href="https://tailwindcss.com/docs" target="_blank" rel="noopener">
+                        Tailwind docs
+                    </a>
+                </div>
+            </div>
+            <div class="doc-showcase__preview" id="docPreview">
+                <div class="doc-preview-card">
+                    <header>
+                        <div>
+                            <small>Floating preview</small>
+                            <h4>Card animations</h4>
+                        </div>
+                        <i data-lucide="activity"></i>
+                    </header>
+                    <ul>
+                        <li><span></span>Hue-rotating hero gradient</li>
+                        <li><span></span>Scroll-synced builder preview</li>
+                        <li><span></span>Animated navbar drawer</li>
+                    </ul>
+                </div>
+                <div class="doc-preview-card secondary">
+                    <header>
+                        <span class="pulse"></span>
+                        <p>Design tips</p>
+                    </header>
+                    <p>Use deep gradients for dark experiences and keep CTA contrast above WCAG AA.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-faq animate-card">
+            <h3>Quick reference</h3>
+            <div class="doc-faq__grid">
+                <article>
+                    <h4>Install & run</h4>
+                    <pre><code>pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver</code></pre>
+                </article>
+                <article>
+                    <h4>Run the suite</h4>
+                    <pre><code>python manage.py test cards.tests cards.test_dashboards</code></pre>
+                </article>
+                <article>
+                    <h4>Tailwind resources</h4>
+                    <p>Tweak the gradients in <code>cards/templates/cards/index.html</code> or extend the palette via CSS utilities.</p>
+                </article>
+            </div>
+        </section>
+    </div>
+</div>
+
+<style>
+    .doc-root {
+        position: relative;
+        background: radial-gradient(130% 120% at 10% 20%, rgba(236,72,153,0.12), transparent 70%),
+                    radial-gradient(120% 130% at 90% 10%, rgba(56,189,248,0.12), transparent 65%),
+                    #f8fafc;
+        overflow: hidden;
+    }
+    .doc-nebula {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(0);
+        opacity: 0.45;
+        animation: docFloat 20s ease-in-out infinite;
+    }
+    .doc-nebula--one { top: -220px; left: -160px; width: 460px; height: 460px; background: radial-gradient(circle, rgba(236,72,153,0.35), transparent 65%); }
+    .doc-nebula--two { bottom: -180px; right: -120px; width: 420px; height: 420px; background: radial-gradient(circle, rgba(59,130,246,0.3), transparent 70%); animation-delay: 5s; }
+    @keyframes docFloat { 0%,100% { transform: translate3d(0,0,0); opacity: 0.45; } 50% { transform: translate3d(0,-28px,0); opacity: 0.7; } }
+
+    .doc-hero { display: grid; gap: 2rem; text-align: left; }
+    .doc-hero h1 { font-size: clamp(3rem, 5vw, 4.2rem); font-weight: 800; max-width: 18ch; line-height: 1.1; color: #0f172a; }
+    .doc-hero p { max-width: 48ch; font-size: clamp(1.1rem, 2.4vw, 1.25rem); color: #475569; }
+    .doc-badge {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.75rem 1.2rem;
+        border-radius: 999px;
+        background: rgba(255,255,255,0.8);
+        border: 1px solid rgba(236,72,153,0.25);
+        letter-spacing: 0.3em;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        font-weight: 600;
+    }
+    .doc-badge__pulse {
+        position: absolute;
+        inset: -6px;
+        border-radius: inherit;
+        background: radial-gradient(circle, rgba(236,72,153,0.25), transparent 70%);
+        opacity: 0;
+        animation: docPulse 2.3s ease-in-out infinite;
+    }
+    @keyframes docPulse { 0%,70% { opacity: 0; transform: scale(0.95); } 80% { opacity: 0.65; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.1); } }
+    .doc-gradient { background: linear-gradient(135deg, #f97316, #ec4899, #6366f1); -webkit-background-clip: text; color: transparent; }
+    .doc-cta { display: flex; flex-wrap: wrap; gap: 1rem; }
+
+    .doc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.5rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .doc-btn.primary { color: white; background: linear-gradient(135deg, #ec4899, #6366f1); box-shadow: 0 25px 60px -35px rgba(79,70,229,0.7); }
+    .doc-btn.primary:hover { transform: translateY(-3px); }
+    .doc-btn.ghost { border: 1px solid rgba(15,23,42,0.12); background: rgba(255,255,255,0.8); color: #0f172a; }
+    .doc-btn.ghost:hover { transform: translateY(-2px); }
+
+    .doc-grid { display: grid; gap: 1.8rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .doc-card {
+        position: relative;
+        padding: 2rem 1.9rem;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.78);
+        border: 1px solid rgba(148,163,184,0.2);
+        box-shadow: 0 30px 60px -40px rgba(15,23,42,0.25);
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+    .doc-card:hover { transform: translateY(-8px); box-shadow: 0 45px 75px -36px rgba(15,23,42,0.32); }
+    .doc-card header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+    .doc-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 16px; background: color-mix(in srgb, var(--accent) 20%, white); color: color-mix(in srgb, var(--accent) 80%, black); }
+    .doc-card ul { display: grid; gap: 0.6rem; color: #475569; font-size: 0.92rem; }
+    .doc-card li { display: inline-flex; align-items: center; gap: 0.55rem; }
+
+    .doc-showcase {
+        position: relative;
+        display: grid;
+        gap: clamp(2rem, 6vw, 3rem);
+        grid-template-columns: minmax(0, 1fr);
+        padding: clamp(2.5rem, 5vw, 3rem);
+        border-radius: 28px;
+        background: linear-gradient(135deg, rgba(30,41,59,0.92), rgba(15,23,42,0.95));
+        color: white;
+        overflow: hidden;
+    }
+    .doc-showcase__orbit {
+        position: absolute;
+        inset: -20%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(236,72,153,0.25), transparent 70%);
+        filter: blur(50px);
+        opacity: 0.5;
+        animation: orbitGlow 14s linear infinite;
+        pointer-events: none;
+    }
+    @keyframes orbitGlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .doc-showcase__content { display: grid; gap: 1.4rem; position: relative; z-index: 1; }
+    .doc-showcase__controls { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .doc-toggle { position: relative; width: 68px; height: 36px; border-radius: 999px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.25); display: inline-flex; align-items: center; padding: 0 0.4rem; gap: 0.6rem; cursor: pointer; }
+    .doc-toggle__thumb { width: 26px; height: 26px; border-radius: 50%; background: white; transition: transform 0.25s ease; }
+    .doc-toggle[data-theme="dark"] .doc-toggle__thumb { transform: translateX(30px); }
+    .doc-toggle__label { font-weight: 600; font-size: 0.85rem; }
+
+    .doc-showcase__preview { position: relative; display: grid; gap: 1rem; z-index: 1; }
+    .doc-preview-card { background: rgba(255,255,255,0.85); color: #0f172a; border-radius: 20px; padding: 1.5rem; border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 25px 55px -35px rgba(15,23,42,0.35); }
+    .doc-preview-card header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
+    .doc-preview-card ul { margin-top: 1rem; display: grid; gap: 0.5rem; }
+    .doc-preview-card ul span { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: linear-gradient(135deg, #ec4899, #6366f1); margin-right: 0.4rem; }
+    .doc-preview-card.secondary { background: rgba(15,23,42,0.65); color: white; border: 1px solid rgba(148,163,184,0.25); backdrop-filter: blur(6px); }
+    .doc-preview-card.secondary .pulse { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 12px #22c55e; animation: pulseStatus 1.8s ease infinite; }
+    .doc-showcase__preview.is-dark .doc-preview-card { background: rgba(15,23,42,0.9); color: #e2e8f0; border-color: rgba(148,163,184,0.3); }
+    .doc-showcase__preview.is-dark .doc-preview-card header i { color: #22d3ee; }
+    .doc-showcase__preview.is-dark .doc-preview-card.secondary { background: rgba(15,23,42,0.7); color: #f8fafc; }
+
+    .doc-faq__grid { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .doc-faq__grid article { padding: 1.6rem; border-radius: 20px; background: rgba(255,255,255,0.82); border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 20px 45px -32px rgba(15,23,42,0.28); }
+    .doc-faq__grid pre { margin-top: 0.75rem; background: rgba(15,23,42,0.9); color: #e2e8f0; border-radius: 16px; padding: 0.9rem 1rem; font-size: 0.85rem; overflow-x: auto; }
+    .doc-md { padding: clamp(2rem, 5vw, 3rem); border-radius: 28px; background: rgba(255,255,255,0.82); border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 25px 55px -35px rgba(15,23,42,0.3); display: grid; gap: 1.2rem; }
+    .doc-md__content { line-height: 1.7; color: #475569; overflow-x: auto; }
+    .doc-md__content h1, .doc-md__content h2, .doc-md__content h3 { margin-top: 1.5rem; font-family: "Poppins", sans-serif; color: #0f172a; }
+    .doc-md__content pre { background: rgba(15,23,42,0.92); color: #e2e8f0; border-radius: 16px; padding: 1rem 1.2rem; }
+
+    .animate-card { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .animate-card.is-visible { opacity: 1; transform: translateY(0); }
+    .animate-card { transition-delay: var(--delay, 0s); }
+
+    @media (min-width: 1024px) {
+        .doc-showcase { grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); align-items: center; }
+    }
+
+    @media (max-width: 768px) {
+        .doc-hero { text-align: center; }
+        .doc-hero p { margin: 0 auto; }
+        .doc-cta { justify-content: center; }
+        .doc-showcase__controls { justify-content: center; }
+    }
+</style>
+
+<script>
+    (function() {
+        lucide.createIcons();
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.15 });
+        document.querySelectorAll('.animate-card').forEach(el => observer.observe(el));
+
+        const scrollTrigger = document.querySelector('[data-doc-scroll]');
+        const sections = document.getElementById('doc-sections');
+        scrollTrigger?.addEventListener('click', () => {
+            sections?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+
+        const themeToggle = document.querySelector('[data-theme-toggle]');
+        const preview = document.getElementById('docPreview');
+        let theme = 'light';
+        themeToggle?.addEventListener('click', () => {
+            theme = theme === 'light' ? 'dark' : 'light';
+            themeToggle.dataset.theme = theme;
+            preview?.classList.toggle('is-dark', theme === 'dark');
+        });
+    })();
+</script>
+{% endblock %}

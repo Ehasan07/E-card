@@ -1,6 +1,8 @@
+from django import forms
 from django.test import TestCase, Client
 from django.contrib.auth.models import User
 from django.urls import reverse
+from .forms import CardForm
 from .models import Card, Profile
 from urllib.parse import urlparse
 
@@ -49,3 +51,33 @@ class DashboardTests(TestCase):
         self.assertContains(response, '2') # 2 users created
         self.assertContains(response, 'Total Cards')
         self.assertContains(response, '1') # 1 card created
+
+    def test_admin_can_edit_any_card(self):
+        """Superuser should be able to edit cards from the admin edit endpoint."""
+        self.client.login(username='super', password='password')
+        url = reverse('admin_edit_card', kwargs={'slug': self.card.slug})
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+        form = CardForm(instance=self.card, initial=self.card.card_data)
+        post_data = {}
+        for field_name, field in form.fields.items():
+            widget = field.widget
+            if isinstance(widget, forms.FileInput):
+                post_data[field_name] = ''
+                continue
+            value = form.initial.get(field_name, '')
+            if value is None:
+                value = ''
+            post_data[field_name] = value
+
+        post_data['firstName'] = 'Admin'
+        post_data['lastName'] = 'Updated'
+
+        response = self.client.post(url, post_data, follow=True)
+        self.assertRedirects(response, reverse('admin_dashboard'))
+
+        self.card.refresh_from_db()
+        self.assertEqual(self.card.card_data.get('firstName'), 'Admin')
+        self.assertEqual(self.card.card_data.get('lastName'), 'Updated')

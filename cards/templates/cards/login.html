@@ -4,10 +4,10 @@
 
 {% block content %}
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="relative w-full max-w-4xl">
+    <div class="relative w-full max-w-4xl login-animate">
         <div class="absolute inset-0 -z-10">
-            <div class="absolute -top-20 -left-16 w-72 h-72 rounded-full bg-indigo-300/30 blur-3xl"></div>
-            <div class="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-pink-200/30 blur-3xl"></div>
+            <div class="floating-orb orb-delay-0 absolute -top-20 -left-16 w-72 h-72 rounded-full bg-indigo-300/30 blur-3xl"></div>
+            <div class="floating-orb orb-delay-1 absolute bottom-0 right-0 w-80 h-80 rounded-full bg-pink-200/30 blur-3xl"></div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 bg-white/75 border border-white/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl">
@@ -23,7 +23,7 @@
                 <div class="space-y-4">
                     <div class="login-feature">
                         <i data-lucide="shield-check" class="w-5 h-5"></i>
-                        Protected by OTP recovery
+                        Easy Account Recovery
                     </div>
                     <div class="login-feature">
                         <i data-lucide="sparkle" class="w-5 h-5"></i>
@@ -67,7 +67,17 @@
                                 {% endif %}
                                 {{ field.label }}
                             </span>
-                            {{ field }}
+                            {% if field.field.widget.input_type == 'password' %}
+                                <div class="password-wrapper">
+                                    {{ field }}
+                                    <button type="button" class="password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
+                                        <span class="icon-hidden">🔒</span>
+                                        <span class="icon-visible">👁</span>
+                                    </button>
+                                </div>
+                            {% else %}
+                                {{ field }}
+                            {% endif %}
                             {% if field.errors %}
                                 <small class="text-red-500 text-xs">{{ field.errors|striptags }}</small>
                             {% endif %}
@@ -93,7 +103,7 @@
                     <p class="flex items-center gap-2">
                         <i data-lucide="key-round" class="w-4 h-4 text-indigo-500"></i>
                         Forgot password?
-                        <a href="{% url 'password_reset_request_otp' %}" class="text-indigo-600 font-semibold hover:underline">Reset via OTP</a>
+                        <a href="{% url 'forgot_password' %}" class="text-indigo-600 font-semibold hover:underline">Reset it here</a>
                     </p>
                     <p class="flex items-center gap-2">
                         <i data-lucide="arrow-left" class="w-4 h-4 text-indigo-500"></i>
@@ -106,18 +116,34 @@
 </div>
 
 <style>
+    .login-animate {
+        animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .floating-orb {
+        animation: orbDrift 18s ease-in-out infinite;
+    }
+    .floating-orb.orb-delay-1 { animation-delay: 3.5s; }
+    .login-feature {
+        animation: slideFade 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        opacity: 0;
+    }
+    .login-feature:nth-child(1) { animation-delay: 0.2s; }
+    .login-feature:nth-child(2) { animation-delay: 0.35s; }
+    .login-feature:nth-child(3) { animation-delay: 0.5s; }
+
     #login-form input {
         width: 100%;
         border-radius: 1rem;
         padding: 0.75rem 1rem;
         border: 1px solid rgba(148,163,184,0.25);
         background: rgba(255,255,255,0.92);
-        transition: border 0.3s ease, box-shadow 0.3s ease;
+        transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
     }
     #login-form input:focus {
         outline: none;
         border-color: rgba(99,102,241,0.45);
         box-shadow: 0 0 0 4px rgba(99,102,241,0.2);
+        transform: translateY(-2px);
     }
     .login-field {
         display: flex;
@@ -135,6 +161,31 @@
         letter-spacing: 0.09em;
         font-size: 0.7rem;
     }
+    .password-wrapper {
+        position: relative;
+    }
+    .password-wrapper input[type="password"],
+    .password-wrapper input[type="text"] {
+        padding-right: 3rem;
+    }
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 0.85rem;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #94a3b8;
+    }
+    .password-toggle .icon-visible { display: none; }
+    .password-toggle[data-visible="true"] .icon-visible { display: inline; }
+    .password-toggle[data-visible="true"] .icon-hidden { display: none; }
+
     .login-feature {
         display: flex;
         align-items: center;
@@ -150,5 +201,42 @@
     @media (max-width: 768px) {
         .login-feature { padding: 0.65rem 0.9rem; }
     }
+
+    button[type="submit"] {
+        transition: transform 0.3s ease;
+    }
+    button[type="submit"]:hover {
+        transform: translateY(-3px) scale(1.01);
+    }
+
+    @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(26px) scale(0.97); }
+        60% { opacity: 1; }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes orbDrift {
+        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.5; }
+        50% { transform: translate3d(14px,-12px,0) scale(1.07); opacity: 0.8; }
+    }
+    @keyframes slideFade {
+        0% { opacity: 0; transform: translateY(18px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
 </style>
+<script>
+    (function() {
+        document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+            const wrapper = toggle.closest('.password-wrapper');
+            if (!wrapper) { return; }
+            const input = wrapper.querySelector('input[type="password"], input[type="text"]');
+            if (!input) { return; }
+
+            toggle.addEventListener('click', () => {
+                const isVisible = input.type === 'text';
+                input.type = isVisible ? 'password' : 'text';
+                toggle.dataset.visible = isVisible ? 'false' : 'true';
+            });
+        });
+    })();
+</script>
 {% endblock %}

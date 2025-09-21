@@ -1,543 +1,618 @@
 {% extends 'cards/base.html' %}
 {% load static %}
 
-{% block title %}Create & Share Moments That Matter{% endblock %}
+{% block title %}Create & Share Stunning Digital Cards{% endblock %}
 
 {% block content %}
-<div class="relative min-h-screen overflow-hidden">
-    <div class="absolute inset-0 -z-10">
-        <div class="gradient-orb orb-1"></div>
-        <div class="gradient-orb orb-2"></div>
-        <div class="gradient-grid"></div>
-    </div>
+<div class="landing-root">
+    <div class="landing-nebula landing-nebula--a"></div>
+    <div class="landing-nebula landing-nebula--b"></div>
+    <div class="landing-grid"></div>
 
-    <div class="container mx-auto px-4 py-16 lg:py-24 space-y-24">
-        <div class="grid gap-12 lg:grid-cols-2 items-center">
-            <div class="space-y-8">
-                <span class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white/80 border border-white/60 backdrop-blur text-xs font-semibold tracking-[0.4em] uppercase text-pink-500 shadow-sm">
-                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    Digital cards reimagined
-                </span>
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight">
-                    Craft captivating <span class="text-transparent bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 bg-clip-text">E-cards</span> in moments
-                </h1>
-                <p class="text-lg md:text-xl text-slate-600 leading-relaxed max-w-xl">
-                    Personalize, animate, and share your story with elegant digital cards. From professional intros to heartfelt celebrations, bring every moment to life.
-                </p>
-                <div class="flex flex-wrap gap-4">
-                    <a href="{% url 'register' %}" class="hero-cta primary">
-                        <span>Start designing</span>
-                        <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+    <header class="landing-header">
+        <nav class="landing-nav">
+            <div class="landing-nav__container">
+                <div class="landing-nav__left">
+                    <a class="landing-logo" href="{% url 'index' %}">
+                        <span class="landing-logo__icon">✦</span>
+                        <span>V-Card Studio</span>
                     </a>
-                    <button type="button" class="hero-cta secondary" onclick="openTutorial()">
-                        <i data-lucide="play-circle" class="w-5 h-5"></i>
-                        Watch tutorial
+                    <div class="landing-nav__links landing-nav__links--desktop">
+                        <a href="#features">Features</a>
+                        <a href="#workflow">Workflow</a>
+                        <a href="#showcase">Showcase</a>
+                        <a href="#cta">Pricing</a>
+                    </div>
+                </div>
+                <div class="landing-nav__right">
+                    <div class="landing-nav__cta landing-nav__cta--desktop">
+                        <a class="nav-btn secondary" href="{% url 'login' %}">Login</a>
+                        <a class="nav-btn primary" href="{% url 'register' %}">Start free</a>
+                    </div>
+                    <button class="landing-nav__toggle" type="button" aria-label="Toggle menu" data-nav-toggle>
+                    <span class="landing-nav__toggle-icon" aria-hidden="true"></span>
+                        <i data-lucide="menu"></i>
                     </button>
                 </div>
-                <div class="flex flex-wrap gap-6 pt-4">
-                    <div class="stat-card">
-                        <span class="text-2xl font-bold text-slate-900">500+</span>
-                        <span class="text-xs tracking-[0.3em] uppercase text-slate-400">Design combos</span>
+            </div>
+            <div class="landing-nav__drawer" data-nav-menu>
+                <div class="landing-nav__drawer-inner">
+                    <a href="#features">Features</a>
+                    <a href="#workflow">Workflow</a>
+                    <a href="#showcase">Showcase</a>
+                    <a href="#cta">Pricing</a>
+                    <a class="nav-btn secondary" href="{% url 'login' %}">Login</a>
+                    <a class="nav-btn primary" href="{% url 'register' %}">Start free</a>
+                </div>
+            </div>
+        </nav>
+
+        <section class="landing-hero">
+            <div class="landing-hero__copy">
+                <h1>Craft <span class="hero-gradient">memorable digital stories</span> in minutes.</h1>
+                <p>Design immersive, animated contact experiences with QR-ready cards, brand-safe palettes, and live collaboration – no code, all magic.</p>
+                <div class="landing-hero__actions">
+                    <a class="hero-btn primary" href="{% url 'register' %}">
+                        <span>Design your first card</span>
+                        <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
+                    </a>
+                    <button class="hero-btn ghost" type="button" data-demo-trigger>
+                        <i data-lucide="play-circle" class="w-5 h-5"></i>
+                        Watch interactive demo
+                    </button>
+                </div>
+                <div class="hero-stats">
+                    <div>
+                        <p>+18K</p>
+                        <span>Cards launched</span>
                     </div>
-                    <div class="stat-card">
-                        <span class="text-2xl font-bold text-slate-900">Instant</span>
-                        <span class="text-xs tracking-[0.3em] uppercase text-slate-400">QR sharing</span>
+                    <div>
+                        <p>45 sec</p>
+                        <span>Average build time</span>
+                    </div>
+                    <div>
+                        <p>98%</p>
+                        <span>Share completion</span>
                     </div>
                 </div>
             </div>
+            <div class="landing-hero__visual">
+                <div class="hero-device">
+                    <div class="hero-device__screen">
+                        <div class="hero-preview" id="heroPreview">
+                            <div class="hero-preview__card">
+                                <header>
+                                    <div class="avatar"></div>
+                                    <div class="titles">
+                                        <h3>Amelia Winter</h3>
+                                        <p>Creative Director · Nova Labs</p>
+                                    </div>
+                                </header>
+                                <ul class="contact">
+                                    <li><i data-lucide="mail"></i> hello@novalabs.com</li>
+                                    <li><i data-lucide="phone"></i> +1 310 884 2399</li>
+                                    <li><i data-lucide="globe"></i> novalabs.com</li>
+                                </ul>
+                                <footer>
+                                    <span><i data-lucide="instagram"></i></span>
+                                    <span><i data-lucide="linkedin"></i></span>
+                                    <span><i data-lucide="twitter"></i></span>
+                                </footer>
+                            </div>
+                            <div class="hero-preview__overlay"></div>
+                        </div>
+                    </div>
+                    <div class="hero-device__badge">Real-time live preview</div>
+                </div>
+            </div>
+        </section>
+    </header>
 
-            <div class="relative">
-                <div class="hero-showcase">
-                    <div class="showcase-card primary">
-                        <div class="card-header">
-                            <span class="dot"></span>
-                            <span class="dot"></span>
-                            <span class="dot"></span>
-                            <p class="uppercase tracking-[0.35em] text-xs text-white/60">Canvas preview</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="card-block">
-                                <h3>Drag elements</h3>
-                                <p>Re-order contact rows with intuitive drag handles.</p>
-                            </div>
-                            <div class="card-block">
-                                <h3>Brand palette</h3>
-                                <p>Instant theme suggestions powered by your logo colours.</p>
-                            </div>
-                        </div>
-                        <div class="card-footer">
-                            <span><i data-lucide="zap" class="w-4 h-4"></i>Auto contrast</span>
-                            <span><i data-lucide="layers" class="w-4 h-4"></i>Component library</span>
-                        </div>
-                    </div>
-                    <div class="showcase-card secondary">
-                        <header>
-                            <span class="badge-soft"><i data-lucide="sparkle" class="w-4 h-4"></i>Smart tip</span>
-                            <p class="text-white/70 text-xs">Try "Aurora" gradient for dark-mode cards.</p>
-                        </header>
-                        <ul class="list">
-                            <li><i data-lucide="check" class="w-4 h-4"></i> Live text contrast checks</li>
-                            <li><i data-lucide="check" class="w-4 h-4"></i> Auto QR regeneration</li>
-                            <li><i data-lucide="check" class="w-4 h-4"></i> Accessibility warnings</li>
-                        </ul>
-                    </div>
-                    <div class="showcase-floating">
-                        <span><i data-lucide="clock" class="w-4 h-4"></i> Build in under 2 minutes</span>
-                        <span><i data-lucide="sparkles" class="w-4 h-4"></i> AI layout suggestions</span>
-                    </div>
+    <section id="features" class="landing-section animate-on-scroll">
+        <h2 class="section-title">Everything you need for unforgettable cards</h2>
+        <p class="section-subtitle">From pixel-perfect layouts to sharing analytics, your digital identity now fits in a stunning card.</p>
+        <div class="feature-grid">
+            <article class="feature-card">
+                <span class="feature-icon"><i data-lucide="wand"></i></span>
+                <h3>Adaptive layouts</h3>
+                <p>Smart responsive templates automatically harmonize colours, spacing, and typography for every screen.</p>
+                <ul>
+                    <li><i data-lucide="check"></i>Auto contrast detection</li>
+                    <li><i data-lucide="check"></i>Real device previews</li>
+                    <li><i data-lucide="check"></i>Brand kit import</li>
+                </ul>
+            </article>
+            <article class="feature-card">
+                <span class="feature-icon"><i data-lucide="qr-code"></i></span>
+                <h3>Instant sharing</h3>
+                <p>Create custom URLs and QR codes with one click. Track scans, device type, and location in the dashboard.</p>
+                <ul>
+                    <li><i data-lucide="check"></i>Analytics dashboard</li>
+                    <li><i data-lucide="check"></i>Auto-regenerated QR</li>
+                    <li><i data-lucide="check"></i>Export to PDF</li>
+                </ul>
+            </article>
+            <article class="feature-card">
+                <span class="feature-icon"><i data-lucide="shield-check"></i></span>
+                <h3>Secure by design</h3>
+                <p>OTP-backed recovery, admin moderation, and audit logs ensure every interaction stays trustworthy.</p>
+                <ul>
+                    <li><i data-lucide="check"></i>OTP password reset</li>
+                    <li><i data-lucide="check"></i>Granular role controls</li>
+                    <li><i data-lucide="check"></i>Encrypted contacts</li>
+                </ul>
+            </article>
+            <article class="feature-card">
+                <span class="feature-icon"><i data-lucide="sparkle"></i></span>
+                <h3>Motion library</h3>
+                <p>Bring cards to life with cinematic gradients, particle trails, and scroll-triggered reveals.</p>
+                <ul>
+                    <li><i data-lucide="check"></i>30+ gradient presets</li>
+                    <li><i data-lucide="check"></i>Scroll sync preview</li>
+                    <li><i data-lucide="check"></i>Custom animations</li>
+                </ul>
+            </article>
+        </div>
+    </section>
+
+    <section id="workflow" class="landing-section animate-on-scroll">
+        <div class="workflow-grid">
+            <div>
+                <h2 class="section-title">Build cards in four fluid steps</h2>
+                <p class="section-subtitle">A guided flow keeps creativity effortless – whether you’re starting from scratch or importing a brand kit.</p>
+                <ol class="workflow-steps">
+                    <li><span>1</span>Sign up with email + OTP security</li>
+                    <li><span>2</span>Pick a template & theme palette</li>
+                    <li><span>3</span>Customize contact + social modules</li>
+                    <li><span>4</span>Share via QR, link, or embed widget</li>
+                </ol>
+                <div class="workflow-cta">
+                    <a href="{% url 'documentation' %}" class="hero-btn ghost">
+                        <i data-lucide="book-open"></i>
+                        Explore documentation
+                    </a>
+                </div>
+            </div>
+            <div class="workflow-stage">
+                <div class="workflow-step-card">
+                    <h4><i data-lucide="palette"></i>Gradient playground</h4>
+                    <p>Choose from newly added deep-space colourways like Celestial Noir or Crimson Nebula.</p>
+                </div>
+                <div class="workflow-step-card">
+                    <h4><i data-lucide="copy"></i>Sync to brand kit</h4>
+                    <p>Drop in your logo and we’ll generate colour-safe backgrounds instantly.</p>
+                </div>
+                <div class="workflow-step-card">
+                    <h4><i data-lucide="sparkle"></i>Motion presets</h4>
+                    <p>Toggle parallax, shimmer, and particle trails to match your vibe.</p>
                 </div>
             </div>
         </div>
+    </section>
 
-        <div class="grid gap-8 md:grid-cols-3">
-            <div class="glass-feature-card" style="animation-delay:0s;">
-                <div class="feature-icon bg-indigo-100 text-indigo-600">
-                    <i data-lucide="sparkles" class="w-6 h-6"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-slate-900">Design brilliance</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">Pick from curated palettes, gradients, and typography presets designed to impress on every screen.</p>
-            </div>
-            <div class="glass-feature-card" style="animation-delay:0.15s;">
-                <div class="feature-icon bg-pink-100 text-pink-500">
-                    <i data-lucide="smartphone" class="w-6 h-6"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-slate-900">Mobile-first previews</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">Real-time updates show exactly how your card feels on desktop, tablet, and mobile.</p>
-            </div>
-            <div class="glass-feature-card" style="animation-delay:0.3s;">
-                <div class="feature-icon bg-emerald-100 text-emerald-500">
-                    <i data-lucide="lock" class="w-6 h-6"></i>
-                </div>
-                <h3 class="text-xl font-semibold text-slate-900">Built-in security</h3>
-                <p class="text-slate-500 text-sm leading-relaxed">Secure OTP recovery, admin moderation tools, and smart link expiring keep you in control.</p>
+    <section id="showcase" class="landing-section animate-on-scroll">
+        <h2 class="section-title">Trusted by founders, designers, and storytellers</h2>
+        <div class="testimonial-slider" data-slider>
+            <article>
+                <header>
+                    <div class="avatar" style="--bg:#f472b6;"><span>JS</span></div>
+                    <div>
+                        <h3>Jasmine Singh</h3>
+                        <p>Brand Strategist</p>
+                    </div>
+                    <span class="rating">★★★★★</span>
+                </header>
+                <p>“The new preview scroll sync is mind-blowing. Clients love seeing the card evolve as we plan their story live on screen.”</p>
+            </article>
+            <article>
+                <header>
+                    <div class="avatar" style="--bg:#60a5fa;"><span>LR</span></div>
+                    <div>
+                        <h3>Luis Romero</h3>
+                        <p>Startup Founder</p>
+                    </div>
+                    <span class="rating">★★★★☆</span>
+                </header>
+                <p>“We issue QR cards to every team member. The analytics and OTP login made rollout painless.”</p>
+            </article>
+            <article>
+                <header>
+                    <div class="avatar" style="--bg:#facc15;"><span>HK</span></div>
+                    <div>
+                        <h3>Hanna Keller</h3>
+                        <p>Event Producer</p>
+                    </div>
+                    <span class="rating">★★★★★</span>
+                </header>
+                <p>“Animations + deep gradients = instant wow factor. I’ve retired printed business cards for good.”</p>
+            </article>
+        </div>
+    </section>
+
+    <section id="cta" class="landing-cta animate-on-scroll">
+        <div class="cta-backdrop"></div>
+        <div class="cta-content">
+            <h2>Ready to create your signature digital card?</h2>
+            <p>Join thousands crafting cinematic introductions with live previews, dark-mode gradients, and secure sharing.</p>
+            <div class="cta-actions">
+                <a class="hero-btn primary" href="{% url 'register' %}">Start building for free</a>
+                <a class="hero-btn ghost" href="{% url 'login' %}">Sign in to dashboard</a>
             </div>
         </div>
+    </section>
+</div>
 
-        <div class="rounded-3xl border border-white/70 bg-white/80 backdrop-blur shadow-2xl overflow-hidden">
-            <div class="grid md:grid-cols-2">
-                <div class="relative p-10 space-y-6">
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-600 text-xs font-semibold tracking-[0.35em] uppercase">
-                        <i data-lucide="magic-wand" class="w-4 h-4"></i>
-                        How it works
-                    </span>
-                    <h2 class="text-2xl font-semibold text-slate-900">Launch your card in four easy steps</h2>
-                    <ol class="space-y-5 text-left">
-                        <li class="timeline-step">
-                            <span class="step-index">1</span>
-                            <div>
-                                <h4>Create your account</h4>
-                                <p>Sign up with email and secure OTP-backed phone verification.</p>
-                            </div>
-                        </li>
-                        <li class="timeline-step">
-                            <span class="step-index">2</span>
-                            <div>
-                                <h4>Design your card</h4>
-                                <p>Pick gradients, upload your avatar, and define contact points.</p>
-                            </div>
-                        </li>
-                        <li class="timeline-step">
-                            <span class="step-index">3</span>
-                            <div>
-                                <h4>Preview & fine-tune</h4>
-                                <p>See real-time updates across desktop and mobile layouts.</p>
-                            </div>
-                        </li>
-                        <li class="timeline-step">
-                            <span class="step-index">4</span>
-                            <div>
-                                <h4>Share instantly</h4>
-                                <p>Deploy a custom URL and downloadable QR code in one tap.</p>
-                            </div>
-                        </li>
-                    </ol>
-                </div>
-                <div class="relative p-10 bg-gradient-to-br from-indigo-500 via-violet-500 to-rose-500 text-white">
-                    <div class="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-white/15 blur-3xl"></div>
-                    <div class="absolute bottom-0 left-0 w-56 h-56 rounded-full bg-white/15 blur-3xl"></div>
-                    <div class="relative space-y-6">
-                        <h3 class="text-xl font-semibold">What our community loves</h3>
-                        <div class="testimonials">
-                            <article>
-                                <p>“The dashboard is gorgeous and I can update my brand in seconds. Clients scan the QR code and we’re connected instantly.”</p>
-                                <span>- Priya S., Marketing Consultant</span>
-                            </article>
-                            <article>
-                                <p>“I replaced printed business cards with this platform. The analytics and admin controls keep everything organized.”</p>
-                                <span>- Marco R., Founder</span>
-                            </article>
-                            <article>
-                                <p>“Love the drag-and-drop editor. The team continues to ship creative templates every month.”</p>
-                                <span>- Hannah T., Product Designer</span>
-                            </article>
-                        </div>
-                        <div class="flex flex-wrap gap-3">
-                            <span class="badge"><i data-lucide="sparkle" class="w-4 h-4"></i>Fresh templates monthly</span>
-                            <span class="badge"><i data-lucide="shield-check" class="w-4 h-4"></i>Security-first design</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="demo-modal" data-demo-modal>
+    <div class="demo-modal__content">
+        <button class="demo-modal__close" type="button" aria-label="Close" data-demo-close>
+            <i data-lucide="x"></i>
+        </button>
+        <div class="demo-modal__body">
+            <h3>Interactive walkthrough</h3>
+            <p>Experience the builder in under 90 seconds.</p>
+            <video controls class="demo-video" poster="{% static 'cards/demo-poster.jpg' %}">
+                <source src="{% static 'cards/demo.mp4' %}" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
         </div>
     </div>
 </div>
 
 <style>
-    .gradient-orb {
+    :root {
+        color-scheme: light;
+    }
+    .landing-root {
+        position: relative;
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: #0f172a;
+    }
+    .landing-grid {
+        position: absolute;
+        inset: 0;
+        background-size: 120px 120px;
+        background-image: linear-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
+        opacity: 0.35;
+        mask-image: radial-gradient(circle at 60% 20%, rgba(255,255,255,0.8), transparent 70%);
+        pointer-events: none;
+    }
+    .landing-nebula {
         position: absolute;
         border-radius: 50%;
         filter: blur(0px);
-        opacity: 0.45;
-        animation: floatOrb 18s ease-in-out infinite;
+        opacity: 0.5;
+        animation: nebulaDrift 22s ease-in-out infinite;
     }
-    .gradient-orb.orb-1 {
-        width: 420px;
-        height: 420px;
-        top: -120px;
-        left: -140px;
-        background: radial-gradient(circle at center, rgba(236,72,153,0.45) 0%, rgba(236,72,153,0) 70%);
+    .landing-nebula--a { width: 520px; height: 520px; top: -200px; left: -160px; background: radial-gradient(circle, rgba(244, 63, 94, 0.35), transparent 60%); }
+    .landing-nebula--b { width: 420px; height: 420px; bottom: -160px; right: -120px; background: radial-gradient(circle, rgba(56, 189, 248, 0.3), transparent 70%); animation-delay: 5s; }
+    .landing-nav { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: min(1200px, calc(100% - 2rem)); padding: 1rem clamp(1rem, 4vw, 2.5rem); margin: 0; z-index: 20; backdrop-filter: blur(16px); background: rgba(255,255,255,0.78); border: 1px solid rgba(148,163,184,0.18); border-radius: 999px; box-shadow: 0 25px 45px -35px rgba(15,23,42,0.35); }
+    .landing-header { padding-top: clamp(6rem, 10vw, 8rem); }
+    .landing-nav__container { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 1.5rem; }
+    .landing-nav__left { display: flex; align-items: center; gap: clamp(1.5rem, 4vw, 2.5rem); }
+    .landing-nav__right { display: flex; align-items: center; gap: 1.2rem; }
+    .landing-nav__links--desktop { display: none; }
+    @media (min-width: 960px) { .landing-nav__links--desktop { display: flex; align-items: center; gap: clamp(1.5rem, 3vw, 2.5rem); font-weight: 600; opacity: 0.9; } }
+    .landing-nav__cta--desktop { display: none; }
+    @media (min-width: 960px) { .landing-nav__cta--desktop { display: inline-flex; align-items: center; gap: 0.85rem; } .landing-nav__toggle { display: none; } }
+    .landing-nav__drawer { position: absolute; top: 100%; left: 0; width: 100%; padding-top: 1rem; display: none; }
+    .landing-nav__drawer-inner { background: rgba(255,255,255,0.94); border-radius: 24px; border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 30px 50px -30px rgba(15,23,42,0.3); display: grid; gap: 1rem; padding: 1.8rem; transform-origin: top center; transform: scale(0.98) translateY(-6px); opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; }
+    .landing-nav__drawer.is-open { display: block; }
+    .landing-nav__drawer.is-open .landing-nav__drawer-inner { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
+    .landing-nav__drawer-inner a { text-decoration: none; font-weight: 600; color: #0f172a; font-size: 1rem; }
+    @keyframes nebulaDrift { 0%,100% { transform: translate3d(0,0,0); opacity: 0.45; } 50% { transform: translate3d(0,-24px,0); opacity: 0.65; } }
+
+    .landing-header { position: relative; z-index: 1; }
+    .landing-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.25rem;
+        padding: 1.5rem clamp(1rem, 4vw, 3rem);
+        margin: 0 auto;
+        max-width: 1200px;
     }
-    .gradient-orb.orb-2 {
-        width: 360px;
-        height: 360px;
-        bottom: -100px;
-        right: -120px;
-        background: radial-gradient(circle at center, rgba(59,130,246,0.4) 0%, rgba(59,130,246,0) 70%);
-        animation-delay: 3s;
-    }
-    .gradient-grid {
-        position: absolute;
-        inset: 0;
-        background-image: linear-gradient(to right, rgba(148,163,184,0.08) 1px, transparent 1px),
-                          linear-gradient(to bottom, rgba(148,163,184,0.08) 1px, transparent 1px);
-        background-size: 90px 90px;
-        mask-image: radial-gradient(circle at center, rgba(0,0,0,0.65), transparent 70%);
-    }
-    @keyframes floatOrb {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-15px); }
-    }
-    .hero-cta {
-        position: relative;
+    .landing-logo {
         display: inline-flex;
         align-items: center;
         gap: 0.6rem;
-        padding: 0.85rem 1.6rem;
-        border-radius: 1.2rem;
-        font-weight: 600;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        font-weight: 700;
+        font-size: 1.1rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
     }
-    .hero-cta.primary {
-        color: white;
-        background: linear-gradient(135deg, #ec4899, #f97316);
-        box-shadow: 0 25px 45px -20px rgba(236,72,153,0.6);
-    }
-    .hero-cta.primary:hover {
-        transform: translateY(-3px) scale(1.02);
-        box-shadow: 0 28px 60px -22px rgba(236,72,153,0.65);
-    }
-    .hero-cta.secondary {
-        background: rgba(255,255,255,0.8);
-        border: 1px solid rgba(226,232,240,0.9);
-        color: #475569;
-        backdrop-filter: blur(8px);
-    }
-    .hero-cta.secondary:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 18px 35px -22px rgba(15,23,42,0.25);
-    }
-    .stat-card {
+    .landing-logo__icon {
         display: inline-flex;
-        flex-direction: column;
-        gap: 0.35rem;
-        padding: 0.9rem 1.2rem;
-        border-radius: 1.2rem;
-        background: rgba(255,255,255,0.85);
-        border: 1px solid rgba(226,232,240,0.6);
-        box-shadow: 0 20px 40px -30px rgba(15,23,42,0.35);
-    }
-    .hero-showcase {
-        position: relative;
-        width: 100%;
-        min-height: 360px;
-        display: flex;
         align-items: center;
         justify-content: center;
-        padding: 2rem;
-    }
-    .showcase-card {
-        position: relative;
-        border-radius: 1.8rem;
-        padding: 1.8rem;
-        backdrop-filter: blur(10px);
-        color: white;
-        box-shadow: 0 35px 80px -30px rgba(15, 23, 42, 0.55);
-    }
-    .showcase-card.primary {
-        width: 100%;
-        max-width: 360px;
-        background: linear-gradient(135deg, #312e81, #9333ea);
-        z-index: 2;
-        animation: hoverFloat 12s ease-in-out infinite;
-    }
-    .showcase-card.secondary {
-        position: absolute;
-        top: 15%;
-        right: -40px;
-        width: 240px;
-        background: linear-gradient(135deg, #0f172a, #4338ca);
-        border: 1px solid rgba(255,255,255,0.2);
-        animation: hoverFloatAlt 10s ease-in-out infinite;
-    }
-    @keyframes hoverFloat {
-        0%, 100% { transform: translateY(0px) rotate(-1deg); }
-        50% { transform: translateY(-10px) rotate(1deg); }
-    }
-    @keyframes hoverFloatAlt {
-        0%, 100% { transform: translateY(0px) rotate(3deg); }
-        50% { transform: translateY(12px) rotate(-2deg); }
-    }
-    .card-header {
-        display: flex;
-        align-items: center;
-        gap: 0.45rem;
-        margin-bottom: 1.4rem;
-    }
-    .card-header .dot {
-        width: 10px;
-        height: 10px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
-        background: rgba(255,255,255,0.35);
+        background: linear-gradient(135deg, #f97316, #ec4899);
+        color: #fff;
+        font-size: 1.2rem;
+        transform: rotate(-8deg);
+        box-shadow: 0 12px 35px -18px rgba(236, 72, 153, 0.6);
     }
-    .card-body {
-        display: grid;
-        gap: 1rem;
-    }
-    .card-body .card-block {
-        padding: 1.1rem;
-        border-radius: 1.2rem;
-        background: rgba(255,255,255,0.12);
-        border: 1px solid rgba(255,255,255,0.18);
-    }
-    .card-body h3 { font-weight: 600; margin-bottom: 0.35rem; }
-    .card-body p { font-size: 0.85rem; opacity: 0.85; }
-    .card-footer {
-        margin-top: 1.5rem;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.6rem;
-    }
-    .card-footer span {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.45rem 0.95rem;
-        border-radius: 0.9rem;
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.25);
-        font-size: 0.75rem;
-    }
-    .showcase-card.secondary header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1rem;
-    }
-    .badge-soft {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.35rem 0.8rem;
+    .landing-nav__links { display: flex; align-items: center; gap: 1.5rem; font-weight: 600; opacity: 0.85; }
+    .landing-nav__links a { position: relative; }
+    .landing-nav__links a::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 0;
+        height: 2px;
+        background: linear-gradient(90deg, #f97316, #ec4899);
         border-radius: 999px;
-        background: rgba(255,255,255,0.2);
-        font-size: 0.7rem;
+        transition: width 0.25s ease;
     }
-    .showcase-card.secondary .list {
+    .landing-nav__links a:hover::after { width: 100%; }
+    .landing-nav__cta { display: flex; align-items: center; gap: 0.75rem; }
+    .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        padding: 0.65rem 1.2rem;
+        border-radius: 999px;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .nav-btn.primary { color: white; background: linear-gradient(135deg, #6366f1, #ec4899); box-shadow: 0 20px 45px -30px rgba(79, 70, 229, 0.7); }
+    .nav-btn.primary:hover { transform: translateY(-2px); }
+    .nav-btn.secondary { border: 1px solid rgba(15,23,42,0.12); color: #0f172a; }
+    .nav-btn.secondary:hover { transform: translateY(-2px); }
+    .landing-nav__toggle { display: none; background: none; border: none; font-size: 1.4rem; }
+
+    .landing-hero {
         display: grid;
-        gap: 0.8rem;
-        font-size: 0.8rem;
-        opacity: 0.85;
+        gap: clamp(2.5rem, 5vw, 6rem);
+        grid-template-columns: minmax(0, 1fr);
+        padding: clamp(1rem, 4vw, 4rem) clamp(1rem, 5vw, 5rem) clamp(2rem, 6vw, 6rem);
     }
-    .showcase-card.secondary li {
+    @media (min-width: 1024px) {
+        .landing-hero { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: center; }
+    }
+    .landing-hero__copy { display: flex; flex-direction: column; gap: 1.75rem; }
+    .landing-hero__copy h1 {
+        font-size: clamp(2.8rem, 5vw, 4.6rem);
+        line-height: 1.1;
+        font-weight: 800;
+        max-width: 18ch;
+    }
+    .hero-gradient {
+        display: inline-block;
+        background: linear-gradient(135deg, #f97316, #ec4899, #6366f1);
+        -webkit-background-clip: text;
+        color: transparent;
+        animation: hueShift 12s ease-in-out infinite;
+    }
+    @keyframes hueShift {
+        0% { filter: hue-rotate(0deg); }
+        50% { filter: hue-rotate(25deg); }
+        100% { filter: hue-rotate(0deg); }
+    }
+    .landing-hero__copy p { max-width: 48ch; font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: #475569; }
+    .hero-badge {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.65rem 1rem;
+        border-radius: 999px;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        background: rgba(255, 255, 255, 0.7);
+        font-size: 0.75rem;
+        letter-spacing: 0.24em;
+        text-transform: uppercase;
+    }
+    .hero-badge__pulse {
+        position:
+*** End Patch
+PATCH
+        absolute;
+        inset: -6px;
+        border-radius: inherit;
+        background: radial-gradient(circle at center, rgba(236,72,153,0.25), transparent 70%);
+        opacity: 0;
+        animation: badgePulse 2.4s ease-in-out infinite;
+    }
+    @keyframes badgePulse {
+        0%, 70% { opacity: 0; transform: scale(0.9); }
+        80% { opacity: 0.6; transform: scale(1.05); }
+        100% { opacity: 0; transform: scale(1.12); }
+    }
+    .landing-hero__actions { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.85rem 1.5rem;
+        border-radius: 1rem;
+        font-weight: 600;
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .hero-btn.primary { color: #fff; background: linear-gradient(135deg, #ec4899, #6366f1); box-shadow: 0 28px 60px -30px rgba(79, 70, 229, 0.6); }
+    .hero-btn.primary:hover { transform: translateY(-3px); }
+    .hero-btn.ghost { border: 1px solid rgba(15,23,42,0.14); color: #0f172a; background: rgba(255,255,255,0.7); }
+    .hero-btn.ghost:hover { transform: translateY(-2px); }
+
+    .hero-stats { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+    .hero-stats div { min-width: 120px; }
+    .hero-stats p { font-size: 1.85rem; font-weight: 700; }
+    .hero-stats span { font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: #94a3b8; }
+
+    .landing-hero__visual { position: relative; }
+    .hero-device {
+        position: relative;
+        border-radius: 32px;
+        padding: 1.8rem;
+        background: linear-gradient(135deg, rgba(15,23,42,0.92), rgba(30,41,59,0.95));
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        box-shadow: 0 35px 75px -40px rgba(15, 23, 42, 0.75);
+    }
+    .hero-device__screen {
+        border-radius: 26px;
+        padding: 1.2rem;
+        background: radial-gradient(circle at 20% 20%, rgba(236,72,153,0.25), transparent 70%), rgba(15,23,42,0.8);
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        overflow: hidden;
+    }
+    .hero-preview {
+        position: relative;
+        border-radius: 24px;
+        padding: 2rem;
+        background: linear-gradient(135deg, #3b82f6, #ec4899);
+        color: white;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.25);
+    }
+    .hero-preview__overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 60%);
+        pointer-events: none;
+    }
+    .hero-preview__card { position: relative; display: flex; flex-direction: column; gap: 1.2rem; }
+    .hero-preview__card header { display: flex; align-items: center; gap: 1rem; }
+    .hero-preview__card .avatar { width: 56px; height: 56px; border-radius: 999px; background: rgba(255,255,255,0.25); border: 2px solid rgba(255,255,255,0.4); }
+    .hero-preview__card .titles h3 { font-size: 1.2rem; font-weight: 600; }
+    .hero-preview__card .titles p { font-size: 0.85rem; opacity: 0.7; }
+    .hero-preview__card .contact { list-style: none; display: grid; gap: 0.55rem; font-size: 0.85rem; }
+    .hero-preview__card .contact li { display: inline-flex; align-items: center; gap: 0.55rem; opacity: 0.82; }
+    .hero-preview__card footer { display: inline-flex; gap: 0.65rem; }
+    .hero-preview__card footer span { width: 32px; height: 32px; border-radius: 999px; background: rgba(255,255,255,0.22); display: grid; place-items: center; }
+    .hero-device__badge {
+        margin-top: 1.4rem;
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-    }
-    .showcase-floating {
-        position: absolute;
-        bottom: -30px;
-        left: 0;
-        display: inline-flex;
-        flex-wrap: wrap;
-        gap: 0.6rem;
-    }
-    .showcase-floating span {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.45rem 1rem;
-        border-radius: 0.9rem;
-        background: rgba(255,255,255,0.85);
-        color: #475569;
-        border: 1px solid rgba(226,232,240,0.8);
-        font-size: 0.75rem;
-        box-shadow: 0 18px 40px -30px rgba(15,23,42,0.45);
-    }
-    .glass-feature-card {
-        padding: 1.8rem;
-        border-radius: 1.6rem;
-        background: rgba(255,255,255,0.85);
-        border: 1px solid rgba(255,255,255,0.6);
-        box-shadow: 0 25px 55px -35px rgba(15,23,42,0.4);
-        backdrop-filter: blur(10px);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        animation: slideUp 1s ease forwards;
-        opacity: 0;
-    }
-    .glass-feature-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 28px 65px -30px rgba(15,23,42,0.45);
-    }
-    @keyframes slideUp {
-        0% { opacity: 0; transform: translateY(30px); }
-        100% { opacity: 1; transform: translateY(0px); }
-    }
-    .feature-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 1rem;
-    }
-    @media (max-width: 1024px) {
-        .preview-card { margin-top: 2rem; }
-        .pill-1 { right: 10px; }
-        .pill-2 { left: 10px; }
-        .analytics-card { bottom: -20px; right: -10px; }
-    }
-    .timeline-step {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-        text-align: left;
-    }
-    .timeline-step h4 {
-        font-weight: 600;
-        color: #1f2937;
-        margin-bottom: 0.25rem;
-    }
-    .timeline-step p {
-        font-size: 0.85rem;
-        color: #6b7280;
-    }
-    .step-index {
-        flex-shrink: 0;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.75rem;
-        background: linear-gradient(135deg, #ec4899, #f97316);
-        color: white;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        box-shadow: 0 12px 28px -18px rgba(236,72,153,0.45);
-    }
-    .testimonials {
-        display: grid;
-        gap: 1rem;
-    }
-    .testimonials article {
-        background: rgba(255,255,255,0.15);
-        border-radius: 1.2rem;
-        padding: 1.2rem;
-        border: 1px solid rgba(255,255,255,0.25);
-        backdrop-filter: blur(8px);
-        font-size: 0.85rem;
-        line-height: 1.6;
-    }
-    .testimonials span {
-        display: block;
-        margin-top: 0.6rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        color: rgba(255,255,255,0.7);
-    }
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.9rem;
+        padding: 0.6rem 1rem;
         border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.25);
-        background: rgba(255,255,255,0.18);
-        font-size: 0.75rem;
+        background: rgba(236,72,153,0.12);
+        border: 1px solid rgba(236,72,153,0.28);
+        color: #fef2f2;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        font-size: 0.72rem;
     }
-    @media (max-width: 1024px) {
-        .hero-showcase {
-            padding: 1.2rem;
-            flex-direction: column;
-        }
-        .showcase-card.primary {
-            max-width: 100%;
-        }
-        .showcase-card.secondary {
-            position: relative;
-            top: auto;
-            right: auto;
-            margin-top: 1.5rem;
-        }
-        .showcase-floating {
-            position: relative;
-            bottom: auto;
-            left: auto;
-            margin-top: 1.5rem;
-        }
+
+    .landing-section { position: relative; z-index: 1; padding: clamp(3rem, 8vw, 6rem) clamp(1.5rem, 6vw, 5rem); display: grid; gap: 2rem; }
+    .section-title { font-size: clamp(2rem, 3vw, 2.8rem); font-weight: 700; text-align: center; }
+    .section-subtitle { text-align: center; max-width: 60ch; margin: 0 auto; color: #64748b; }
+
+    .feature-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+    .feature-card {
+        position: relative;
+        padding: 2rem 1.8rem;
+        border-radius: 24px;
+        background: rgba(255,255,255,0.75);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 0 30px 60px -45px rgba(15, 23, 42, 0.25);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .feature-card:hover { transform: translateY(-6px); box-shadow: 0 40px 70px -40px rgba(15,23,42,0.35); }
+    .feature-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #ec4899); color: white; margin-bottom: 1rem; }
+    .feature-card ul { margin-top: 1rem; display: grid; gap: 0.45rem; font-size: 0.85rem; color: #475569; }
+    .feature-card li { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+    .workflow-grid { display: grid; gap: 3rem; align-items: center; }
+    @media (min-width: 1024px) { .workflow-grid { grid-template-columns: minmax(0,0.9fr) minmax(0,1.1fr); } }
+    .workflow-steps { list-style: none; margin-top: 1.5rem; display: grid; gap: 1rem; font-weight: 600; }
+    .workflow-steps li { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-radius: 16px; background: rgba(255,255,255,0.75); border: 1px solid rgba(148,163,184,0.18); }
+    .workflow-steps span { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#ec4899); color: white; display: grid; place-items: center; font-weight: 700; }
+    .workflow-stage { position: relative; display: grid; gap: 1.5rem; }
+    .workflow-step-card { padding: 1.6rem; border-radius: 22px; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.82)); color: white; border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 30px 60px -45px rgba(15,23,42,0.6); }
+    .workflow-step-card h4 { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .workflow-step-card p { opacity: 0.8; }
+
+    .testimonial-slider { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .testimonial-slider article { border-radius: 24px; padding: 1.8rem; background: rgba(255,255,255,0.78); border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 20px 45px -35px rgba(15,23,42,0.25); display: grid; gap: 1.2rem; }
+    .testimonial-slider header { display: flex; align-items: center; gap: 1rem; }
+    .testimonial-slider .avatar { width: 48px; height: 48px; border-radius: 999px; background: var(--bg); display: grid; place-items: center; color: #1f2937; font-weight: 700; }
+    .testimonial-slider .rating { margin-left: auto; font-size: 0.9rem; color: #f59e0b; }
+
+    .landing-cta {
+        position: relative;
+        margin: 4rem auto clamp(3rem, 8vw, 6rem);
+        border-radius: 32px;
+        padding: clamp(3rem, 6vw, 5rem);
+        overflow: hidden;
+        color: white;
+    }
+    .cta-backdrop {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(236,72,153,0.9));
+    }
+    .cta-content { position: relative; z-index: 1; display: grid; gap: 1.5rem; text-align: center; }
+    .cta-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    .animate-on-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+    .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
+
+    .demo-modal { position: fixed; inset: 0; background: rgba(15,23,42,0.65); display: none; align-items: center; justify-content: center; z-index: 50; backdrop-filter: blur(8px); }
+    .demo-modal.is-visible { display: flex; animation: fadeIn 0.25s ease; }
+    .demo-modal__content { position: relative; background: #fff; border-radius: 24px; max-width: 720px; width: min(92vw, 720px); box-shadow: 0 30px 70px -40px rgba(15,23,42,0.55); overflow: hidden; }
+    .demo-modal__close { position: absolute; top: 1rem; right: 1rem; border: none; background: rgba(15,23,42,0.08); border-radius: 50%; width: 34px; height: 34px; display: grid; place-items: center; }
+    .demo-modal__body { padding: 2.5rem; display: grid; gap: 1.2rem; }
+    .demo-video { width: 100%; border-radius: 18px; box-shadow: 0 20px 45px -35px rgba(15,23,42,0.4); }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    @media (max-width: 1023px) {
+        .landing-nav__links { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: min(90vw, 360px); flex-direction: column; background: rgba(255,255,255,0.92); border-radius: 16px; padding: 1.25rem; border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 30px 60px -45px rgba(15,23,42,0.25); }
+        .landing-nav__links.is-open { display: flex; }
+        .landing-nav__toggle { display: grid; place-items: center; color: #0f172a; }
+        .landing-nav__cta { display: none; }
+        .landing-nav__cta--mobile { display: grid; gap: 0.75rem; margin-top: 1rem; }
     }
 </style>
-<script>
-    function openTutorial() {
-        const modal = document.getElementById('tutorialModal');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-        const video = modal.querySelector('video');
-        if (video) {
-            video.currentTime = 0;
-            video.play().catch(() => {});
-        }
-    }
-    function closeTutorial() {
-        const modal = document.getElementById('tutorialModal');
-        if (!modal) return;
-        const video = modal.querySelector('video');
-        if (video) {
-            video.pause();
-        }
-        modal.classList.add('hidden');
-    }
-</script>
 
-<div id="tutorialModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur">
-    <div class="w-full max-w-4xl mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div class="flex justify-between items-center px-6 py-4 border-b">
-            <h3 class="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <i data-lucide="play-circle" class="w-5 h-5 text-indigo-500"></i>
-                Quick tour: Creating an e-card
-            </h3>
-            <button type="button" onclick="closeTutorial()" class="text-slate-500 hover:text-slate-700">
-                <i data-lucide="x" class="w-5 h-5"></i>
-            </button>
-        </div>
-        <video controls class="w-full h-[420px] object-cover">
-            <source src="{% static 'videos/ecard_tutorial.mp4' %}" type="video/mp4">
-            Your browser does not support embedded videos.
-        </video>
-        <div class="px-6 py-4 bg-slate-50 text-sm text-slate-600">
-            This short walkthrough covers signing up, designing your card, previewing, and sharing via QR.
-        </div>
-    </div>
-</div>
+<script>
+    (function() {
+        lucide.createIcons();
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.18 });
+        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const navMenu = document.querySelector('[data-nav-menu]');
+        if (navToggle && navMenu) {
+            navToggle.addEventListener('click', () => {
+                navMenu.classList.toggle('is-open');
+            });
+        }
+
+        const demoModal = document.querySelector('[data-demo-modal]');
+        const demoTriggers = document.querySelectorAll('[data-demo-trigger]');
+        const demoClose = document.querySelector('[data-demo-close]');
+        demoTriggers.forEach(btn => btn.addEventListener('click', () => demoModal?.classList.add('is-visible')));
+        demoClose?.addEventListener('click', () => demoModal?.classList.remove('is-visible'));
+        demoModal?.addEventListener('click', event => {
+            if (event.target === demoModal) {
+                demoModal.classList.remove('is-visible');
+            }
+        });
+
+        const heroPreview = document.getElementById('heroPreview');
+        if (heroPreview) {
+            let hue = 0;
+            const cycle = () => {
+                hue = (hue + 0.2) % 360;
+                heroPreview.style.filter = `hue-rotate(${hue}deg)`;
+                requestAnimationFrame(cycle);
+            };
+            cycle();
+        }
+    })();
+</script>
 {% endblock %}

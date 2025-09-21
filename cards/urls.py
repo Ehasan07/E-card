@@ -12,10 +12,11 @@ urlpatterns = [
     path('card/<slug:slug>/edit/', views.edit_card, name='edit_card'),
     path('my-admin/login/', views.admin_login_view, name='admin_login'),
     path('my-admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
+    path('my-admin/card/<slug:slug>/edit/', views.admin_edit_card, name='admin_edit_card'),
     path('my-admin/card/<slug:slug>/delete/', views.delete_card_admin, name='delete_card_admin'),
     path('documentation/', views.documentation_view, name='documentation'),
-    path('password_reset/request_otp/', views.password_reset_request_otp, name='password_reset_request_otp'),
-    path('password_reset/verify_otp/', views.password_reset_verify_otp, name='password_reset_verify_otp'),
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/', views.reset_password, name='reset_password'),
     path('export/csv/', views.export_cards_csv, name='export_cards_csv'),
     path('export/excel/', views.export_cards_excel, name='export_cards_excel'),
 ]

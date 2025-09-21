@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# This script is for deploying the E-card project on a fresh Ubuntu server.
+# This script is for deploying the V-card project (repository name: E-card) on a fresh Ubuntu server.
 # Run this script as a user with sudo privileges.
 
 # --- Variables ---

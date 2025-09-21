@@ -4,7 +4,7 @@ django-qr-code==4.2.0
 Markdown==3.8.2
 packaging==25.0
 pillow==11.3.0
-psycopg2==2.9.10
+psycopg2-binary
 sqlparse==0.5.3
 gunicorn
 whitenoise

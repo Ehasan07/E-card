@@ -25,7 +25,7 @@
                     </a>
                     <a href="{% url 'export_cards_csv' %}" class="admin-nav-btn csv">
                         <span class="icon"><i data-lucide="file-output" class="w-4 h-4"></i></span>
-                        Download CSV
+                        Download CSVs
                     </a>
                     <a href="{% url 'export_cards_excel' %}" class="admin-nav-btn excel">
                         <span class="icon"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></span>
@@ -46,7 +46,7 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="admin-stat" style="animation-delay:0s;">
+                <div class="admin-stat admin-summary-trigger" data-target="users" tabindex="0" role="button" aria-controls="detail-section" aria-expanded="false" style="animation-delay:0s;">
                     <div class="stat-icon bg-indigo-100 text-indigo-600">
                         <i data-lucide="users" class="w-5 h-5"></i>
                     </div>
@@ -55,7 +55,7 @@
                         <p class="stat-value">{{ total_users }}</p>
                     </div>
                 </div>
-                <div class="admin-stat" style="animation-delay:0.15s;">
+                <div class="admin-stat admin-summary-trigger" data-target="cards" tabindex="0" role="button" aria-controls="detail-section" aria-expanded="false" style="animation-delay:0.15s;">
                     <div class="stat-icon bg-violet-100 text-violet-600">
                         <i data-lucide="id-card" class="w-5 h-5"></i>
                     </div>
@@ -64,7 +64,7 @@
                         <p class="stat-value">{{ total_cards }}</p>
                     </div>
                 </div>
-                <div class="admin-stat" style="animation-delay:0.3s;">
+                <div class="admin-stat admin-summary-trigger" data-target="cards" tabindex="0" role="button" aria-controls="detail-section" aria-expanded="false" style="animation-delay:0.3s;">
                     <div class="stat-icon bg-emerald-100 text-emerald-600">
                         <i data-lucide="list-ordered" class="w-5 h-5"></i>
                     </div>
@@ -74,81 +74,216 @@
                     </div>
                 </div>
             </div>
-
-            <div class="bg-white/85 border border-white/70 rounded-3xl shadow-2xl backdrop-blur overflow-hidden">
-                <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                    <div>
-                        <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Moderation queue</p>
-                        <h2 class="text-xl font-semibold text-slate-800">All cards</h2>
+            <div id="detail-section" class="detail-panel hidden">
+                <div class="detail-table hidden" data-table="users">
+                    <a href="#" class="back-to-summary">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Back to summary
+                    </a>
+                    <div class="bg-white/85 border border-white/70 rounded-3xl shadow-2xl backdrop-blur overflow-hidden">
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">User directory</p>
+                                <h2 class="text-xl font-semibold text-slate-800">All users</h2>
+                            </div>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                {{ all_users|length }} users
+                            </span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left text-sm">
+                                <thead class="bg-slate-50/80 text-slate-500 uppercase tracking-[0.2em] text-xs">
+                                    <tr>
+                                        <th class="px-6 py-3">User ID</th>
+                                        <th class="px-6 py-3">Name</th>
+                                        <th class="px-6 py-3">Email</th>
+                                        <th class="px-6 py-3">Phone</th>
+                                        <th class="px-6 py-3">Registered</th>
+                                        <th class="px-6 py-3 text-right">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    {% for user in all_users %}
+                                        <tr class="hover:bg-slate-50/80 transition">
+                                            <td class="px-6 py-4 text-slate-500 font-semibold">#{{ user.id }}</td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="avatar-badge">
+                                                        <i data-lucide="user" class="w-4 h-4"></i>
+                                                    </span>
+                                                    <div>
+                                                        <p class="font-semibold text-slate-800">{{ user.name }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-slate-600">{{ user.email|default:'—' }}</td>
+                                            <td class="px-6 py-4 text-slate-600">{{ user.phone|default:'—' }}</td>
+                                            <td class="px-6 py-4 text-slate-500">{{ user.registered|date:"M d, Y" }}</td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex justify-end">
+                                                    <span class="status-pill {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
+                                                        <span class="dot"></span>
+                                                        {{ user.status_label }}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-                        <i data-lucide="list-checks" class="w-4 h-4"></i>
-                        {{ all_cards|length }} entries
-                    </span>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-left text-sm">
-                        <thead class="bg-slate-50/80 text-slate-500 uppercase tracking-[0.2em] text-xs">
-                            <tr>
-                                <th class="px-6 py-3">User</th>
-                                <th class="px-6 py-3">Slug</th>
-                                <th class="px-6 py-3">Status</th>
-                                <th class="px-6 py-3">Created</th>
-                                <th class="px-6 py-3 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            {% for card in all_cards %}
-                                <tr class="hover:bg-slate-50/80 transition">
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center gap-3">
-                                            <span class="avatar-badge">
-                                                <i data-lucide="user" class="w-4 h-4"></i>
-                                            </span>
-                                            <div>
-                                                <p class="font-semibold text-slate-800">{{ card.user.username }}</p>
-                                                <p class="text-xs text-slate-400">ID #{{ card.user.id }}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-slate-600">{{ card.slug }}</td>
-                                    <td class="px-6 py-4">
-                                        {% if card.is_active %}
-                                            <span class="status-pill status-active"><span class="dot"></span>Active</span>
-                                        {% else %}
-                                            <span class="status-pill status-inactive"><span class="dot"></span>Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="px-6 py-4 text-slate-500">{{ card.created_at|date:"M d, Y" }}</td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex justify-end items-center gap-2">
-                                            <a href="{% url 'view_card' card.slug %}" class="table-action view" title="View">
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
-                                            <a href="{% url 'edit_card' card.slug %}" class="table-action edit" title="Edit">
-                                                <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                            </a>
-                                            <form action="{% url 'delete_card_admin' card.slug %}" method="post" class="inline">
-                                                {% csrf_token %}
-                                                <button type="submit" class="table-action delete" onclick="return confirm('Delete this card?');" title="Delete">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="5" class="px-6 py-8 text-center text-slate-500">No cards found.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                <div class="detail-table hidden" data-table="cards">
+                    <a href="#" class="back-to-summary">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Back to summary
+                    </a>
+                    <div class="bg-white/85 border border-white/70 rounded-3xl shadow-2xl backdrop-blur overflow-hidden">
+                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                            <div>
+                                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Moderation queue</p>
+                                <h2 class="text-xl font-semibold text-slate-800">All cards</h2>
+                            </div>
+                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
+                                <i data-lucide="list-checks" class="w-4 h-4"></i>
+                                {{ all_cards|length }} entries
+                            </span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full text-left text-sm">
+                                <thead class="bg-slate-50/80 text-slate-500 uppercase tracking-[0.2em] text-xs">
+                                    <tr>
+                                        <th class="px-6 py-3">User</th>
+                                        <th class="px-6 py-3">Slug</th>
+                                        <th class="px-6 py-3">Status</th>
+                                        <th class="px-6 py-3">Created</th>
+                                        <th class="px-6 py-3 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    {% for card in all_cards %}
+                                        <tr class="hover:bg-slate-50/80 transition">
+                                            <td class="px-6 py-4">
+                                                <div class="flex items-center gap-3">
+                                                    <span class="avatar-badge">
+                                                        <i data-lucide="user" class="w-4 h-4"></i>
+                                                    </span>
+                                                    <div>
+                                                        <p class="font-semibold text-slate-800">{{ card.user.username }}</p>
+                                                        <p class="text-xs text-slate-400">ID #{{ card.user.id }}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4 text-slate-600">{{ card.slug }}</td>
+                                            <td class="px-6 py-4">
+                                                {% if card.is_active %}
+                                                    <span class="status-pill status-active"><span class="dot"></span>Active</span>
+                                                {% else %}
+                                                    <span class="status-pill status-inactive"><span class="dot"></span>Inactive</span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="px-6 py-4 text-slate-500">{{ card.created_at|date:"M d, Y" }}</td>
+                                            <td class="px-6 py-4">
+                                                <div class="flex justify-end items-center gap-2">
+                                                    <a href="{% url 'view_card' card.slug %}" class="table-action view" title="View">
+                                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                                    </a>
+                                                    <a href="{% url 'admin_edit_card' card.slug %}" class="table-action edit" title="Edit">
+                                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                                                    </a>
+                                                    <form action="{% url 'delete_card_admin' card.slug %}" method="post" class="inline">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="table-action delete" onclick="return confirm('Delete this card?');" title="Delete">
+                                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% empty %}
+                                        <tr>
+                                            <td colspan="5" class="px-6 py-8 text-center text-slate-500">No cards found.</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const detailSection = document.getElementById('detail-section');
+        if (!detailSection) {
+            return;
+        }
+
+        const summaryCards = document.querySelectorAll('.admin-summary-trigger');
+        const detailTables = detailSection.querySelectorAll('.detail-table');
+        const backLinks = detailSection.querySelectorAll('.back-to-summary');
+
+        const activateTable = (target) => {
+            detailTables.forEach((table) => {
+                if (table.dataset.table === target) {
+                    table.classList.remove('hidden');
+                    requestAnimationFrame(() => {
+                        table.classList.add('active');
+                    });
+                } else if (!table.classList.contains('hidden')) {
+                    table.classList.remove('active');
+                    setTimeout(() => table.classList.add('hidden'), 200);
+                }
+            });
+
+            detailSection.classList.remove('hidden');
+            requestAnimationFrame(() => detailSection.classList.add('active'));
+
+            summaryCards.forEach((card) => {
+                const isActive = card.dataset.target === target;
+                card.setAttribute('aria-expanded', String(isActive));
+                card.classList.toggle('admin-stat-active', isActive);
+            });
+        };
+
+        const hideDetail = () => {
+            detailSection.classList.remove('active');
+            detailTables.forEach((table) => table.classList.remove('active'));
+            summaryCards.forEach((card) => card.setAttribute('aria-expanded', 'false'));
+            setTimeout(() => {
+                detailSection.classList.add('hidden');
+                detailTables.forEach((table) => table.classList.add('hidden'));
+                summaryCards.forEach((card) => card.classList.remove('admin-stat-active'));
+            }, 220);
+        };
+
+        summaryCards.forEach((card) => {
+            card.addEventListener('click', () => activateTable(card.dataset.target));
+            card.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    card.click();
+                }
+            });
+        });
+
+        backLinks.forEach((link) => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault();
+                hideDetail();
+            });
+        });
+    });
+</script>
 
 <style>
     .admin-stat {
@@ -162,6 +297,50 @@
         box-shadow: 0 25px 55px -30px rgba(15,23,42,0.55);
         backdrop-filter: blur(10px);
         animation: floatPulse 10s ease-in-out infinite;
+    }
+    .admin-summary-trigger {
+        cursor: pointer;
+    }
+    .admin-summary-trigger:focus-visible {
+        outline: 2px solid rgba(79,70,229,0.85);
+        outline-offset: 2px;
+    }
+    .admin-stat-active {
+        border-color: rgba(79,70,229,0.35);
+        box-shadow: 0 28px 55px -28px rgba(79,70,229,0.4);
+    }
+    .detail-panel {
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .detail-panel.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .detail-table {
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 0.25s ease, transform 0.25s ease;
+        margin-bottom: 2.5rem;
+    }
+    .detail-table.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    .back-to-summary {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.18em;
+        color: #6366f1;
+        margin-bottom: 0.75rem;
+    }
+    .back-to-summary:hover {
+        color: #4338ca;
     }
     @keyframes floatPulse {
         0%, 100% { transform: translateY(0px); }

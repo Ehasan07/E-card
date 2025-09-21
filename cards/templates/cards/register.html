@@ -1,16 +1,15 @@
 {% extends 'cards/base.html' %}
+{% load static %}
 
 {% block title %}Register{% endblock %}
 
 {% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/css/intlTelInput.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/intlTelInput.min.js"></script>
 
 <div class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="relative w-full max-w-5xl">
+    <div class="relative w-full max-w-5xl register-animate">
         <div class="absolute inset-0 -z-10">
-            <div class="absolute -top-24 -left-24 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute -bottom-20 -right-16 w-72 h-72 bg-indigo-300/30 rounded-full blur-3xl animate-pulse" style="animation-delay:1.8s;"></div>
+            <div class="floating-orb orb-delay-0 absolute -top-24 -left-24 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl"></div>
+            <div class="floating-orb orb-delay-1 absolute -bottom-20 -right-16 w-72 h-72 bg-indigo-300/30 rounded-full blur-3xl"></div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 backdrop-blur-xl bg-white/70 border border-white/80 rounded-3xl shadow-2xl overflow-hidden">
             <div class="relative hidden lg:flex flex-col justify-between p-10 text-white" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
@@ -19,7 +18,7 @@
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
                         Join us
                     </span>
-                    <h2 class="text-3xl font-bold mt-5 mb-3">Start crafting memorable e-cards</h2>
+                    <h2 class="text-3xl font-bold mt-5 mb-3">Start crafting memorable v-cards</h2>
                     <p class="text-white/90 leading-relaxed">Create a profile to unlock personalized designs, instant QR sharing and a sleek digital identity you control.</p>
                 </div>
                 <div class="space-y-4">
@@ -62,12 +61,34 @@
                         </label>
                         <label class="form-field">
                             <span><i data-lucide="lock" class="w-4 h-4"></i> Password</span>
-                            {{ user_form.password }}
+                            <div class="password-wrapper">
+                                {{ user_form.password }}
+                                <button type="button" class="password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
+                                    <span class="icon-hidden">🔒</span>
+                                    <span class="icon-visible">👁</span>
+                                </button>
+                            </div>
                         </label>
                         <label class="form-field">
                             <span><i data-lucide="phone" class="w-4 h-4"></i> Phone number</span>
-                            <div class="phone-field">
-                                {{ profile_form.phone_number }}
+                            <div class="phone-picker" data-country-wrapper>
+                                <div class="country-selector" data-country-picker="register-phone" data-default-code="{{ profile_form.phone_country.value|default:'880' }}" data-selected-code="{{ profile_form.phone_country.value|default:'880' }}">
+                                    {{ profile_form.phone_country }}
+                                    {{ profile_form.phone_number }}
+                                    <button type="button" class="country-trigger" data-country-button>
+                                        <span class="flag" data-country-flag>🌐</span>
+                                        <span class="dial" data-country-code>+000</span>
+                                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                                    </button>
+                                    <div class="country-dropdown hidden" data-country-dropdown>
+                                        <div class="country-search">
+                                            <input type="text" data-country-search placeholder="Search country or code">
+                                        </div>
+                                        <ul data-country-list></ul>
+                                        <p class="country-empty hidden" data-country-empty>No results found</p>
+                                    </div>
+                                </div>
+                                {{ profile_form.phone_number_local }}
                             </div>
                         </label>
                     </div>
@@ -105,18 +126,34 @@
 </div>
 
 <style>
+    .register-animate {
+        animation: fadeInUp 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .floating-orb {
+        animation: orbDrift 18s ease-in-out infinite;
+    }
+    .floating-orb.orb-delay-1 { animation-delay: 4s; }
+    .register-animate .glass-feature {
+        animation: slideFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        opacity: 0;
+    }
+    .register-animate .glass-feature:nth-child(1) { animation-delay: 0.2s; }
+    .register-animate .glass-feature:nth-child(2) { animation-delay: 0.35s; }
+    .register-animate .glass-feature:nth-child(3) { animation-delay: 0.5s; }
+
     #register-form input {
         width: 100%;
         border-radius: 1rem;
         padding: 0.75rem 1rem;
         border: 1px solid rgba(148,163,184,0.25);
         background: rgba(255,255,255,0.9);
-        transition: border 0.3s ease, box-shadow 0.3s ease;
+        transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
     }
     #register-form input:focus {
         outline: none;
         border-color: rgba(244,114,182,0.6);
         box-shadow: 0 0 0 4px rgba(244,114,182,0.2);
+        transform: translateY(-2px);
     }
     .form-field {
         display: flex;
@@ -149,15 +186,364 @@
     @media (max-width: 1023px) {
         .glass-feature { padding: 0.65rem 0.9rem; }
     }
+
+    .phone-picker {
+        display: flex;
+        gap: 0.6rem;
+        align-items: center;
+    }
+    .country-selector {
+        position: relative;
+    }
+    .country-selector input[type="hidden"] {
+        display: none;
+    }
+    .country-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.7rem 0.95rem;
+        border-radius: 1rem;
+        border: 1px solid rgba(148,163,184,0.3);
+        background: rgba(255,255,255,0.95);
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: border 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, transform 0.25s ease;
+        min-width: 110px;
+        justify-content: space-between;
+    }
+    .country-trigger .flag {
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+    .country-trigger .dial {
+        font-variant-numeric: tabular-nums;
+    }
+    .country-trigger:hover,
+    .country-trigger:focus {
+        border-color: rgba(244,114,182,0.6);
+        background: rgba(255,255,255,1);
+        box-shadow: 0 0 0 4px rgba(244,114,182,0.15);
+        outline: none;
+        transform: translateY(-2px);
+    }
+    .country-dropdown {
+        position: absolute;
+        z-index: 40;
+        top: calc(100% + 0.5rem);
+        left: 0;
+        width: 260px;
+        background: #ffffff;
+        border-radius: 1rem;
+        box-shadow: 0 28px 70px -32px rgba(15,23,42,0.35);
+        border: 1px solid rgba(226,232,240,0.7);
+        overflow: hidden;
+    }
+    .country-search {
+        padding: 0.6rem;
+        border-bottom: 1px solid rgba(226,232,240,0.7);
+    }
+    .country-search input {
+        width: 100%;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(148,163,184,0.45);
+        padding: 0.55rem 0.8rem;
+        font-size: 0.85rem;
+        transition: border 0.3s ease, box-shadow 0.3s ease;
+    }
+    .country-search input:focus {
+        outline: none;
+        border-color: rgba(244,114,182,0.6);
+        box-shadow: 0 0 0 3px rgba(244,114,182,0.15);
+    }
+    [data-country-list] {
+        max-height: 220px;
+        overflow-y: auto;
+        padding: 0.4rem 0;
+    }
+    [data-country-item] {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.55rem 0.9rem;
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: background 0.2s ease;
+    }
+    [data-country-item]:hover,
+    [data-country-item].active {
+        background: rgba(244,114,182,0.12);
+    }
+    [data-country-item] .flag {
+        font-size: 1.1rem;
+    }
+    [data-country-item] .label {
+        display: flex;
+        flex-direction: column;
+        line-height: 1.1;
+    }
+    .country-empty {
+        padding: 0.9rem;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        text-align: center;
+    }
+
+    button[type="submit"] {
+        transition: transform 0.3s ease;
+    }
+    button[type="submit"]:hover {
+        transform: translateY(-3px) scale(1.01);
+    }
+
+    @keyframes fadeInUp {
+        0% { opacity: 0; transform: translateY(28px) scale(0.98); }
+        60% { opacity: 1; }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes orbDrift {
+        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.55; }
+        50% { transform: translate3d(12px,-16px,0) scale(1.08); opacity: 0.85; }
+    }
+    @keyframes slideFade {
+        0% { opacity: 0; transform: translateY(16px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
 </style>
 
 <script>
-    const phoneInputField = document.getElementById('id_phone_number');
-    if (phoneInputField) {
-        const phoneInput = window.intlTelInput(phoneInputField, {
-            initialCountry: 'bd',
-            utilsScript: 'https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js',
+    (function() {
+        const picker = document.querySelector('[data-country-picker="register-phone"]');
+        if (!picker) { return; }
+
+        const hiddenCountry = document.getElementById('id_phone_country');
+        const hiddenCombined = document.getElementById('id_phone_number');
+        const localInput = document.getElementById('id_phone_number_local');
+        const button = picker.querySelector('[data-country-button]');
+        const flagEl = picker.querySelector('[data-country-flag]');
+        const codeEl = picker.querySelector('[data-country-code]');
+        const dropdown = picker.querySelector('[data-country-dropdown]');
+        const searchInput = picker.querySelector('[data-country-search]');
+        const listEl = picker.querySelector('[data-country-list]');
+        const emptyState = picker.querySelector('[data-country-empty]');
+        const datasetUrl = "{% static 'cards/country_codes.json' %}";
+
+        let countries = [];
+        let filtered = [];
+        let activeIndex = -1;
+
+        const sanitizeDigits = (value) => value ? value.replace(/\D/g, '') : '';
+
+        const closeDropdown = () => {
+            dropdown.classList.add('hidden');
+            button.setAttribute('aria-expanded', 'false');
+            activeIndex = filtered.findIndex(country => country.dialDigits === hiddenCountry.value);
+        };
+
+        const openDropdown = () => {
+            dropdown.classList.remove('hidden');
+            button.setAttribute('aria-expanded', 'true');
+            renderList('');
+            searchInput.value = '';
+            setTimeout(() => searchInput.focus(), 0);
+        };
+
+        const updateButtonDisplay = (country) => {
+            if (!country) { return; }
+            flagEl.textContent = country.flag;
+            codeEl.textContent = country.dial_code;
+            picker.dataset.selectedCode = country.dialDigits;
+        };
+
+        const updateHiddenValues = () => {
+            const countryDigits = sanitizeDigits(hiddenCountry.value);
+            let localDigits = sanitizeDigits(localInput.value);
+
+            if (countryDigits && localDigits.startsWith(countryDigits)) {
+                localDigits = localDigits.slice(countryDigits.length);
+            }
+
+            localInput.value = localDigits;
+            hiddenCombined.value = countryDigits ? `${countryDigits}${localDigits}` : localDigits;
+        };
+
+        const selectCountry = (country) => {
+            hiddenCountry.value = country.dialDigits;
+            updateButtonDisplay(country);
+            updateHiddenValues();
+        };
+
+        const renderList = (term) => {
+            const query = term.trim().toLowerCase();
+            filtered = !query
+                ? countries
+                : countries.filter(country => country.search.includes(query));
+
+            if (!filtered.length) {
+                listEl.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                activeIndex = -1;
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            activeIndex = filtered.findIndex(country => country.dialDigits === hiddenCountry.value);
+            if (activeIndex < 0) { activeIndex = 0; }
+
+            listEl.innerHTML = filtered.map((country, index) => {
+                const activeClass = index === activeIndex ? 'active' : '';
+                return `<li data-country-item data-index="${index}" data-dial="${country.dialDigits}" class="${activeClass}">` +
+                    `<span class="flag">${country.flag}</span>` +
+                    `<span class="label">${country.name}<small>${country.dial_code}</small></span>` +
+                `</li>`;
+            }).join('');
+        };
+
+        document.addEventListener('click', (event) => {
+            if (!picker.contains(event.target) && !dropdown.classList.contains('hidden')) {
+                closeDropdown();
+            }
         });
-    }
+
+        button.addEventListener('click', () => {
+            if (dropdown.classList.contains('hidden')) {
+                openDropdown();
+            } else {
+                closeDropdown();
+            }
+        });
+
+        listEl.addEventListener('mousedown', (event) => {
+            const item = event.target.closest('[data-country-item]');
+            if (!item) { return; }
+            event.preventDefault();
+            const country = filtered[Number(item.dataset.index)];
+            if (country) {
+                selectCountry(country);
+                closeDropdown();
+                button.focus();
+            }
+        });
+
+        listEl.addEventListener('mousemove', (event) => {
+            const item = event.target.closest('[data-country-item]');
+            if (!item) { return; }
+            const index = Number(item.dataset.index);
+            if (!Number.isNaN(index)) {
+                activeIndex = index;
+                listEl.querySelectorAll('[data-country-item]').forEach((node, idx) => {
+                    node.classList.toggle('active', idx === activeIndex);
+                });
+            }
+        });
+
+        searchInput.addEventListener('input', (event) => {
+            renderList(event.target.value);
+        });
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (!filtered.length) { return; }
+            if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                activeIndex = (activeIndex + 1) % filtered.length;
+                renderList(event.target.value);
+            }
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
+                renderList(event.target.value);
+            }
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const country = filtered[activeIndex >= 0 ? activeIndex : 0];
+                if (country) {
+                    selectCountry(country);
+                    closeDropdown();
+                    button.focus();
+                }
+            }
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeDropdown();
+                button.focus();
+            }
+        });
+
+        fetch(datasetUrl)
+            .then(response => response.json())
+            .then(data => {
+                countries = data.map(country => ({
+                    ...country,
+                    dialDigits: country.dial_code.replace(/[^0-9]/g, ''),
+                    search: `${country.name.toLowerCase()} ${country.dial_code.replace('+','')} ${country.code.toLowerCase()}`
+                }));
+
+                const initialCode = sanitizeDigits(hiddenCountry.value) || picker.dataset.defaultCode || '880';
+                const initialCountry = countries.find(country => country.dialDigits === initialCode) || countries[0];
+                selectCountry(initialCountry);
+                renderList('');
+                updateHiddenValues();
+            })
+            .catch(() => {
+                hiddenCountry.value = hiddenCountry.value || '880';
+                updateButtonDisplay({ flag: '🌐', dial_code: `+${hiddenCountry.value}`, dialDigits: hiddenCountry.value });
+                updateHiddenValues();
+            });
+
+        if (localInput) {
+            localInput.addEventListener('input', () => {
+                const sanitized = sanitizeDigits(localInput.value);
+                if (sanitized !== localInput.value) {
+                    localInput.value = sanitized;
+                }
+                updateHiddenValues();
+            });
+        }
+    })();
+
+    (function() {
+        document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
+            const wrapper = toggle.closest('.password-wrapper');
+            if (!wrapper) { return; }
+            const input = wrapper.querySelector('input[type="password"], input[type="text"]');
+            if (!input) { return; }
+
+            toggle.addEventListener('click', () => {
+                const isVisible = input.type === 'text';
+                input.type = isVisible ? 'password' : 'text';
+                toggle.dataset.visible = isVisible ? 'false' : 'true';
+            });
+        });
+    })();
 </script>
 {% endblock %}
+    .password-wrapper {
+        position: relative;
+    }
+    .password-wrapper input[type="password"],
+    .password-wrapper input[type="text"] {
+        padding-right: 3rem;
+    }
+    .password-toggle {
+        position: absolute;
+        top: 50%;
+        right: 0.85rem;
+        transform: translateY(-50%);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        color: #94a3b8;
+    }
+    .password-toggle .icon-visible {
+        display: none;
+    }
+    .password-toggle[data-visible="true"] .icon-visible {
+        display: inline;
+    }
+    .password-toggle[data-visible="true"] .icon-hidden {
+        display: none;
+    }
