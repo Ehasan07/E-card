@@ -23,6 +23,10 @@
                         <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
                         Back to home
                     </a>
+                    <a href="{% url 'logout' %}" class="logout-btn">
+                        <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
+                        Logout
+                    </a>
                     <a href="{% url 'create_card' %}" class="group relative inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden">
                         <span class="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 group-hover:opacity-90 transition"></span>
                         <span class="absolute -inset-0.5 bg-gradient-to-r from-rose-300 to-pink-400 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
@@ -71,6 +75,24 @@
                 </div>
             </div>
 
+            <div class="limit-banner {% if at_card_limit %}limit-banner--warning{% else %}limit-banner--info{% endif %} mb-10">
+                <div class="limit-icon">
+                    {% if at_card_limit %}
+                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    {% else %}
+                        <i data-lucide="sparkles" class="w-5 h-5"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if at_card_limit %}
+                        <p class="font-semibold text-gray-800">Limit reached — contact an administrator to extend beyond {{ card_limit }} card{{ card_limit|pluralize }}.</p>
+                    {% else %}
+                        <p class="font-semibold text-gray-800">You can publish {{ cards_remaining }} more card{{ cards_remaining|pluralize }} with your current allowance of {{ card_limit }}.</p>
+                        <p class="text-sm text-gray-500">Upgrade requests go straight to the admin team.</p>
+                    {% endif %}
+                </div>
+            </div>
+
             {% if cards %}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {% for card in cards %}
@@ -91,9 +113,9 @@
                                             <h3 class="text-lg font-semibold text-gray-900">{{ card.card_data.firstName|default:'Card' }} {{ card.card_data.lastName|default:card.id }}</h3>
                                             <p class="text-sm text-gray-500">{{ card.card_data.jobTitle|default:'No title set yet' }}</p>
                                         </div>
-                                        <span class="status-pill">
+                                        <span class="status-pill {% if card.is_active %}status-pill--live{% else %}status-pill--offline{% endif %}">
                                             <span class="status-dot"></span>
-                                            Live
+                                            {% if card.is_active %}Live{% else %}Offline{% endif %}
                                         </span>
                                     </div>
                                     <div class="preview-banner" style="background: {{ card.card_data.background_style|default:'linear-gradient(135deg,#ff9a9e,#fad0c4)' }};"></div>
@@ -110,18 +132,29 @@
                                         {% endif %}
                                     </div>
                                     <div class="flex flex-wrap gap-3 pt-2">
-                                        <a href="{% url 'view_card' card.slug %}" class="card-action">
+                                        <a href="{% url 'view_card' card.slug %}" class="card-action {% if not card.is_active %}soft-disabled{% endif %}">
                                             <i data-lucide="eye" class="w-4 h-4"></i>
-                                            View card
+                                            {% if card.is_active %}View card{% else %}Preview offline{% endif %}
                                         </a>
                                         <a href="{% url 'edit_card' card.slug %}" class="card-action accent">
                                             <i data-lucide="edit-3" class="w-4 h-4"></i>
                                             Edit details
                                         </a>
-                                        <button type="button" class="card-action" data-copy-url="{{ card.get_absolute_url }}" onclick="(function(btn){const url=new URL(btn.dataset.copyUrl, window.location.origin).href;navigator.clipboard.writeText(url).then(()=>{btn.dataset.original=btn.dataset.original||btn.innerHTML;btn.innerHTML='<i data-lucide=\'check\' class=\'w-4 h-4\'></i>Copied!';setTimeout(()=>{btn.innerHTML=btn.dataset.original;lucide.createIcons();},1500);}).catch(()=>alert('Unable to copy link'));})(this)">
-                                            <i data-lucide="copy" class="w-4 h-4"></i>
-                                            Copy link
-                                        </button>
+                                        {% if card.is_active %}
+                                            <button type="button" class="card-action" data-copy-url="{{ card.get_absolute_url }}" onclick="(function(btn){const url=new URL(btn.dataset.copyUrl, window.location.origin).href;navigator.clipboard.writeText(url).then(()=>{btn.dataset.original=btn.dataset.original||btn.innerHTML;btn.innerHTML='<i data-lucide=\'check\' class=\'w-4 h-4\'></i>Copied!';setTimeout(()=>{btn.innerHTML=btn.dataset.original;lucide.createIcons();},1500);}).catch(()=>alert('Unable to copy link'));})(this)">
+                                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                                Copy link
+                                            </button>
+                                        {% else %}
+                                            <form action="{% url 'request_upgrade' card.slug %}" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="plan" value="monthly_upgrade">
+                                                <button type="submit" class="card-action upgrade">
+                                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                                    Request upgrade
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -196,6 +229,38 @@
         transform: translateY(-6px);
         box-shadow: 0 35px 70px -30px rgba(236, 72, 153, 0.45);
     }
+    .limit-banner {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        padding: 1.25rem;
+        border-radius: 1.25rem;
+        border: 1px solid transparent;
+        background: rgba(255,255,255,0.85);
+        box-shadow: 0 24px 45px -30px rgba(15,23,42,0.25);
+        backdrop-filter: blur(6px);
+    }
+    .limit-banner--info {
+        border-color: rgba(199,210,254,0.6);
+    }
+    .limit-banner--warning {
+        border-color: rgba(254,202,202,0.6);
+        background: rgba(254,226,226,0.78);
+    }
+    .limit-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 1rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(236,72,153,0.12);
+        color: #ec4899;
+    }
+    .limit-banner--warning .limit-icon {
+        background: rgba(248,113,113,0.18);
+        color: #dc2626;
+    }
     .avatar-shell {
         width: 3.5rem;
         height: 3.5rem;
@@ -228,25 +293,40 @@
         padding: 0.3rem 0.7rem;
         border-radius: 999px;
         font-size: 0.75rem;
-        background: rgba(220, 252, 231, 0.9);
-        border: 1px solid rgba(22, 163, 74, 0.2);
-        color: #166534;
         font-weight: 600;
+        border: 1px solid transparent;
+    }
+    .status-pill--live {
+        background: rgba(220, 252, 231, 0.9);
+        border-color: rgba(22, 163, 74, 0.2);
+        color: #166534;
+    }
+    .status-pill--offline {
+        background: rgba(254, 226, 226, 0.85);
+        border-color: rgba(248, 113, 113, 0.35);
+        color: #b91c1c;
     }
     .status-dot {
         position: relative;
         width: 8px;
         height: 8px;
         border-radius: 999px;
-        background: #22c55e;
+        background: currentColor;
     }
-    .status-dot::after {
+    .status-pill--live .status-dot::after {
         content: '';
         position: absolute;
         inset: -4px;
         border-radius: inherit;
         background: rgba(34, 197, 94, 0.35);
         animation: ping 1.5s infinite;
+    }
+    .status-pill--offline .status-dot::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: inherit;
+        background: rgba(248, 113, 113, 0.25);
     }
     @keyframes ping {
         0% { transform: scale(1); opacity: 0.8; }
@@ -277,6 +357,19 @@
         transform: translateY(-3px);
         color: #111827;
         box-shadow: 0 15px 35px -30px rgba(15, 23, 42, 0.45);
+    }
+    .card-action.soft-disabled {
+        border-style: dashed;
+        opacity: 0.75;
+    }
+    .card-action.upgrade {
+        background: rgba(236,72,153,0.12);
+        border: 1px solid rgba(236,72,153,0.35);
+        color: #be185d;
+    }
+    .card-action.upgrade:hover {
+        color: #9d174d;
+        box-shadow: 0 20px 40px -30px rgba(236,72,153,0.5);
     }
     .card-action i { opacity: 0.75; }
     .card-action.accent {
@@ -360,6 +453,48 @@
         border-radius: 0.9rem;
         background: rgba(59,130,246,0.12);
         color: #2563eb;
+        position: relative;
+        z-index: 1;
+    }
+    .logout-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.8rem 1.4rem;
+        border-radius: 1.1rem;
+        font-weight: 600;
+        color: #b91c1c;
+        background: rgba(254,226,226,0.9);
+        border: 1px solid rgba(248,113,113,0.45);
+        box-shadow: 0 18px 40px -28px rgba(248,113,113,0.45);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .logout-btn::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(248,113,113,0.18), rgba(251,191,36,0.12));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .logout-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 24px 52px -26px rgba(248,113,113,0.55);
+    }
+    .logout-btn:hover::after {
+        opacity: 1;
+    }
+    .logout-btn .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 0.9rem;
+        background: rgba(248,113,113,0.18);
+        color: #b91c1c;
         position: relative;
         z-index: 1;
     }

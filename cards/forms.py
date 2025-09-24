@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
 
-from .models import Card, Profile
+from .models import Card, Profile, DEFAULT_CARD_LIMIT
 
 import re
 
@@ -228,9 +229,61 @@ class CardForm(forms.ModelForm):
 
 
 class UserForm(forms.ModelForm):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={'autocomplete': 'email'}),
+        error_messages={'required': 'We need your email address to create the account.'}
+    )
+    password = forms.CharField(
+        strip=False,
+        required=True,
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        error_messages={'required': 'Choose a password for your account.'}
+    )
+
     class Meta:
         model = User
         fields = ["username", "email", "password"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name in self.fields:
+            field = self.fields[field_name]
+            classes = field.widget.attrs.get('class', '')
+            field.widget.attrs['class'] = f"{classes} form-control".strip()
+            if field_name == 'username':
+                field.widget.attrs.setdefault('autocomplete', 'username')
+                field.widget.attrs.setdefault('placeholder', 'Studio username')
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username', '').strip()
+        if not username:
+            raise forms.ValidationError('Choose a username to continue.')
+        if User.objects.filter(username__iexact=username).exists():
+            raise forms.ValidationError('This username is already taken.')
+        return username.lower()
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError('An account with this email already exists.')
+        return email
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if not password:
+            raise forms.ValidationError('Choose a password for your account.')
+        username = self.cleaned_data.get('username') or ''
+        temp_user = User(username=username)
+        validate_password(password, temp_user)
+        return password
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data.get('email', user.email)
+        if commit:
+            user.save()
+        return user
 
 
 class ProfileForm(forms.ModelForm):
@@ -258,6 +311,7 @@ class ProfileForm(forms.ModelForm):
         self.fields['phone_number_local'].widget.attrs.setdefault('placeholder', 'Phone number')
         self.fields['phone_number_local'].widget.attrs.setdefault('inputmode', 'numeric')
         self.fields['phone_number_local'].widget.attrs.setdefault('pattern', '[0-9]*')
+        self.fields['phone_number_local'].required = True
 
         # Prepare defaults for the picker widgets.
         existing_phone = self.initial.get('phone_number') or ''
@@ -289,6 +343,9 @@ class ProfileForm(forms.ModelForm):
         if local_raw and not local_digits:
             self.add_error('phone_number_local', 'Enter digits only for the phone number.')
 
+        if not local_digits:
+            self.add_error('phone_number_local', 'A phone number is required.')
+
         if local_digits and not country_code:
             self.add_error('phone_country', 'Select a country code.')
 
@@ -299,8 +356,31 @@ class ProfileForm(forms.ModelForm):
         else:
             cleaned_data['phone_number'] = ''
 
+        final_number = cleaned_data.get('phone_number')
+        if final_number:
+            qs = Profile.objects.filter(phone_number=final_number)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                self.add_error('phone_number_local', 'This phone number is already registered with another account.')
+        elif local_digits:
+            self.add_error('phone_number_local', 'Enter a valid phone number so we can reach you.')
+
         return cleaned_data
 
 
 class ForgotPasswordForm(forms.Form):
     email_or_phone = forms.CharField(label="Email or Phone Number", max_length=254)
+
+
+class AdminCardLimitForm(forms.Form):
+    card_limit = forms.IntegerField(
+        min_value=DEFAULT_CARD_LIMIT,
+        max_value=50,
+        widget=forms.NumberInput(attrs={'class': 'form-control w-24 text-center rounded-xl border border-slate-200', 'aria-label': 'Card limit'}),
+        error_messages={
+            'min_value': 'Limit must allow at least one card.',
+            'max_value': 'That limit is higher than we support right now.',
+            'invalid': 'Enter how many cards this user may create.'
+        }
+    )

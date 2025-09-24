@@ -8,8 +8,18 @@ from io import BytesIO, StringIO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .forms import UserForm, ProfileForm, ForgotPasswordForm, CardForm, COUNTRY_CHOICES
-from .models import Card, Profile
+from django.db import transaction
+from django.db.models import Count
+from django.http import Http404
+from .forms import UserForm, ProfileForm, ForgotPasswordForm, CardForm, COUNTRY_CHOICES, AdminCardLimitForm
+from .models import (
+    Card,
+    Profile,
+    DEFAULT_CARD_LIMIT,
+    UpgradeRequest,
+    SubscriptionPlan,
+    Subscription,
+)
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
 from django.core.mail import send_mail
@@ -23,6 +33,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
+from django.views.decorators.http import require_POST
 
 from datetime import timedelta
 
@@ -78,17 +89,32 @@ def register(request):
         user_form = UserForm(request.POST)
         profile_form = ProfileForm(request.POST)
         if user_form.is_valid() and profile_form.is_valid():
-            user = user_form.save(commit=False)
-            user.set_password(user.password)
-            user.save()
-            profile = profile_form.save(commit=False)
-            profile.user = user
-            profile.save()
-            login(request, user)
-            return redirect('dashboard')
+            try:
+                with transaction.atomic():
+                    user = user_form.save(commit=False)
+                    raw_password = user_form.cleaned_data['password']
+                    user.set_password(raw_password)
+                    user.email = user.email.lower()
+                    user.save()
+
+                    profile = profile_form.save(commit=False)
+                    profile.user = user
+                    if not profile.card_limit:
+                        profile.card_limit = DEFAULT_CARD_LIMIT
+                    profile.save()
+
+                login(request, user)
+                messages.success(request, 'Welcome aboard! Your studio is ready for its first card.')
+                return redirect('dashboard')
+            except Exception as exc:
+                messages.error(request, 'We could not create your account right now. Please try again.')
+                user_form.add_error(None, 'Unexpected error while creating your account. If this persists, contact support.')
+        else:
+            messages.error(request, 'Please review the highlighted details before continuing.')
     else:
         user_form = UserForm()
         profile_form = ProfileForm()
+
     return render(request, 'cards/register.html', {
         'user_form': user_form,
         'profile_form': profile_form
@@ -111,38 +137,73 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    cards = Card.objects.filter(user=request.user).order_by('-created_at')
-    return render(request, 'cards/dashboard.html', {'cards': cards})
+    cards_qs = Card.objects.filter(user=request.user).order_by('-created_at')
+    cards = list(cards_qs)
+
+    profile = getattr(request.user, 'profile', None)
+    card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
+    total_cards = len(cards)
+    remaining_cards = max(card_limit - total_cards, 0)
+
+    context = {
+        'cards': cards,
+        'card_limit': card_limit,
+        'cards_remaining': remaining_cards,
+        'at_card_limit': remaining_cards == 0,
+    }
+    return render(request, 'cards/dashboard.html', context)
 
 @login_required
 def create_card(request):
-    # Check if user already has an active card
-    existing_card = Card.objects.filter(user=request.user, is_active=True).first()
-    if existing_card:
-        messages.info(request, 'You already have a card. We opened the editor for you.')
-        return redirect('edit_card', slug=existing_card.slug)
+    profile = getattr(request.user, 'profile', None)
+    card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
+    total_cards = Card.objects.filter(user=request.user).count()
+    remaining_cards = card_limit - total_cards
+
+    if remaining_cards <= 0:
+        first_card = Card.objects.filter(user=request.user).order_by('created_at').first()
+        if first_card and card_limit == DEFAULT_CARD_LIMIT:
+            messages.info(request, 'Your plan allows one card. We opened the editor for your existing card.')
+            return redirect('edit_card', slug=first_card.slug)
+
+        messages.warning(request, 'You have reached your card limit. Ask an administrator to extend your allowance.')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         form = CardForm(request.POST, request.FILES)
         if form.is_valid():
             excluded_keys = {'avatar', 'logo', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
             card_data = {key: value for key, value in form.cleaned_data.items() if key not in excluded_keys}
-            
+
             card = form.save(commit=False)
             card.user = request.user
             card.card_data = card_data
-            card.save() # This will also trigger the QR code generation in the model's save method
+            card.save()
 
-            return redirect(card.get_absolute_url())
+            messages.success(request, 'Card published! Share your new link right away.')
+            return redirect('view_card', slug=card.slug)
+        messages.error(request, 'Fix the highlighted details so we can create your card.')
     else:
         form = CardForm()
-    
-    # The create_card.html now needs to be a proper form template
-    return render(request, 'cards/create_card.html', {'form': form})
+
+    context = {
+        'form': form,
+        'card_limit': card_limit,
+        'cards_remaining': remaining_cards,
+    }
+    return render(request, 'cards/create_card.html', context)
 
 @login_required
 def edit_card(request, slug):
-    card = get_object_or_404(Card, slug=slug, user=request.user, is_active=True)
+    card = get_object_or_404(Card, slug=slug, user=request.user)
+
+    if not card.is_active:
+        messages.info(request, 'This card is currently offline. Any updates will be live once an admin reactivates it.')
+
+    profile = getattr(request.user, 'profile', None)
+    card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
+    total_cards = Card.objects.filter(user=request.user).count()
+    remaining_cards = max(card_limit - total_cards, 0)
 
     if request.method == 'POST':
         form = CardForm(request.POST, request.FILES, instance=card)
@@ -156,7 +217,13 @@ def edit_card(request, slug):
         initial_data = _card_initial_data(card)
         form = CardForm(instance=card, initial=initial_data)
 
-    return render(request, 'cards/create_card.html', {'form': form, 'card': card})
+    context = {
+        'form': form,
+        'card': card,
+        'card_limit': card_limit,
+        'cards_remaining': remaining_cards,
+    }
+    return render(request, 'cards/create_card.html', context)
 
 
 @user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
@@ -176,13 +243,29 @@ def admin_edit_card(request, slug):
     return render(request, 'cards/create_card.html', {'form': form, 'card': card, 'admin_edit': True})
 
 def view_card(request, slug):
-    card = get_object_or_404(Card, slug=slug, is_active=True)
+    card = get_object_or_404(Card, slug=slug)
     is_owner = request.user.is_authenticated and request.user == card.user
     is_admin = request.user.is_authenticated and request.user.is_superuser
+
     from_qr = request.GET.get('qr') == '1'
 
+    if not card.is_active and not is_admin:
+        if is_owner:
+            existing_request = UpgradeRequest.objects.filter(
+                user=request.user,
+                card=card,
+                status=UpgradeRequest.STATUS_PENDING
+            ).first()
+            context = {
+                'card': card,
+                'existing_request': existing_request,
+                'is_owner': True,
+            }
+            return render(request, 'cards/card_inactive.html', context)
+        return render(request, 'cards/card_inactive_public.html', {'card': card}, status=200)
+
     visited_cards = request.session.get('visited_cards', [])
-    if card.slug not in visited_cards:
+    if card.is_active and card.slug not in visited_cards:
         visited_cards.append(card.slug)
         request.session['visited_cards'] = visited_cards
         current_count = card.card_data.get('unique_views') or 0
@@ -238,11 +321,23 @@ def admin_login_view(request):
 
 @user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
 def admin_dashboard(request):
-    users = User.objects.select_related('profile').order_by('-date_joined')
+    users = (
+        User.objects.select_related('profile')
+        .annotate(card_count=Count('card'))
+        .order_by('-date_joined')
+    )
     cards = Card.objects.select_related('user', 'user__profile').order_by('-created_at')
+
     user_records = []
     for user in users:
+        profile = getattr(user, 'profile', None)
+        card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
+        card_limit_form = AdminCardLimitForm(initial={'card_limit': card_limit}, auto_id=f'id_user_{user.id}_%s')
+        primary_card_slug = (
+            user.card_set.order_by('created_at').values_list('slug', flat=True).first()
+        )
         user_records.append({
+            'instance': user,
             'id': user.id,
             'name': (user.get_full_name() or '').strip() or user.username,
             'email': user.email or '',
@@ -250,20 +345,177 @@ def admin_dashboard(request):
             'registered': user.date_joined,
             'is_active': user.is_active,
             'status_label': 'Active' if user.is_active else 'Inactive',
+            'card_limit': card_limit,
+            'card_count': user.card_count,
+            'card_limit_form': card_limit_form,
+            'primary_card_slug': primary_card_slug,
         })
+
+    pending_requests = UpgradeRequest.objects.filter(status=UpgradeRequest.STATUS_PENDING)
 
     context = {
         'total_users': len(user_records),
         'total_cards': cards.count(),
         'all_cards': cards,
         'all_users': user_records,
+        'pending_request_count': pending_requests.count(),
     }
     return render(request, 'cards/admin_dashboard.html', context)
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def admin_set_card_limit(request, user_id):
+    target_user = get_object_or_404(User, pk=user_id)
+
+    if request.method != 'POST':
+        return redirect('admin_dashboard')
+
+    form = AdminCardLimitForm(request.POST)
+    if form.is_valid():
+        new_limit = form.cleaned_data['card_limit']
+        try:
+            profile = target_user.profile
+        except Profile.DoesNotExist:
+            messages.error(request, 'This user does not have a profile yet, so we cannot update their limit.')
+        else:
+            existing_cards = target_user.card_set.count()
+            profile.card_limit = new_limit
+            profile.save(update_fields=['card_limit'])
+            if new_limit < existing_cards:
+                messages.warning(
+                    request,
+                    f"Limit updated to {new_limit}, but the user already has {existing_cards} cards. They will need to archive cards before creating new ones."
+                )
+            else:
+                messages.success(request, f'Card limit for {target_user.username} updated to {new_limit}.')
+    else:
+        error_text = ', '.join(form.errors.get('card_limit', [])) or 'Enter a valid limit to continue.'
+        messages.error(request, error_text)
+
+    return redirect('admin_dashboard')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def admin_toggle_card_status(request, slug):
+    card = get_object_or_404(Card, slug=slug)
+
+    if request.method == 'POST':
+        card.is_active = not card.is_active
+        card.save(update_fields=['is_active'])
+        if card.is_active:
+            UpgradeRequest.objects.filter(card=card, status=UpgradeRequest.STATUS_PENDING).update(
+                status=UpgradeRequest.STATUS_APPROVED,
+                responded_at=timezone.now(),
+                handled_by=request.user,
+                admin_notes='Approved via quick toggle'
+            )
+        state = 'active' if card.is_active else 'offline'
+        messages.success(request, f'Card “{card.slug}” is now {state}.')
+
+    return redirect('admin_dashboard')
+
+
+@login_required
+@require_POST
+def request_upgrade(request, slug):
+    card = get_object_or_404(Card, slug=slug, user=request.user)
+
+    if card.is_active:
+        messages.info(request, 'This card is already active.')
+        return redirect(card.get_absolute_url())
+
+    existing_request = UpgradeRequest.objects.filter(
+        user=request.user,
+        card=card,
+        status=UpgradeRequest.STATUS_PENDING
+    ).first()
+    if existing_request:
+        messages.info(request, 'We already have your request on file. Our concierge team will follow up shortly.')
+        return redirect(card.get_absolute_url())
+
+    requested_plan = request.POST.get('plan') or 'monthly_upgrade'
+    user_note = request.POST.get('note', '').strip()
+
+    UpgradeRequest.objects.create(
+        user=request.user,
+        card=card,
+        requested_plan=requested_plan,
+        message=user_note
+    )
+
+    messages.success(request, 'Upgrade request sent. Our team will reach out within 1 business day.')
+    return redirect(card.get_absolute_url())
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def admin_messages(request):
+    upgrade_requests = UpgradeRequest.objects.select_related('user', 'card').order_by('-created_at')
+    available_plans = SubscriptionPlan.objects.filter(is_active=True)
+    return render(request, 'cards/admin_messages.html', {
+        'upgrade_requests': upgrade_requests,
+        'available_plans': available_plans,
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+@require_POST
+def admin_handle_upgrade(request, request_id, action):
+    upgrade_request = get_object_or_404(UpgradeRequest, pk=request_id)
+
+    if upgrade_request.status != UpgradeRequest.STATUS_PENDING:
+        messages.info(request, 'This request has already been handled.')
+        return redirect('admin_messages')
+
+    admin_notes = request.POST.get('admin_notes', '').strip()
+    card_limit_raw = request.POST.get('card_limit')
+    reactivate = request.POST.get('reactivate_card') == 'on'
+
+    if action == 'approve':
+        profile = getattr(upgrade_request.user, 'profile', None)
+        if profile and card_limit_raw:
+            try:
+                new_limit = int(card_limit_raw)
+            except (TypeError, ValueError):
+                messages.error(request, 'Include a valid number for the new allowance.')
+                return redirect('admin_messages')
+            profile.card_limit = max(DEFAULT_CARD_LIMIT, new_limit)
+            profile.save(update_fields=['card_limit'])
+
+        if reactivate and upgrade_request.card:
+            upgrade_request.card.is_active = True
+            upgrade_request.card.save(update_fields=['is_active'])
+
+        upgrade_request.mark(UpgradeRequest.STATUS_APPROVED, request.user, admin_notes)
+        messages.success(request, f'Upgrade approved for {upgrade_request.user.username}.')
+
+    elif action == 'reject':
+        upgrade_request.mark(UpgradeRequest.STATUS_REJECTED, request.user, admin_notes)
+        messages.info(request, f'Upgrade request rejected for {upgrade_request.user.username}.')
+    else:
+        messages.error(request, 'Unsupported action.')
+
+    return redirect('admin_messages')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def delete_user_admin(request, user_id):
+    target_user = get_object_or_404(User, pk=user_id)
+
+    if request.method == 'POST':
+        if target_user == request.user:
+            messages.error(request, 'You cannot delete your own admin account while logged in.')
+        else:
+            target_user.delete()
+            messages.success(request, f'User “{target_user.username}” has been removed.')
+
+    return redirect('admin_dashboard')
+
 
 @user_passes_test(lambda u: u.is_superuser)
 def delete_card_admin(request, slug):
     card = get_object_or_404(Card, slug=slug)
     card.delete()
+    messages.success(request, f'Card “{slug}” was removed from the workspace.')
     return redirect('admin_dashboard')
 
 

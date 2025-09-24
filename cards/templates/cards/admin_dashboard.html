@@ -1,503 +1,716 @@
 {% extends 'cards/base.html' %}
 
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}Admin Command Center{% endblock %}
 
 {% block content %}
-<div class="min-h-screen">
-    <div class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-slate-100 via-white to-indigo-100/60"></div>
-        <div class="relative container mx-auto px-4 py-12">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-12">
-                <div class="space-y-4">
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-900 text-white/80 text-xs font-semibold tracking-[0.35em] uppercase">
-                        <i data-lucide="shield" class="w-4 h-4"></i>
-                        Admin console
-                    </span>
-                    <div>
-                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Platform overview</h1>
-                        <p class="text-slate-500 max-w-2xl">Monitor user growth, review live cards, and step in quickly when moderation is needed.</p>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <a href="{% url 'index' %}" class="admin-nav-btn home">
-                        <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
-                        Back to home
-                    </a>
-                    <a href="{% url 'export_cards_csv' %}" class="admin-nav-btn csv">
-                        <span class="icon"><i data-lucide="file-output" class="w-4 h-4"></i></span>
-                        Download CSVs
-                    </a>
-                    <a href="{% url 'export_cards_excel' %}" class="admin-nav-btn excel">
-                        <span class="icon"><i data-lucide="file-spreadsheet" class="w-4 h-4"></i></span>
-                        Download Excel
-                    </a>
-                    <a href="{% url 'logout' %}" class="admin-nav-btn logout">
-                        <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
-                        Logout
-                    </a>
-                    <div class="hidden md:flex items-center gap-3 bg-white/80 border border-white/70 backdrop-blur px-6 py-3 rounded-2xl shadow-lg">
-                        <i data-lucide="activity" class="w-5 h-5 text-indigo-500"></i>
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Last sync</p>
-                            <p class="text-sm font-semibold text-slate-700">{{ all_cards|length }} cards indexed</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="admin-stat admin-summary-trigger" data-target="users" tabindex="0" role="button" aria-controls="detail-section" aria-expanded="false" style="animation-delay:0s;">
-                    <div class="stat-icon bg-indigo-100 text-indigo-600">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label">Total Users</p>
-                        <p class="stat-value">{{ total_users }}</p>
-                    </div>
-                </div>
-                <div class="admin-stat admin-summary-trigger" data-target="cards" tabindex="0" role="button" aria-controls="detail-section" aria-expanded="false" style="animation-delay:0.15s;">
-                    <div class="stat-icon bg-violet-100 text-violet-600">
-                        <i data-lucide="id-card" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label">Total Cards</p>
-                        <p class="stat-value">{{ total_cards }}</p>
-                    </div>
-                </div>
-                <div class="admin-stat admin-summary-trigger" data-target="cards" tabindex="0" role="button" aria-controls="detail-section" aria-expanded="false" style="animation-delay:0.3s;">
-                    <div class="stat-icon bg-emerald-100 text-emerald-600">
-                        <i data-lucide="list-ordered" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <p class="stat-label">Moderation queue</p>
-                        <p class="stat-value">{{ all_cards|length }}</p>
-                    </div>
-                </div>
-            </div>
-            <div id="detail-section" class="detail-panel hidden">
-                <div class="detail-table hidden" data-table="users">
-                    <a href="#" class="back-to-summary">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        Back to summary
-                    </a>
-                    <div class="bg-white/85 border border-white/70 rounded-3xl shadow-2xl backdrop-blur overflow-hidden">
-                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                            <div>
-                                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">User directory</p>
-                                <h2 class="text-xl font-semibold text-slate-800">All users</h2>
-                            </div>
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-                                <i data-lucide="users" class="w-4 h-4"></i>
-                                {{ all_users|length }} users
-                            </span>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-left text-sm">
-                                <thead class="bg-slate-50/80 text-slate-500 uppercase tracking-[0.2em] text-xs">
-                                    <tr>
-                                        <th class="px-6 py-3">User ID</th>
-                                        <th class="px-6 py-3">Name</th>
-                                        <th class="px-6 py-3">Email</th>
-                                        <th class="px-6 py-3">Phone</th>
-                                        <th class="px-6 py-3">Registered</th>
-                                        <th class="px-6 py-3 text-right">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100">
-                                    {% for user in all_users %}
-                                        <tr class="hover:bg-slate-50/80 transition">
-                                            <td class="px-6 py-4 text-slate-500 font-semibold">#{{ user.id }}</td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="avatar-badge">
-                                                        <i data-lucide="user" class="w-4 h-4"></i>
-                                                    </span>
-                                                    <div>
-                                                        <p class="font-semibold text-slate-800">{{ user.name }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 text-slate-600">{{ user.email|default:'—' }}</td>
-                                            <td class="px-6 py-4 text-slate-600">{{ user.phone|default:'—' }}</td>
-                                            <td class="px-6 py-4 text-slate-500">{{ user.registered|date:"M d, Y" }}</td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex justify-end">
-                                                    <span class="status-pill {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">
-                                                        <span class="dot"></span>
-                                                        {{ user.status_label }}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="6" class="px-6 py-8 text-center text-slate-500">No users found.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="detail-table hidden" data-table="cards">
-                    <a href="#" class="back-to-summary">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        Back to summary
-                    </a>
-                    <div class="bg-white/85 border border-white/70 rounded-3xl shadow-2xl backdrop-blur overflow-hidden">
-                        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                            <div>
-                                <p class="text-xs uppercase tracking-[0.3em] text-slate-400">Moderation queue</p>
-                                <h2 class="text-xl font-semibold text-slate-800">All cards</h2>
-                            </div>
-                            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">
-                                <i data-lucide="list-checks" class="w-4 h-4"></i>
-                                {{ all_cards|length }} entries
-                            </span>
-                        </div>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full text-left text-sm">
-                                <thead class="bg-slate-50/80 text-slate-500 uppercase tracking-[0.2em] text-xs">
-                                    <tr>
-                                        <th class="px-6 py-3">User</th>
-                                        <th class="px-6 py-3">Slug</th>
-                                        <th class="px-6 py-3">Status</th>
-                                        <th class="px-6 py-3">Created</th>
-                                        <th class="px-6 py-3 text-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100">
-                                    {% for card in all_cards %}
-                                        <tr class="hover:bg-slate-50/80 transition">
-                                            <td class="px-6 py-4">
-                                                <div class="flex items-center gap-3">
-                                                    <span class="avatar-badge">
-                                                        <i data-lucide="user" class="w-4 h-4"></i>
-                                                    </span>
-                                                    <div>
-                                                        <p class="font-semibold text-slate-800">{{ card.user.username }}</p>
-                                                        <p class="text-xs text-slate-400">ID #{{ card.user.id }}</p>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="px-6 py-4 text-slate-600">{{ card.slug }}</td>
-                                            <td class="px-6 py-4">
-                                                {% if card.is_active %}
-                                                    <span class="status-pill status-active"><span class="dot"></span>Active</span>
-                                                {% else %}
-                                                    <span class="status-pill status-inactive"><span class="dot"></span>Inactive</span>
-                                                {% endif %}
-                                            </td>
-                                            <td class="px-6 py-4 text-slate-500">{{ card.created_at|date:"M d, Y" }}</td>
-                                            <td class="px-6 py-4">
-                                                <div class="flex justify-end items-center gap-2">
-                                                    <a href="{% url 'view_card' card.slug %}" class="table-action view" title="View">
-                                                        <i data-lucide="eye" class="w-4 h-4"></i>
-                                                    </a>
-                                                    <a href="{% url 'admin_edit_card' card.slug %}" class="table-action edit" title="Edit">
-                                                        <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                                    </a>
-                                                    <form action="{% url 'delete_card_admin' card.slug %}" method="post" class="inline">
-                                                        {% csrf_token %}
-                                                        <button type="submit" class="table-action delete" onclick="return confirm('Delete this card?');" title="Delete">
-                                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    {% empty %}
-                                        <tr>
-                                            <td colspan="5" class="px-6 py-8 text-center text-slate-500">No cards found.</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="admin-shell">
+    <div class="admin-hero">
+        <div class="hero-copy">
+            <span class="hero-tag"><i data-lucide="shield-check"></i> Premium Console</span>
+            <h1>Control the entire V-Card experience</h1>
+            <p>Moderate users, tune allowances, and toggle cards online in seconds. All actions are audited and styled for a premium SaaS feel.</p>
+        </div>
+        <div class="hero-actions">
+            <a href="{% url 'index' %}" class="hero-btn secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Open marketing site">
+                <i data-lucide="home"></i> Home
+            </a>
+            <a href="{% url 'export_cards_csv' %}" class="hero-btn secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download CSV export">
+                <i data-lucide="file-down"></i> CSV Export
+            </a>
+            <a href="{% url 'export_cards_excel' %}" class="hero-btn secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download Excel export">
+                <i data-lucide="table"></i> XLSX Export
+            </a>
+            <a href="{% url 'admin_messages' %}" class="hero-btn tertiary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upgrade requests">
+                <i data-lucide="inbox"></i>
+                Messages
+                {% if pending_request_count %}<span class="pill">{{ pending_request_count }}</span>{% endif %}
+            </a>
+            <a href="{% url 'logout' %}" class="hero-btn danger" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Logout">
+                <i data-lucide="log-out"></i> Logout
+            </a>
         </div>
     </div>
+
+    <div class="metrics-grid">
+        <article class="metric-card metric-trigger" data-target="users-panel">
+            <div class="metric-icon gradient-blue"><i data-lucide="users"></i></div>
+            <div>
+                <p class="metric-label">Total Users</p>
+                <p class="metric-value">{{ total_users }}</p>
+                <p class="metric-sub">Active studios on the platform</p>
+            </div>
+        </article>
+        <article class="metric-card metric-trigger" data-target="cards-panel">
+            <div class="metric-icon gradient-purple"><i data-lucide="id-card"></i></div>
+            <div>
+                <p class="metric-label">Total Cards</p>
+                <p class="metric-value">{{ total_cards }}</p>
+                <p class="metric-sub">Live digital experiences</p>
+            </div>
+        </article>
+        <article class="metric-card">
+            <div class="metric-icon gradient-emerald"><i data-lucide="sparkles"></i></div>
+            <div>
+                <p class="metric-label">Upgrade Requests</p>
+                <p class="metric-value">{{ pending_request_count }}</p>
+                <p class="metric-sub">Awaiting concierge review</p>
+            </div>
+        </article>
+    </div>
+
+    <section class="data-panels">
+        <div class="panel is-hidden" id="users-panel">
+            <header class="panel-head">
+                <div>
+                    <p class="panel-tag"><i data-lucide="users"></i> People directory</p>
+                    <h2>All users & allowances</h2>
+                </div>
+                <span class="panel-count">{{ all_users|length }} users</span>
+            </header>
+            <div class="table-shell">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th><span class="th-label"><i data-lucide="hash"></i>User ID</span></th>
+                            <th><span class="th-label"><i data-lucide="user"></i>Name</span></th>
+                            <th><span class="th-label"><i data-lucide="mail"></i>Email</span></th>
+                            <th><span class="th-label"><i data-lucide="phone"></i>Phone</span></th>
+                            <th><span class="th-label"><i data-lucide="calendar"></i>Registered</span></th>
+                            <th><span class="th-label"><i data-lucide="bar-chart-2"></i>Allowance</span></th>
+                            <th><span class="th-label"><i data-lucide="circle-check"></i>Status</span></th>
+                            <th><span class="th-label"><i data-lucide="settings-2"></i>Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in all_users %}
+                        <tr>
+                            <td data-label="User ID">#{{ user.id }}</td>
+                            <td data-label="Name">
+                                <div class="cell-with-icon">
+                                    <span class="avatar-pill"><i data-lucide="user"></i></span>
+                                    <span>{{ user.name }}</span>
+                                </div>
+                            </td>
+                            <td data-label="Email">{{ user.email|default:'—' }}</td>
+                            <td data-label="Phone">{{ user.phone|default:'—' }}</td>
+                            <td data-label="Registered">{{ user.registered|date:"M d, Y" }}</td>
+                            <td data-label="Allowance">
+                                <span class="allowance-pill"><i data-lucide="layers"></i>{{ user.card_count }} / {{ user.card_limit }}</span>
+                            </td>
+                            <td data-label="Status">
+                                <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
+                                    <span class="dot"></span>
+                                    {{ user.status_label }}
+                                </span>
+                            </td>
+                            <td class="actions-cell" data-label="Actions">
+                                <div class="action-stack">
+                                    <form action="{% url 'admin_set_card_limit' user.id %}" method="post" class="action-form">
+                                        {% csrf_token %}
+                                        {{ user.card_limit_form.card_limit }}
+                                        <button type="submit" class="stack-btn save" data-bs-toggle="tooltip" data-bs-placement="left" title="Save allowance">
+                                            <i data-lucide="save"></i>
+                                            Save
+                                        </button>
+                                    </form>
+                                    {% if user.primary_card_slug %}
+                                        <a href="{% url 'admin_edit_card' user.primary_card_slug %}" class="stack-btn edit" data-bs-toggle="tooltip" data-bs-placement="left" title="Edit primary card">
+                                            <i data-lucide="edit"></i>
+                                            Edit
+                                        </a>
+                                    {% else %}
+                                        <span class="stack-btn edit disabled" data-bs-toggle="tooltip" data-bs-placement="left" title="No cards yet">
+                                            <i data-lucide="edit"></i>
+                                            Edit
+                                        </span>
+                                    {% endif %}
+                                    <form action="{% url 'delete_user_admin' user.id %}" method="post" class="inline-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="stack-btn danger js-confirm" data-confirm="Delete this user and all of their cards?" data-bs-toggle="tooltip" data-bs-placement="left" title="Delete user">
+                                            <i data-lucide="trash"></i>
+                                            Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="empty-row">No users found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel is-hidden" id="cards-panel">
+            <header class="panel-head">
+                <div>
+                    <p class="panel-tag"><i data-lucide="layout"></i> Moderation queue</p>
+                    <h2>All cards & visibility</h2>
+                </div>
+                <span class="panel-count">{{ all_cards|length }} cards</span>
+            </header>
+            <div class="table-shell">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th><span class="th-label"><i data-lucide="user"></i>User</span></th>
+                            <th><span class="th-label"><i data-lucide="link"></i>Slug</span></th>
+                            <th><span class="th-label"><i data-lucide="circle-check"></i>Status</span></th>
+                            <th><span class="th-label"><i data-lucide="calendar"></i>Created</span></th>
+                            <th><span class="th-label"><i data-lucide="settings"></i>Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for card in all_cards %}
+                        <tr>
+                            <td data-label="User">
+                                <div class="cell-with-icon">
+                                    <span class="avatar-pill"><i data-lucide="user"></i></span>
+                                    <div>
+                                        <strong>{{ card.user.username }}</strong>
+                                        <p class="sub">ID #{{ card.user.id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Slug">{{ card.slug }}</td>
+                            <td data-label="Status">
+                                <span class="status-pill {% if card.is_active %}active{% else %}inactive{% endif %}">
+                                    <span class="dot"></span>
+                                    {% if card.is_active %}Active{% else %}Offline{% endif %}
+                                </span>
+                            </td>
+                            <td data-label="Created">{{ card.created_at|date:"M d, Y" }}</td>
+                            <td class="actions-cell" data-label="Actions">
+                                <div class="card-action-stack">
+                                    <a href="{% url 'view_card' card.slug %}" class="stack-btn neutral" data-bs-toggle="tooltip" data-bs-placement="left" title="Open public view"><i data-lucide="external-link"></i>View</a>
+                                    <form action="{% url 'admin_toggle_card_status' card.slug %}" method="post" class="inline-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="stack-btn toggle {% if card.is_active %}warning{% else %}success{% endif %}" data-bs-toggle="tooltip" data-bs-placement="left" title="Toggle visibility">
+                                            {% if card.is_active %}<i data-lucide="moon"></i>Make offline{% else %}<i data-lucide="sun"></i>Make active{% endif %}
+                                        </button>
+                                    </form>
+                                    <a href="{% url 'admin_edit_card' card.slug %}" class="stack-btn edit" data-bs-toggle="tooltip" data-bs-placement="left" title="Edit card"><i data-lucide="pen-square"></i>Edit</a>
+                                    <form action="{% url 'delete_card_admin' card.slug %}" method="post" class="inline-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="stack-btn danger js-confirm" data-confirm="Delete this card?" data-bs-toggle="tooltip" data-bs-placement="left" title="Delete card">
+                                            <i data-lucide="trash"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty-row">No cards found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const detailSection = document.getElementById('detail-section');
-        if (!detailSection) {
-            return;
-        }
-
-        const summaryCards = document.querySelectorAll('.admin-summary-trigger');
-        const detailTables = detailSection.querySelectorAll('.detail-table');
-        const backLinks = detailSection.querySelectorAll('.back-to-summary');
-
-        const activateTable = (target) => {
-            detailTables.forEach((table) => {
-                if (table.dataset.table === target) {
-                    table.classList.remove('hidden');
-                    requestAnimationFrame(() => {
-                        table.classList.add('active');
-                    });
-                } else if (!table.classList.contains('hidden')) {
-                    table.classList.remove('active');
-                    setTimeout(() => table.classList.add('hidden'), 200);
-                }
-            });
-
-            detailSection.classList.remove('hidden');
-            requestAnimationFrame(() => detailSection.classList.add('active'));
-
-            summaryCards.forEach((card) => {
-                const isActive = card.dataset.target === target;
-                card.setAttribute('aria-expanded', String(isActive));
-                card.classList.toggle('admin-stat-active', isActive);
-            });
-        };
-
-        const hideDetail = () => {
-            detailSection.classList.remove('active');
-            detailTables.forEach((table) => table.classList.remove('active'));
-            summaryCards.forEach((card) => card.setAttribute('aria-expanded', 'false'));
-            setTimeout(() => {
-                detailSection.classList.add('hidden');
-                detailTables.forEach((table) => table.classList.add('hidden'));
-                summaryCards.forEach((card) => card.classList.remove('admin-stat-active'));
-            }, 220);
-        };
-
-        summaryCards.forEach((card) => {
-            card.addEventListener('click', () => activateTable(card.dataset.target));
-            card.addEventListener('keypress', (event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    card.click();
-                }
-            });
-        });
-
-        backLinks.forEach((link) => {
-            link.addEventListener('click', (event) => {
-                event.preventDefault();
-                hideDetail();
-            });
-        });
-    });
-</script>
-
 <style>
-    .admin-stat {
+    html {
+        scroll-behavior: smooth;
+    }
+    .admin-shell {
+        min-height: 100vh;
+        padding: clamp(2rem, 5vw, 3rem);
+        background: linear-gradient(135deg, #f9fafb 0%, #eef2ff 100%);
+    }
+    .admin-hero {
         display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        padding: clamp(1.6rem, 4vw, 2.4rem);
+        border-radius: 1.75rem;
+        background: linear-gradient(135deg, rgba(249,250,251,0.98) 0%, rgba(238,242,255,0.98) 100%);
+        box-shadow: 0 28px 60px -38px rgba(15,23,42,0.25);
+    }
+    @media (min-width: 992px) {
+        .admin-hero {
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+    }
+    .hero-copy {
+        max-width: 560px;
+        display: grid;
+        gap: 1.25rem;
+    }
+    .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        border-radius: 999px;
+        background: rgba(15,23,42,0.9);
+        color: rgba(255,255,255,0.9);
+        font-size: 0.7rem;
+        letter-spacing: 0.35em;
+        text-transform: uppercase;
+    }
+    .hero-copy h1 {
+        font-size: clamp(2.4rem, 5vw, 3.6rem);
+        font-weight: 600;
+        color: #0f172a;
+        line-height: 1.05;
+    }
+    .hero-copy p {
+        font-size: clamp(1rem, 2vw, 1.15rem);
+        color: #64748b;
+    }
+    .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+    }
+    .hero-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.25rem;
+        border-radius: 999px;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .hero-btn.secondary {
+        background: rgba(255,255,255,0.85);
+        color: #1f2937;
+        border: 1px solid rgba(148,163,184,0.35);
+        box-shadow: 0 20px 40px -28px rgba(15,23,42,0.35);
+    }
+    .hero-btn.tertiary {
+        position: relative;
+        background: rgba(236,72,153,0.12);
+        color: #be185d;
+        border: 1px solid rgba(236,72,153,0.25);
+        box-shadow: 0 20px 40px -30px rgba(236,72,153,0.35);
+    }
+    .hero-btn.danger {
+        background: rgba(254,226,226,0.85);
+        color: #b91c1c;
+        border: 1px solid rgba(248,113,113,0.4);
+        box-shadow: 0 20px 40px -28px rgba(248,113,113,0.35);
+    }
+    .hero-btn:hover {
+        transform: translateY(-2px);
+    }
+    .hero-btn .pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.5rem;
+        padding: 0.05rem 0.4rem;
+        border-radius: 999px;
+        background: #ec4899;
+        color: #fff;
+        font-size: 0.65rem;
+        font-weight: 700;
+    }
+    .metrics-grid {
+        display: grid;
+        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin-bottom: 3rem;
+    }
+    .metric-card {
+        display: flex;
+        gap: 1rem;
+        padding: 1.6rem;
+        border-radius: 1.5rem;
+        background: rgba(255,255,255,0.9);
+        border: 1px solid rgba(226,232,240,0.6);
+        box-shadow: 0 25px 55px -38px rgba(79,70,229,0.35);
+        backdrop-filter: blur(10px);
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 32px 70px -40px rgba(79,70,229,0.45);
+    }
+    .metric-icon {
+        width: 3.2rem;
+        height: 3.2rem;
+        border-radius: 1.1rem;
+        display: grid;
+        place-items: center;
+        color: #fff;
+    }
+    .gradient-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+    .gradient-purple { background: linear-gradient(135deg, #c084fc, #7c3aed); }
+    .gradient-emerald { background: linear-gradient(135deg, #34d399, #059669); }
+    .metric-label {
+        font-size: 0.75rem;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+    }
+    .metric-sub {
+        font-size: 0.85rem;
+        color: #94a3b8;
+    }
+    .data-panels {
+        display: grid;
+        gap: 2.5rem;
+    }
+.panel {
+        background: rgba(255,255,255,0.95);
+        border-radius: 1.75rem;
+        border: 1px solid rgba(226,232,240,0.6);
+        box-shadow: 0 30px 70px -45px rgba(15,23,42,0.25);
+        backdrop-filter: blur(10px);
+        padding: clamp(1.5rem, 3vw, 2.25rem);
+    }
+    .panel.is-hidden {
+        display: none;
+    }
+    .panel-head {
+        display: flex;
+        justify-content: space-between;
         align-items: center;
         gap: 1rem;
-        padding: 1.4rem;
-        border-radius: 1.5rem;
-        background: rgba(255,255,255,0.85);
-        border: 1px solid rgba(255,255,255,0.6);
-        box-shadow: 0 25px 55px -30px rgba(15,23,42,0.55);
-        backdrop-filter: blur(10px);
-        animation: floatPulse 10s ease-in-out infinite;
+        margin-bottom: 1.5rem;
     }
-    .admin-summary-trigger {
-        cursor: pointer;
-    }
-    .admin-summary-trigger:focus-visible {
-        outline: 2px solid rgba(79,70,229,0.85);
-        outline-offset: 2px;
-    }
-    .admin-stat-active {
-        border-color: rgba(79,70,229,0.35);
-        box-shadow: 0 28px 55px -28px rgba(79,70,229,0.4);
-    }
-    .detail-panel {
-        opacity: 0;
-        transform: translateY(12px);
-        transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    .detail-panel.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .detail-table {
-        opacity: 0;
-        transform: translateY(12px);
-        transition: opacity 0.25s ease, transform 0.25s ease;
-        margin-bottom: 2.5rem;
-    }
-    .detail-table.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    .back-to-summary {
+    .panel-tag {
+        font-size: 0.75rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #6366f1;
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        font-size: 0.75rem;
+    }
+    .panel-head h2 {
+        font-size: 1.6rem;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.18em;
-        color: #6366f1;
-        margin-bottom: 0.75rem;
-    }
-    .back-to-summary:hover {
-        color: #4338ca;
-    }
-    @keyframes floatPulse {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-6px); }
-    }
-    .stat-icon {
-        width: 3.25rem;
-        height: 3.25rem;
-        border-radius: 1.1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-    }
-    .stat-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        color: #64748b;
-        font-weight: 600;
-    }
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
         color: #0f172a;
     }
-    .avatar-badge {
+    .panel-count {
         display: inline-flex;
         align-items: center;
-        justify-content: center;
-        width: 2rem;
-        height: 2rem;
-        border-radius: 0.75rem;
+        gap: 0.4rem;
+        padding: 0.4rem 0.9rem;
+        border-radius: 999px;
         background: rgba(99,102,241,0.12);
-        color: #4f46e5;
+        color: #4338ca;
+        font-weight: 600;
+        font-size: 0.75rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+    }
+    .table-shell {
+        overflow-x: auto;
+    }
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+    }
+    .premium-table thead th {
+        font-size: 0.75rem;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: #475569;
+        text-align: left;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid rgba(148,163,184,0.25);
+        background: rgba(255,255,255,0.97);
+        position: sticky;
+        top: 0;
+        z-index: 6;
+    }
+    .premium-table thead th .th-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+    }
+    .premium-table tbody td {
+        padding: 1.25rem 1rem;
+        font-size: 0.98rem;
+        color: #1f2937;
+        border-bottom: 1px solid rgba(226,232,240,0.8);
+        background: inherit;
+    }
+    .premium-table tbody tr:nth-child(odd) {
+        background: rgba(249,250,251,0.9);
+    }
+    .premium-table tbody tr:nth-child(even) {
+        background: rgba(238,242,255,0.8);
+    }
+    .premium-table tbody tr {
+        transition: background 0.2s ease, transform 0.2s ease;
+    }
+    .premium-table tbody tr:hover {
+        background: rgba(224,231,255,0.95);
+    }
+    .premium-table thead th:first-child,
+    .premium-table tbody td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 7;
+        background: rgba(255,255,255,0.98);
+        box-shadow: 4px 0 12px -6px rgba(15,23,42,0.25);
+    }
+    .cell-with-icon {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    .avatar-pill {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        background: rgba(99,102,241,0.12);
+        color: #4338ca;
+    }
+    .cell-with-icon .sub {
+        font-size: 0.75rem;
+        color: #94a3b8;
+    }
+    .allowance-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(236,72,153,0.12);
+        color: #be185d;
+        font-size: 0.8rem;
+        font-weight: 600;
     }
     .status-pill {
         display: inline-flex;
         align-items: center;
         gap: 0.45rem;
-        padding: 0.35rem 0.8rem;
+        padding: 0.4rem 0.9rem;
         border-radius: 999px;
-        font-size: 0.75rem;
+        font-size: 0.8rem;
         font-weight: 600;
+        border: 1px solid transparent;
     }
     .status-pill .dot {
         width: 8px;
         height: 8px;
-        border-radius: 999px;
+        border-radius: 50%;
     }
-    .status-pill.status-active {
-        background: rgba(16,185,129,0.12);
+    .status-pill.active {
+        background: rgba(52,211,153,0.12);
+        border-color: rgba(52,211,153,0.3);
         color: #047857;
-        border: 1px solid rgba(16,185,129,0.18);
     }
-    .status-pill.status-active .dot { background: #10b981; }
-    .status-pill.status-inactive {
+    .status-pill.active .dot { background: #10b981; }
+    .status-pill.inactive {
         background: rgba(148,163,184,0.15);
+        border-color: rgba(148,163,184,0.25);
         color: #475569;
-        border: 1px solid rgba(148,163,184,0.2);
     }
-    .status-pill.status-inactive .dot { background: #94a3b8; }
-    .table-action {
-        width: 2.25rem;
-        height: 2.25rem;
-        border-radius: 0.75rem;
-        display: inline-flex;
-        align-items: center;
+    .status-pill.inactive .dot { background: #94a3b8; }
+    .premium-table tbody td.actions-cell {
+        display: flex;
+        align-items: flex-end;
         justify-content: center;
-        background: rgba(248,250,252,0.9);
-        border: 1px solid rgba(226,232,240,0.9);
-        transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    .table-action:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 12px 28px -20px rgba(15,23,42,0.4);
-    }
-    .table-action.view { color: #2563eb; }
-    .table-action.edit { color: #16a34a; }
-    .table-action.delete { color: #dc2626; }
-    .admin-nav-btn {
-        position: relative;
-        display: inline-flex;
+    .action-stack {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 0.6rem;
-        padding: 0.85rem 1.5rem;
-        border-radius: 1.1rem;
-        font-weight: 600;
-        color: #475569;
-        background: rgba(255,255,255,0.9);
-        border: 1px solid rgba(226,232,240,0.85);
-        box-shadow: 0 20px 45px -30px rgba(15,23,42,0.35);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        backdrop-filter: blur(8px);
+        justify-content: flex-end;
+        gap: 0.5rem;
+        width: 100%;
+        min-height: 100%;
     }
-    .admin-nav-btn::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    .admin-nav-btn .icon {
-        position: relative;
-        z-index: 1;
-        display: inline-flex;
+    .action-form {
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
+        gap: 0.5rem;
+    }
+    .action-form input[type="number"] {
+        width: 80px;
+        padding: 0.45rem 0.6rem;
         border-radius: 0.9rem;
-        background: rgba(59,130,246,0.12);
-        color: inherit;
+        border: 1px solid rgba(203,213,225,0.8);
+        background: rgba(255,255,255,0.98);
+        text-align: center;
+        font-weight: 600;
+        color: #1f2937;
     }
-    .admin-nav-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 28px 55px -28px rgba(59,130,246,0.35);
+    .stack-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.4rem 0.85rem;
+        border-radius: 999px;
+        border: none;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #fff;
+        box-shadow: 0 20px 42px -28px rgba(15,23,42,0.45);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        white-space: nowrap;
+        max-width: 120px;
+        width: 120px;
+        text-align: center;
     }
-    .admin-nav-btn:hover::after { opacity: 1; }
-    .admin-nav-btn.home::after {
-        background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(99,102,241,0.12));
+    .stack-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 24px 50px -30px rgba(79,70,229,0.4);
     }
-    .admin-nav-btn.home .icon { color: #2563eb; }
-    .admin-nav-btn.csv::after {
-        background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(37,99,235,0.12));
+    .stack-btn.save { background: linear-gradient(135deg, #2563eb, #4338ca); }
+    .stack-btn.edit { background: linear-gradient(135deg, #10b981, #047857); }
+    .stack-btn.edit.disabled {
+        background: rgba(148,163,184,0.45);
+        cursor: not-allowed;
+        box-shadow: none;
     }
-    .admin-nav-btn.csv .icon {
-        background: rgba(59,130,246,0.12);
-        color: #1d4ed8;
+    .stack-btn.danger { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+    .stack-btn.neutral { background: linear-gradient(135deg, #60a5fa, #2563eb); }
+    .stack-btn.toggle.warning { background: linear-gradient(135deg, #f59e0b, #b45309); }
+    .stack-btn.toggle.success { background: linear-gradient(135deg, #34d399, #059669); }
+    .card-action-stack {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        width: 100%;
+        min-height: 100%;
     }
-    .admin-nav-btn.csv:hover {
-        box-shadow: 0 26px 55px -28px rgba(37,99,235,0.4);
+    .inline-form { display: inline; }
+    .empty-row {
+        text-align: center;
+        padding: 2rem 0;
+        color: #94a3b8;
+        font-weight: 500;
     }
-    .admin-nav-btn.excel::after {
-        background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(34,197,94,0.15));
+
+    @media (max-width: 991.98px) {
+        .admin-shell {
+            padding: 2rem 1.25rem;
+        }
+        .table-shell {
+            overflow-x: auto;
+        }
+        .premium-table {
+            min-width: 900px;
+        }
     }
-    .admin-nav-btn.excel .icon {
-        background: rgba(16,185,129,0.12);
-        color: #047857;
-    }
-    .admin-nav-btn.excel:hover {
-        box-shadow: 0 26px 55px -28px rgba(16,185,129,0.35);
-    }
-    .admin-nav-btn.logout {
-        color: #dc2626;
-        border-color: rgba(248,113,113,0.5);
-    }
-    .admin-nav-btn.logout .icon {
-        background: rgba(248,113,113,0.12);
-        color: #dc2626;
-    }
-    .admin-nav-btn.logout::after {
-        background: linear-gradient(135deg, rgba(248,113,113,0.12), rgba(239,68,68,0.12));
-    }
-    .admin-nav-btn.logout:hover {
-        box-shadow: 0 28px 55px -28px rgba(239,68,68,0.35);
+
+    @media (max-width: 768px) {
+        .hero-copy h1 {
+            font-size: 2.4rem;
+        }
+        .hero-actions {
+            gap: 0.5rem;
+        }
+        .premium-table thead th {
+            font-size: 0.7rem;
+        }
+        .premium-table tbody td {
+            padding: 1rem 0.75rem;
+            font-size: 0.9rem;
+        }
+        .premium-table th:first-child,
+        .premium-table td:first-child {
+            left: 0;
+        }
+        .premium-table {
+            min-width: 760px;
+        }
+        .stack-btn {
+            max-width: 110px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.75rem;
+        }
+        .action-form input[type="number"] {
+            width: 70px;
+        }
     }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const metricCards = document.querySelectorAll('.metric-card');
+        const panels = {
+            users: document.getElementById('users-panel'),
+            cards: document.getElementById('cards-panel')
+        };
+
+        const openPanel = (key) => {
+            Object.values(panels).forEach(panel => panel?.classList.add('is-hidden'));
+            if (panels[key]) {
+                panels[key].classList.remove('is-hidden');
+            }
+        };
+
+        metricCards.forEach(card => {
+            const target = card.dataset.target;
+            if (!target) {
+                return;
+            }
+            card.addEventListener('click', () => {
+                if (target.includes('users')) {
+                    openPanel('users');
+                } else if (target.includes('cards')) {
+                    openPanel('cards');
+                }
+            });
+        });
+
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.forEach((tooltipTriggerEl) => {
+            if (window.bootstrap?.Tooltip) {
+                new bootstrap.Tooltip(tooltipTriggerEl);
+            }
+        });
+
+        document.querySelectorAll('.js-confirm').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                const form = button.closest('form');
+                if (!form) {
+                    return;
+                }
+                const message = button.dataset.confirm || 'Are you sure?';
+                if (window.Swal) {
+                    Swal.fire({
+                        title: 'Please confirm',
+                        text: message,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#6366f1',
+                        cancelButtonColor: '#94a3b8',
+                        confirmButtonText: 'Yes, continue',
+                        cancelButtonText: 'Cancel'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                } else if (confirm(message)) {
+                    form.submit();
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

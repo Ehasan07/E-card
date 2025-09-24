@@ -1,11 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils.text import slugify
+from django.utils import timezone
 import logging
 import re
 
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_CARD_LIMIT = 1
+
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -14,9 +18,16 @@ class Profile(models.Model):
     otp_expires_at = models.DateTimeField(blank=True, null=True)
     otp_requested_at = models.DateTimeField(blank=True, null=True)
     otp_attempts = models.PositiveSmallIntegerField(default=0)
+    card_limit = models.PositiveIntegerField(default=DEFAULT_CARD_LIMIT)
 
     def __str__(self):
         return self.user.username
+
+    def ensure_minimum_limit(self):
+        """Guarantee the profile always has at least one allowed card."""
+        if self.card_limit < DEFAULT_CARD_LIMIT:
+            self.card_limit = DEFAULT_CARD_LIMIT
+            self.save(update_fields=["card_limit"])
 
 class Card(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -35,7 +46,14 @@ class Card(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.user.username)
+            base_value = self.card_data.get('firstName') or self.user.get_full_name() or self.user.username or 'card'
+            base_slug = slugify(base_value) or 'card'
+            slug_candidate = base_slug
+            index = 2
+            while Card.objects.exclude(pk=self.pk).filter(slug=slug_candidate).exists():
+                slug_candidate = f"{base_slug}-{index}"
+                index += 1
+            self.slug = slug_candidate
         
         # Set text color based on background luminance
         def _hex_to_rgb(hex_color: str):
@@ -100,3 +118,89 @@ class Card(models.Model):
         first_name = self.card_data.get('firstName', '')
         last_name = self.card_data.get('lastName', '')
         return f"{first_name} {last_name}".strip() or f"Card {self.id}"
+
+
+class SubscriptionPlan(models.Model):
+    BILLING_MONTHLY = 'monthly'
+    BILLING_YEARLY = 'yearly'
+    BILLING_CHOICES = [
+        (BILLING_MONTHLY, 'Monthly'),
+        (BILLING_YEARLY, 'Yearly'),
+    ]
+
+    name = models.CharField(max_length=120)
+    slug = models.SlugField(max_length=160, unique=True)
+    description = models.TextField(blank=True)
+    billing_cycle = models.CharField(max_length=20, choices=BILLING_CHOICES, default=BILLING_MONTHLY)
+    price = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['price']
+
+    def __str__(self):
+        return f"{self.name} ({self.get_billing_cycle_display()})"
+
+
+class Subscription(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_ACTIVE = 'active'
+    STATUS_CANCELLED = 'cancelled'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_ACTIVE, 'Active'),
+        (STATUS_CANCELLED, 'Cancelled'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.CASCADE, related_name='subscriptions')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    current_period_end = models.DateField(blank=True, null=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} → {self.plan} ({self.get_status_display()})"
+
+
+class UpgradeRequest(models.Model):
+    STATUS_PENDING = 'pending'
+    STATUS_APPROVED = 'approved'
+    STATUS_REJECTED = 'rejected'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_REJECTED, 'Rejected'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='upgrade_requests')
+    card = models.ForeignKey('Card', on_delete=models.SET_NULL, null=True, blank=True, related_name='upgrade_requests')
+    requested_plan = models.CharField(max_length=120, default='monthly_plan')
+    message = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    responded_at = models.DateTimeField(blank=True, null=True)
+    handled_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='handled_upgrade_requests')
+    admin_notes = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def mark(self, status: str, admin_user: User | None = None, notes: str | None = None):
+        if status not in dict(self.STATUS_CHOICES):
+            raise ValueError('Unsupported status value')
+        self.status = status
+        self.responded_at = timezone.now()
+        if admin_user:
+            self.handled_by = admin_user
+        if notes is not None:
+            self.admin_notes = notes
+        self.save(update_fields=['status', 'responded_at', 'handled_by', 'admin_notes'])
+
+    def __str__(self):
+        return f"UpgradeRequest({self.user}, {self.get_status_display()})"

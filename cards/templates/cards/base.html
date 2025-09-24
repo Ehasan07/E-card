@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}V-Card Creator{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyzog9E+N0R8E+sOJleeQwZ0B" crossorigin="anonymous">
             <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,15 +26,94 @@
         .accent-gradient {
             background: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);
         }
+        .toast-stack {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            display: grid;
+            gap: 0.75rem;
+            z-index: 1000;
+        }
+        .toast-card {
+            min-width: 260px;
+            max-width: 340px;
+            padding: 0.85rem 1rem;
+            border-radius: 1rem;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 18px 45px -20px rgba(15,23,42,0.35);
+            display: flex;
+            align-items: start;
+            gap: 0.75rem;
+            color: #0f172a;
+            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(226,232,240,0.75);
+            animation: toastSlide 0.4s ease both;
+        }
+        .toast-card--success { border-color: rgba(16,185,129,0.35); background: rgba(236,253,245,0.92); }
+        .toast-card--error { border-color: rgba(248,113,113,0.45); background: rgba(254,226,226,0.92); }
+        .toast-card--warning { border-color: rgba(251,191,36,0.45); background: rgba(254,243,199,0.92); }
+        .toast-card--info { border-color: rgba(129,140,248,0.35); background: rgba(224,231,255,0.92); }
+        .toast-icon {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(148,163,184,0.15);
+        }
+        @keyframes toastSlide {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="text-gray-800">
+    {% if messages %}
+        <div class="toast-stack" style="display:none;" aria-hidden="true">
+            {% for message in messages %}
+                <div class="toast-card" data-message="{{ message|escapejs }}" data-tags="{{ message.tags|default:'info' }}"></div>
+            {% endfor %}
+        </div>
+    {% endif %}
     <main>
         {% block content %}
         {% endblock %}
     </main>
     <script>
         lucide.createIcons();
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        (function() {
+            const stack = document.querySelectorAll('.toast-stack .toast-card');
+            if (!stack.length || !window.Swal) {
+                return;
+            }
+            const toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 4200,
+                timerProgressBar: true,
+                showClass: { popup: 'swal2-noanimation', backdrop: 'swal2-noanimation' },
+                hideClass: { popup: '', backdrop: '' }
+            });
+            stack.forEach(card => {
+                const text = card.dataset.message || '';
+                const tags = card.dataset.tags || '';
+                let icon = 'info';
+                if (tags.includes('success')) icon = 'success';
+                else if (tags.includes('error')) icon = 'error';
+                else if (tags.includes('warning')) icon = 'warning';
+                else if (tags.includes('info')) icon = 'info';
+                toast.fire({
+                    icon,
+                    title: text
+                });
+            });
+        })();
     </script>
 </body>
 </html>

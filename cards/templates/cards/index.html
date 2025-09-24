@@ -336,7 +336,7 @@
         box-shadow: 0 12px 35px -18px rgba(236, 72, 153, 0.6);
     }
     .landing-nav__links { display: flex; align-items: center; gap: 1.5rem; font-weight: 600; opacity: 0.85; }
-    .landing-nav__links a { position: relative; }
+    .landing-nav__links a { position: relative; z-index: 9999; }
     .landing-nav__links a::after {
         content: '';
         position: absolute;
@@ -570,7 +570,6 @@ PATCH
         .landing-nav__cta--mobile { display: grid; gap: 0.75rem; margin-top: 1rem; }
     }
 </style>
-
 <script>
     (function() {
         lucide.createIcons();
@@ -586,11 +585,50 @@ PATCH
 
         const navToggle = document.querySelector('[data-nav-toggle]');
         const navMenu = document.querySelector('[data-nav-menu]');
+        const navLinks = document.querySelectorAll('.landing-nav__links a, [data-nav-menu] a');
+
+        if (navToggle) {
+            navToggle.setAttribute('aria-expanded', 'false');
+        }
+
+        const toggleMenu = (open) => {
+            if (!navMenu || !navToggle) {
+                return;
+            }
+            navMenu.classList.toggle('is-open', open);
+            navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        };
+
         if (navToggle && navMenu) {
             navToggle.addEventListener('click', () => {
-                navMenu.classList.toggle('is-open');
+                const isOpen = navMenu.classList.contains('is-open');
+                toggleMenu(!isOpen);
+            });
+
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    toggleMenu(false);
+                }
             });
         }
+
+        const handleSmoothScroll = (event) => {
+            const targetId = event.currentTarget.getAttribute('href');
+            if (!targetId || !targetId.startsWith('#')) {
+                return;
+            }
+            event.preventDefault();
+            const section = document.querySelector(targetId);
+            if (section) {
+                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            toggleMenu(false);
+            event.currentTarget.blur();
+        };
+
+        navLinks.forEach((link) => {
+            link.addEventListener('click', handleSmoothScroll);
+        });
 
         const demoModal = document.querySelector('[data-demo-modal]');
         const demoTriggers = document.querySelectorAll('[data-demo-trigger]');

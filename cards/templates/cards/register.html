@@ -50,14 +50,30 @@
 
                 <form method="post" class="space-y-5" id="register-form">
                     {% csrf_token %}
+                    {% if user_form.non_field_errors or profile_form.non_field_errors %}
+                        <div class="form-alert">
+                            {% for error in user_form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                            {% for error in profile_form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
                     <div class="grid grid-cols-1 gap-4">
                         <label class="form-field">
                             <span><i data-lucide="user" class="w-4 h-4"></i> Username</span>
                             {{ user_form.username }}
+                            {% if user_form.username.errors %}
+                                <small class="form-error">{{ user_form.username.errors|striptags }}</small>
+                            {% endif %}
                         </label>
                         <label class="form-field">
                             <span><i data-lucide="mail" class="w-4 h-4"></i> Email</span>
                             {{ user_form.email }}
+                            {% if user_form.email.errors %}
+                                <small class="form-error">{{ user_form.email.errors|striptags }}</small>
+                            {% endif %}
                         </label>
                         <label class="form-field">
                             <span><i data-lucide="lock" class="w-4 h-4"></i> Password</span>
@@ -68,6 +84,9 @@
                                     <span class="icon-visible">👁</span>
                                 </button>
                             </div>
+                            {% if user_form.password.errors %}
+                                <small class="form-error">{{ user_form.password.errors|striptags }}</small>
+                            {% endif %}
                         </label>
                         <label class="form-field">
                             <span><i data-lucide="phone" class="w-4 h-4"></i> Phone number</span>
@@ -90,6 +109,12 @@
                                 </div>
                                 {{ profile_form.phone_number_local }}
                             </div>
+                            {% if profile_form.phone_number_local.errors %}
+                                <small class="form-error">{{ profile_form.phone_number_local.errors|striptags }}</small>
+                            {% endif %}
+                            {% if profile_form.phone_country.errors %}
+                                <small class="form-error">{{ profile_form.phone_country.errors|striptags }}</small>
+                            {% endif %}
                         </label>
                     </div>
 
@@ -162,6 +187,23 @@
         font-size: 0.85rem;
         font-weight: 600;
         color: #475569;
+    }
+    .form-error {
+        display: inline-block;
+        margin-top: 0.35rem;
+        color: #dc2626;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    .form-alert {
+        background: rgba(254, 226, 226, 0.8);
+        border: 1px solid rgba(248, 113, 113, 0.4);
+        color: #b91c1c;
+        font-size: 0.85rem;
+        padding: 0.75rem 1rem;
+        border-radius: 1rem;
+        display: grid;
+        gap: 0.25rem;
     }
     .form-field span {
         display: inline-flex;

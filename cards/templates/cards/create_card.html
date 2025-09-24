@@ -17,6 +17,12 @@
                         <p class="text-xs uppercase tracking-[0.4em] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %} your card</p>
                         <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Craft your interactive identity</h1>
                         <p class="text-sm text-slate-500 mt-1">Fill out the details on the left and scroll the live preview to explore the result.</p>
+                        {% if cards_remaining is not None %}
+                            <div class="mt-4 inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold tracking-[0.2em] uppercase limit-pill">
+                                <i data-lucide="layers" class="w-4 h-4"></i>
+                                {{ cards_remaining }} card{{ cards_remaining|pluralize }} remaining in your allowance of {{ card_limit }}
+                            </div>
+                        {% endif %}
                     </div>
                     <span class="builder-badge">
                         <span class="builder-badge__pulse"></span>
@@ -453,6 +459,11 @@
         animation: pulseBadge 2.6s ease-in-out infinite;
     }
     @keyframes pulseBadge { 0%, 70% { opacity: 0; transform: scale(0.9); } 80% { opacity: 0.6; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.1); } }
+    .limit-pill {
+        background: rgba(129, 140, 248, 0.15);
+        color: #4338ca;
+        border: 1px solid rgba(129, 140, 248, 0.4);
+    }
 
     .builder-panel input, .builder-panel textarea, .builder-panel select {
         width: 100%;
