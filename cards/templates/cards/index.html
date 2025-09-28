@@ -9,51 +9,44 @@
     <div class="landing-nebula landing-nebula--b"></div>
     <div class="landing-grid"></div>
 
-    <header class="landing-header">
-        <nav class="landing-nav">
-            <div class="landing-nav__container">
-                <div class="landing-nav__left">
-                    <a class="landing-logo" href="{% url 'index' %}">
-                        <span class="landing-logo__icon">✦</span>
-                        <span>V-Card Studio</span>
-                    </a>
-                    <div class="landing-nav__links landing-nav__links--desktop">
-                        <a href="#features">Features</a>
-                        <a href="#workflow">Workflow</a>
-                        <a href="#showcase">Showcase</a>
-                        <a href="#cta">Pricing</a>
-                    </div>
-                </div>
-                <div class="landing-nav__right">
-                    <div class="landing-nav__cta landing-nav__cta--desktop">
-                        <a class="nav-btn secondary" href="{% url 'login' %}">Login</a>
-                        <a class="nav-btn primary" href="{% url 'register' %}">Start free</a>
-                    </div>
-                    <button class="landing-nav__toggle" type="button" aria-label="Toggle menu" data-nav-toggle>
-                    <span class="landing-nav__toggle-icon" aria-hidden="true"></span>
-                        <i data-lucide="menu"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="landing-nav__drawer" data-nav-menu>
-                <div class="landing-nav__drawer-inner">
-                    <a href="#features">Features</a>
-                    <a href="#workflow">Workflow</a>
-                    <a href="#showcase">Showcase</a>
-                    <a href="#cta">Pricing</a>
-                    <a class="nav-btn secondary" href="{% url 'login' %}">Login</a>
-                    <a class="nav-btn primary" href="{% url 'register' %}">Start free</a>
-                </div>
-            </div>
-        </nav>
+    <!-- Command Menu Trigger -->
+    <button class="command-menu-trigger" id="command-menu-trigger">
+        <i data-lucide="command"></i>
+        <span>Menu</span>
+    </button>
 
+    <!-- Command Menu Overlay -->
+    <div class="command-menu-overlay" id="command-menu-overlay">
+        <div class="command-menu__backdrop" id="command-menu-backdrop"></div>
+        <div class="command-menu__palette">
+            <div class="command-menu__search-wrapper">
+                <i data-lucide="search"></i>
+                <input type="text" id="command-menu-search" placeholder="Type to navigate..." class="command-menu__search">
+            </div>
+            <ul class="command-menu__list" id="command-menu-list">
+                <li><a href="#features"><i data-lucide="gem"></i><span>Features</span></a></li>
+                <li><a href="#workflow"><i data-lucide="git-fork"></i><span>Workflow</span></a></li>
+                <li><a href="#showcase"><i data-lucide="sparkles"></i><span>Showcase</span></a></li>
+                <li><a href="#faq"><i data-lucide="help-circle"></i><span>FAQ</span></a></li>
+                <li><a href="#cta"><i data-lucide="star"></i><span>Pricing</span></a></li>
+                <li class="separator"></li>
+                <li><a href="{% url 'login' %}"><i data-lucide="log-in"></i><span>Login</span></a></li>
+                <li><a href="{% url 'register' %}"><i data-lucide="user-plus"></i><span>Start for Free</span></a></li>
+            </ul>
+            <div class="command-menu__footer">
+                <span>Press <kbd>ESC</kbd> to close</span>
+            </div>
+        </div>
+    </div>
+
+    <header class="landing-header">
         <section class="landing-hero">
             <div class="landing-hero__copy">
-                <h1>Craft <span class="hero-gradient">memorable digital stories</span> in minutes.</h1>
-                <p>Design immersive, animated contact experiences with QR-ready cards, brand-safe palettes, and live collaboration – no code, all magic.</p>
+                <h1>Launch <span class="hero-gradient">V-Card™ experiences</span> that stay unforgettable.</h1>
+                <p>Spin up V-Card microsites with cached assets, neon gradient presets, and instant QR sharing—so every intro feels premium and ridiculously fast.</p>
                 <div class="landing-hero__actions">
                     <a class="hero-btn primary" href="{% url 'register' %}">
-                        <span>Design your first card</span>
+                        <span>Design your first V-Card</span>
                         <i data-lucide="arrow-up-right" class="w-5 h-5"></i>
                     </a>
                     <button class="hero-btn ghost" type="button" data-demo-trigger>
@@ -63,16 +56,16 @@
                 </div>
                 <div class="hero-stats">
                     <div>
-                        <p>+18K</p>
-                        <span>Cards launched</span>
+                        <p class="stat-value" data-value="24000" data-prefix="+" data-suffix="K">+0K</p>
+                        <span>V-Card wallet saves</span>
                     </div>
                     <div>
-                        <p>45 sec</p>
-                        <span>Average build time</span>
+                        <p class="stat-value" data-value="32" data-suffix=" sec">0 sec</p>
+                        <span>Average V-Card launch</span>
                     </div>
                     <div>
-                        <p>98%</p>
-                        <span>Share completion</span>
+                        <p class="stat-value" data-value="94" data-suffix="%">0%</p>
+                        <span>Viewer save rate</span>
                     </div>
                 </div>
             </div>
@@ -102,54 +95,54 @@
                             <div class="hero-preview__overlay"></div>
                         </div>
                     </div>
-                    <div class="hero-device__badge">Real-time live preview</div>
+                    <div class="hero-device__badge">Real-time V-Card preview</div>
                 </div>
             </div>
         </section>
     </header>
 
     <section id="features" class="landing-section animate-on-scroll">
-        <h2 class="section-title">Everything you need for unforgettable cards</h2>
-        <p class="section-subtitle">From pixel-perfect layouts to sharing analytics, your digital identity now fits in a stunning card.</p>
+        <h2 class="section-title">Everything you need for unforgettable V-Cards</h2>
+        <p class="section-subtitle">From pixel-perfect layouts to lightning-fast delivery, your V-Card becomes the signature moment of every intro.</p>
         <div class="feature-grid">
             <article class="feature-card">
                 <span class="feature-icon"><i data-lucide="wand"></i></span>
-                <h3>Adaptive layouts</h3>
-                <p>Smart responsive templates automatically harmonize colours, spacing, and typography for every screen.</p>
+                <h3>Adaptive V-Card layouts</h3>
+                <p>Responsive templates auto-balance spacing, typography, and colour so every V-Card feels studio-made.</p>
                 <ul>
                     <li><i data-lucide="check"></i>Auto contrast detection</li>
-                    <li><i data-lucide="check"></i>Real device previews</li>
+                    <li><i data-lucide="check"></i>Live device previews</li>
                     <li><i data-lucide="check"></i>Brand kit import</li>
                 </ul>
             </article>
             <article class="feature-card">
                 <span class="feature-icon"><i data-lucide="qr-code"></i></span>
-                <h3>Instant sharing</h3>
-                <p>Create custom URLs and QR codes with one click. Track scans, device type, and location in the dashboard.</p>
+                <h3>Instant V-Card sharing</h3>
+                <p>Create custom URLs and QR codes with one click. Our edge cache keeps every V-Card lightning fast in any country.</p>
                 <ul>
-                    <li><i data-lucide="check"></i>Analytics dashboard</li>
+                    <li><i data-lucide="check"></i>Real-time analytics</li>
                     <li><i data-lucide="check"></i>Auto-regenerated QR</li>
-                    <li><i data-lucide="check"></i>Export to PDF</li>
+                    <li><i data-lucide="check"></i>Offline PDF exports</li>
                 </ul>
             </article>
             <article class="feature-card">
-                <span class="feature-icon"><i data-lucide="shield-check"></i></span>
-                <h3>Secure by design</h3>
-                <p>OTP-backed recovery, admin moderation, and audit logs ensure every interaction stays trustworthy.</p>
+                <span class="feature-icon"><i data-lucide="hard-drive"></i></span>
+                <h3>Cached & reliable</h3>
+                <p>Automatic CDN caching and scheduled backups keep your cards online, even during heavy launch days.</p>
                 <ul>
-                    <li><i data-lucide="check"></i>OTP password reset</li>
-                    <li><i data-lucide="check"></i>Granular role controls</li>
-                    <li><i data-lucide="check"></i>Encrypted contacts</li>
+                    <li><i data-lucide="check"></i>Global edge delivery</li>
+                    <li><i data-lucide="check"></i>Version history vault</li>
+                    <li><i data-lucide="check"></i>One-click rollbacks</li>
                 </ul>
             </article>
             <article class="feature-card">
                 <span class="feature-icon"><i data-lucide="sparkle"></i></span>
-                <h3>Motion library</h3>
-                <p>Bring cards to life with cinematic gradients, particle trails, and scroll-triggered reveals.</p>
+                <h3>Trending inspiration</h3>
+                <p>Tap into curated presets inspired by popular launches, with ready-made copy blocks and social proof sections.</p>
                 <ul>
                     <li><i data-lucide="check"></i>30+ gradient presets</li>
-                    <li><i data-lucide="check"></i>Scroll sync preview</li>
-                    <li><i data-lucide="check"></i>Custom animations</li>
+                    <li><i data-lucide="check"></i>Copy & CTA bundles</li>
+                    <li><i data-lucide="check"></i>Community favourites</li>
                 </ul>
             </article>
         </div>
@@ -161,10 +154,10 @@
                 <h2 class="section-title">Build cards in four fluid steps</h2>
                 <p class="section-subtitle">A guided flow keeps creativity effortless – whether you’re starting from scratch or importing a brand kit.</p>
                 <ol class="workflow-steps">
-                    <li><span>1</span>Sign up with email + OTP security</li>
-                    <li><span>2</span>Pick a template & theme palette</li>
-                    <li><span>3</span>Customize contact + social modules</li>
-                    <li><span>4</span>Share via QR, link, or embed widget</li>
+                    <li><span>1</span>Create your workspace with quick email sign-in</li>
+                    <li><span>2</span>Pick a trending template or sync your brand kit</li>
+                    <li><span>3</span>Drop in contact blocks, media, and favourite CTAs</li>
+                    <li><span>4</span>Publish to QR, shareable links, and download packs</li>
                 </ol>
                 <div class="workflow-cta">
                     <a href="{% url 'documentation' %}" class="hero-btn ghost">
@@ -175,16 +168,16 @@
             </div>
             <div class="workflow-stage">
                 <div class="workflow-step-card">
-                    <h4><i data-lucide="palette"></i>Gradient playground</h4>
-                    <p>Choose from newly added deep-space colourways like Celestial Noir or Crimson Nebula.</p>
+                    <h4><i data-lucide="palette"></i>Colour duos</h4>
+                    <p>Browse fresh palettes pulled from the most-saved cards each week.</p>
                 </div>
                 <div class="workflow-step-card">
-                    <h4><i data-lucide="copy"></i>Sync to brand kit</h4>
-                    <p>Drop in your logo and we’ll generate colour-safe backgrounds instantly.</p>
+                    <h4><i data-lucide="copy"></i>Brand sync</h4>
+                    <p>Drop in your logo once and auto-generate matching gradients, fonts, and favicons.</p>
                 </div>
                 <div class="workflow-step-card">
-                    <h4><i data-lucide="sparkle"></i>Motion presets</h4>
-                    <p>Toggle parallax, shimmer, and particle trails to match your vibe.</p>
+                    <h4><i data-lucide="sparkle"></i>Popular CTAs</h4>
+                    <p>Swap in prewritten copy blocks and CTA stacks proven to convert.</p>
                 </div>
             </div>
         </div>
@@ -202,7 +195,7 @@
                     </div>
                     <span class="rating">★★★★★</span>
                 </header>
-                <p>“The new preview scroll sync is mind-blowing. Clients love seeing the card evolve as we plan their story live on screen.”</p>
+                <p>“Cached templates mean the deck loads instantly in client meetings. They see updates the moment we hit save.”</p>
             </article>
             <article>
                 <header>
@@ -213,7 +206,7 @@
                     </div>
                     <span class="rating">★★★★☆</span>
                 </header>
-                <p>“We issue QR cards to every team member. The analytics and OTP login made rollout painless.”</p>
+                <p>“We issue QR cards to every team member. The share analytics and one-click presets keep our story consistent.”</p>
             </article>
             <article>
                 <header>
@@ -224,16 +217,210 @@
                     </div>
                     <span class="rating">★★★★★</span>
                 </header>
-                <p>“Animations + deep gradients = instant wow factor. I’ve retired printed business cards for good.”</p>
+                <p>“Popular CTA bundles took the guesswork out of follow-ups. Guests save my card before I even leave the stage.”</p>
             </article>
+        </div>
+    </section>
+
+    <section id="faq" class="landing-section animate-on-scroll faq-section">
+        <div class="faq-intro">
+                <span class="faq-badge">Need help?</span>
+                <h2 class="section-title">V-Card FAQ</h2>
+                <p class="section-subtitle">Find quick answers about building, sharing, and optimizing your V-Cards. No fluff – just the essentials to get you shipping faster.</p>
+        </div>
+        <div class="faq-layout">
+            <aside class="faq-sidebar">
+                <div class="faq-sidebar__header">
+                    <span class="faq-sidebar__eyebrow">Inside the studio</span>
+                    <h3>Support playbook at a glance</h3>
+                    <p>Three service lanes keep every creator, collaborator, and admin covered. Tap a capsule to expand the controls you can access right now.</p>
+                </div>
+                <dl class="faq-metrics">
+                    <div>
+                        <dt>Average first reply</dt>
+                        <dd><span>2m 12s</span></dd>
+                    </div>
+                    <div>
+                        <dt>Cards launched weekly</dt>
+                        <dd><span>4.6K</span></dd>
+                    </div>
+                    <div>
+                        <dt>Automations live</dt>
+                        <dd><span>118</span></dd>
+                    </div>
+                </dl>
+                <div class="faq-sidebar__footer">
+                    <p class="faq-sidebar__note"><i data-lucide="sparkles"></i><span>Pro tip: Combine FAQ capsules with command menu shortcuts (`⌘K`) to jump directly into the builder.</span></p>
+                </div>
+            </aside>
+
+            <div class="faq-collection">
+                <section class="faq-group" aria-labelledby="faq-group-create">
+                    <header class="faq-group__header">
+                        <span class="faq-group__badge">Create</span>
+                        <h3 id="faq-group-create">Design & build V-Card workflows</h3>
+                        <p>Theme rules, asset controls, and offline handoffs tailored for crafting signature V-Card experiences.</p>
+                    </header>
+                    <div class="faq-stack">
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="palette"></i></span>
+                                    <span class="faq-card__question">Can I customize every card element?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Absolutely. Start from a template, then refine typography, layers, gradients, embeds, and micro-interactions. Live preview keeps desktop and mobile V-Card layouts synchronised while you edit.</p>
+                            </div>
+                        </article>
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="shield"></i></span>
+                                    <span class="faq-card__question">What branding controls do admins have?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Admin workspaces can lock colour palettes, preset typography, enforce logo placement, and publish “protected” content blocks. Designers can still branch drafts, but brand rules sync the moment they go live.</p>
+                            </div>
+                        </article>
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="download"></i></span>
+                                    <span class="faq-card__question">Can I export cards for offline sharing?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Export layered PDFs, NFC handoff packages, or Apple Wallet passes in a single action. We include QR art, social previews, and a lightweight microsite so offline contacts still get a cinematic intro.</p>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="faq-group" aria-labelledby="faq-group-share">
+                    <header class="faq-group__header">
+                        <span class="faq-group__badge">Share</span>
+                    <h3 id="faq-group-share">Distribution & insight engine</h3>
+                    <p>How V-Card links travel, what analytics you capture, and ways to automate the follow-up.</p>
+                    </header>
+                    <div class="faq-stack">
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="smartphone"></i></span>
+                                    <span class="faq-card__question">Do recipients need to install anything?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>No downloads or sign-ups are required. Cards open instantly across browsers, adapt to dark mode, and can be saved to contact lists, Apple Wallet, or shared as QR, link, or NFC tap.</p>
+                            </div>
+                        </article>
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="radar"></i></span>
+                                    <span class="faq-card__question">How do QR codes and analytics work?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Each card ships with a dynamic QR and branded short link. Engagement logs capture location, device, and conversion events so you can trigger automations or segment follow-ups instantly.</p>
+                            </div>
+                        </article>
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="plug"></i></span>
+                                    <span class="faq-card__question">Do you support integrations with CRM tools?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Native connectors push new contacts to HubSpot and Salesforce. Zapier, Make, and REST webhooks handle everything from Slack alerts to auto-provisioning cards for new hires.</p>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="faq-group" aria-labelledby="faq-group-scale">
+                    <header class="faq-group__header">
+                        <span class="faq-group__badge">Scale</span>
+                    <h3 id="faq-group-scale">Collaboration & compliance</h3>
+                    <p>Safeguards that keep large teams, agencies, and enterprise rollouts in sync.</p>
+                    </header>
+                    <div class="faq-stack">
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="users"></i></span>
+                                    <span class="faq-card__question">Can teams collaborate on the same card?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Yes. Assign editors, reviewers, or approvers, leave inline comments, and lock mission-critical blocks. Activity trails show who changed what so compliance teams stay in the loop.</p>
+                            </div>
+                        </article>
+                        <article class="faq-card" data-faq-item>
+                            <div class="faq-card__glimmer" aria-hidden="true"></div>
+                            <button class="faq-question" type="button" aria-expanded="false">
+                                <span class="faq-card__label">
+                                    <span class="faq-card__icon"><i data-lucide="lock"></i></span>
+                                    <span class="faq-card__question">How secure is customer data?</span>
+                                </span>
+                                <span class="faq-card__toggle" aria-hidden="true">
+                                    <i data-lucide="plus" class="faq-toggle-icon faq-toggle-icon--open"></i>
+                                    <i data-lucide="minus" class="faq-toggle-icon faq-toggle-icon--close"></i>
+                                </span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Contact data is encrypted in transit and at rest with region-aware hosting. You get SSO, SCIM provisioning, granular field privacy, and tamper-proof audit logs for regulated industries.</p>
+                            </div>
+                        </article>
+                    </div>
+                </section>
+            </div>
         </div>
     </section>
 
     <section id="cta" class="landing-cta animate-on-scroll">
         <div class="cta-backdrop"></div>
         <div class="cta-content">
-            <h2>Ready to create your signature digital card?</h2>
-            <p>Join thousands crafting cinematic introductions with live previews, dark-mode gradients, and secure sharing.</p>
+            <h2>Ready to create your signature V-Card?</h2>
+            <p>Join thousands crafting ultra-fast V-Card introductions with cached assets, popular presets, and QR-ready links.</p>
             <div class="cta-actions">
                 <a class="hero-btn primary" href="{% url 'register' %}">Start building for free</a>
                 <a class="hero-btn ghost" href="{% url 'login' %}">Sign in to dashboard</a>
@@ -259,6 +446,9 @@
 </div>
 
 <style>
+    html {
+        scroll-behavior: smooth;
+    }
     :root {
         color-scheme: light;
     }
@@ -267,6 +457,21 @@
         min-height: 100vh;
         overflow-x: hidden;
         color: #0f172a;
+        background: radial-gradient(circle at top, rgba(99,102,241,0.08), transparent 55%),
+                    radial-gradient(circle at 80% 20%, rgba(236,72,153,0.08), transparent 58%),
+                    #f8fafc;
+    }
+    .landing-root::before {
+        content: "";
+        position: fixed;
+        inset: -40% -40% auto;
+        height: 70vh;
+        background: conic-gradient(from 45deg, rgba(14,165,233,0.18), rgba(236,72,153,0.12), rgba(124,58,237,0.18));
+        opacity: 0.8;
+        filter: blur(120px);
+        pointer-events: none;
+        animation: auroraSpin 24s linear infinite;
+        z-index: 0;
     }
     .landing-grid {
         position: absolute;
@@ -282,90 +487,149 @@
         position: absolute;
         border-radius: 50%;
         filter: blur(0px);
-        opacity: 0.5;
-        animation: nebulaDrift 22s ease-in-out infinite;
+        opacity: 0.55;
+        animation: nebulaDrift 26s ease-in-out infinite;
+        mix-blend-mode: screen;
     }
-    .landing-nebula--a { width: 520px; height: 520px; top: -200px; left: -160px; background: radial-gradient(circle, rgba(244, 63, 94, 0.35), transparent 60%); }
-    .landing-nebula--b { width: 420px; height: 420px; bottom: -160px; right: -120px; background: radial-gradient(circle, rgba(56, 189, 248, 0.3), transparent 70%); animation-delay: 5s; }
-    .landing-nav { position: fixed; top: 0; left: 50%; transform: translateX(-50%); width: min(1200px, calc(100% - 2rem)); padding: 1rem clamp(1rem, 4vw, 2.5rem); margin: 0; z-index: 20; backdrop-filter: blur(16px); background: rgba(255,255,255,0.78); border: 1px solid rgba(148,163,184,0.18); border-radius: 999px; box-shadow: 0 25px 45px -35px rgba(15,23,42,0.35); }
-    .landing-header { padding-top: clamp(6rem, 10vw, 8rem); }
-    .landing-nav__container { display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 1.5rem; }
-    .landing-nav__left { display: flex; align-items: center; gap: clamp(1.5rem, 4vw, 2.5rem); }
-    .landing-nav__right { display: flex; align-items: center; gap: 1.2rem; }
-    .landing-nav__links--desktop { display: none; }
-    @media (min-width: 960px) { .landing-nav__links--desktop { display: flex; align-items: center; gap: clamp(1.5rem, 3vw, 2.5rem); font-weight: 600; opacity: 0.9; } }
-    .landing-nav__cta--desktop { display: none; }
-    @media (min-width: 960px) { .landing-nav__cta--desktop { display: inline-flex; align-items: center; gap: 0.85rem; } .landing-nav__toggle { display: none; } }
-    .landing-nav__drawer { position: absolute; top: 100%; left: 0; width: 100%; padding-top: 1rem; display: none; }
-    .landing-nav__drawer-inner { background: rgba(255,255,255,0.94); border-radius: 24px; border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 30px 50px -30px rgba(15,23,42,0.3); display: grid; gap: 1rem; padding: 1.8rem; transform-origin: top center; transform: scale(0.98) translateY(-6px); opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; }
-    .landing-nav__drawer.is-open { display: block; }
-    .landing-nav__drawer.is-open .landing-nav__drawer-inner { opacity: 1; transform: scale(1) translateY(0); pointer-events: auto; }
-    .landing-nav__drawer-inner a { text-decoration: none; font-weight: 600; color: #0f172a; font-size: 1rem; }
-    @keyframes nebulaDrift { 0%,100% { transform: translate3d(0,0,0); opacity: 0.45; } 50% { transform: translate3d(0,-24px,0); opacity: 0.65; } }
+    .landing-nebula--a { width: 560px; height: 560px; top: -220px; left: -190px; background: radial-gradient(circle, rgba(244, 63, 94, 0.32), transparent 65%); }
+    .landing-nebula--b { width: 460px; height: 460px; bottom: -200px; right: -160px; background: radial-gradient(circle, rgba(56, 189, 248, 0.28), transparent 70%); animation-delay: 5s; }
+    @keyframes nebulaDrift { 0%,100% { transform: translate3d(0,0,0) scale(1); opacity: 0.5; } 50% { transform: translate3d(15px,-30px,0) scale(1.05); opacity: 0.7; } }
 
-    .landing-header { position: relative; z-index: 1; }
-    .landing-nav {
+    .landing-header { 
+        position: relative;
+        z-index: 1;
+        padding-top: clamp(2rem, 10vw, 8rem); 
+    }
+
+    /* Command Menu Styles */
+    .command-menu-trigger {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 101;
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 1.25rem;
-        padding: 1.5rem clamp(1rem, 4vw, 3rem);
-        margin: 0 auto;
-        max-width: 1200px;
-    }
-    .landing-logo {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        font-weight: 700;
-        font-size: 1.1rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-    }
-    .landing-logo__icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #f97316, #ec4899);
-        color: #fff;
-        font-size: 1.2rem;
-        transform: rotate(-8deg);
-        box-shadow: 0 12px 35px -18px rgba(236, 72, 153, 0.6);
-    }
-    .landing-nav__links { display: flex; align-items: center; gap: 1.5rem; font-weight: 600; opacity: 0.85; }
-    .landing-nav__links a { position: relative; z-index: 9999; }
-    .landing-nav__links a::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: -8px;
-        width: 0;
-        height: 2px;
-        background: linear-gradient(90deg, #f97316, #ec4899);
-        border-radius: 999px;
-        transition: width 0.25s ease;
-    }
-    .landing-nav__links a:hover::after { width: 100%; }
-    .landing-nav__cta { display: flex; align-items: center; gap: 0.75rem; }
-    .nav-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.35rem;
-        padding: 0.65rem 1.2rem;
-        border-radius: 999px;
+        gap: 8px;
+        padding: 10px 16px;
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(15, 23, 42, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
         font-weight: 600;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        color: #0f172a;
+        transition: all 0.2s ease;
     }
-    .nav-btn.primary { color: white; background: linear-gradient(135deg, #6366f1, #ec4899); box-shadow: 0 20px 45px -30px rgba(79, 70, 229, 0.7); }
-    .nav-btn.primary:hover { transform: translateY(-2px); }
-    .nav-btn.secondary { border: 1px solid rgba(15,23,42,0.12); color: #0f172a; }
-    .nav-btn.secondary:hover { transform: translateY(-2px); }
-    .landing-nav__toggle { display: none; background: none; border: none; font-size: 1.4rem; }
+    .command-menu-trigger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 12px rgba(0,0,0,0.1);
+    }
 
+    .command-menu-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 15vh;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+    .command-menu-overlay.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .command-menu__backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(4px);
+    }
+
+    .command-menu__palette {
+        position: relative;
+        width: min(90vw, 640px);
+        background: #1c1c22;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        color: #fff;
+        overflow: hidden;
+        transform: scale(0.95);
+        transition: transform 0.3s ease;
+    }
+    .command-menu-overlay.is-open .command-menu__palette {
+        transform: scale(1);
+    }
+
+    .command-menu__search-wrapper {
+        position: relative;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .command-menu__search-wrapper i {
+        position: absolute;
+        top: 50%;
+        left: 20px;
+        transform: translateY(-50%);
+        color: rgba(255, 255, 255, 0.4);
+    }
+    .command-menu__search {
+        width: 100%;
+        padding: 20px 20px 20px 50px;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: white;
+        font-size: 1.1rem;
+    }
+
+    .command-menu__list {
+        list-style: none;
+        margin: 0;
+        padding: 12px;
+        max-height: 300px;
+        overflow-y: auto;
+    }
+    .command-menu__list li a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: rgba(255, 255, 255, 0.7);
+        transition: all 0.2s ease;
+    }
+    .command-menu__list li a:hover, .command-menu__list li a.is-active {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    .command-menu__list li.separator {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 8px 12px;
+    }
+    .command-menu__list li[hidden] {
+        display: none;
+    }
+
+    .command-menu__footer {
+        padding: 12px;
+        text-align: center;
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.4);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .command-menu__footer kbd {
+        background: rgba(255,255,255,0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
     .landing-hero {
         display: grid;
         gap: clamp(2.5rem, 5vw, 6rem);
@@ -375,7 +639,19 @@
     @media (min-width: 1024px) {
         .landing-hero { grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr); align-items: center; }
     }
-    .landing-hero__copy { display: flex; flex-direction: column; gap: 1.75rem; }
+    .landing-hero__copy { display: flex; flex-direction: column; gap: 1.75rem; position: relative; }
+    .landing-hero__copy::after {
+        content: "";
+        position: absolute;
+        inset: auto -6rem -3rem auto;
+        width: 180px;
+        height: 180px;
+        border-radius: 30% 70% 60% 40%;
+        background: radial-gradient(circle at 30% 30%, rgba(236,72,153,0.22), transparent 70%);
+        filter: blur(65px);
+        pointer-events: none;
+        animation: pulseGlow 12s ease-in-out infinite;
+    }
     .landing-hero__copy h1 {
         font-size: clamp(2.8rem, 5vw, 4.6rem);
         line-height: 1.1;
@@ -388,6 +664,7 @@
         -webkit-background-clip: text;
         color: transparent;
         animation: hueShift 12s ease-in-out infinite;
+        text-shadow: 0 20px 40px rgba(236, 72, 153, 0.15);
     }
     @keyframes hueShift {
         0% { filter: hue-rotate(0deg); }
@@ -409,10 +686,7 @@
         text-transform: uppercase;
     }
     .hero-badge__pulse {
-        position:
-*** End Patch
-PATCH
-        absolute;
+        position: absolute;
         inset: -6px;
         border-radius: inherit;
         background: radial-gradient(circle at center, rgba(236,72,153,0.25), transparent 70%);
@@ -434,15 +708,37 @@ PATCH
         font-weight: 600;
         transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
-    .hero-btn.primary { color: #fff; background: linear-gradient(135deg, #ec4899, #6366f1); box-shadow: 0 28px 60px -30px rgba(79, 70, 229, 0.6); }
-    .hero-btn.primary:hover { transform: translateY(-3px); }
-    .hero-btn.ghost { border: 1px solid rgba(15,23,42,0.14); color: #0f172a; background: rgba(255,255,255,0.7); }
-    .hero-btn.ghost:hover { transform: translateY(-2px); }
+    .hero-btn.primary { color: #fff; background: linear-gradient(135deg, #6366f1, #ec4899); box-shadow: 0 30px 70px -28px rgba(79, 70, 229, 0.65); }
+    .hero-btn.primary:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 32px 80px -26px rgba(236, 72, 153, 0.6); }
+    .hero-btn.ghost { border: 1px solid rgba(99,102,241,0.25); color: #0f172a; background: rgba(255,255,255,0.85); box-shadow: 0 18px 40px -32px rgba(15,23,42,0.4); }
+    .hero-btn.ghost:hover { transform: translateY(-3px); box-shadow: 0 24px 50px -30px rgba(59,130,246,0.35); }
 
     .hero-stats { display: flex; flex-wrap: wrap; gap: 1.5rem; }
-    .hero-stats div { min-width: 120px; }
-    .hero-stats p { font-size: 1.85rem; font-weight: 700; }
-    .hero-stats span { font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: #94a3b8; }
+    .hero-stats div {
+        min-width: 150px;
+        padding: 0.85rem 1.1rem;
+        border-radius: 1.1rem;
+        background: rgba(255,255,255,0.82);
+        border: 1px solid rgba(99,102,241,0.18);
+        box-shadow: 0 26px 50px -36px rgba(15, 23, 42, 0.45);
+        position: relative;
+        overflow: hidden;
+        transform-origin: center;
+        transition: transform 0.35s ease, box-shadow 0.35s ease;
+    }
+    .hero-stats div::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(99,102,241,0.28), rgba(236,72,153,0.18));
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        mix-blend-mode: multiply;
+    }
+    .hero-stats div:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 32px 70px -30px rgba(99,102,241,0.4); }
+    .hero-stats div:hover::after { opacity: 0.55; }
+    .hero-stats p { font-size: 1.95rem; font-weight: 700; }
+    .hero-stats span { font-size: 0.72rem; letter-spacing: 0.24em; text-transform: uppercase; color: #64748b; }
 
     .landing-hero__visual { position: relative; }
     .hero-device {
@@ -507,15 +803,27 @@ PATCH
     .feature-grid { display: grid; gap: 2rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
     .feature-card {
         position: relative;
-        padding: 2rem 1.8rem;
+        padding: 2.2rem 2rem;
         border-radius: 24px;
-        background: rgba(255,255,255,0.75);
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        box-shadow: 0 30px 60px -45px rgba(15, 23, 42, 0.25);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        background: rgba(255,255,255,0.82);
+        border: 1px solid rgba(203, 213, 225, 0.65);
+        box-shadow: 0 32px 70px -46px rgba(15, 23, 42, 0.28);
+        overflow: hidden;
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
     }
-    .feature-card:hover { transform: translateY(-6px); box-shadow: 0 40px 70px -40px rgba(15,23,42,0.35); }
-    .feature-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 16px; background: linear-gradient(135deg, #6366f1, #ec4899); color: white; margin-bottom: 1rem; }
+    .feature-card::before {
+        content: "";
+        position: absolute;
+        inset: -40% -10% 60% -20%;
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(99,102,241,0.18), rgba(236,72,153,0.12));
+        opacity: 0;
+        transform: translateY(30px);
+        transition: transform 0.45s ease, opacity 0.45s ease;
+    }
+    .feature-card:hover { transform: translateY(-12px) scale(1.01); box-shadow: 0 38px 90px -45px rgba(99,102,241,0.35); }
+    .feature-card:hover::before { opacity: 1; transform: translateY(0); }
+    .feature-icon { display: inline-flex; align-items: center; justify-center; width: 52px; height: 52px; border-radius: 18px; background: linear-gradient(135deg, #6366f1, #ec4899); color: white; margin-bottom: 1.2rem; box-shadow: 0 18px 36px -24px rgba(99,102,241,0.55); }
     .feature-card ul { margin-top: 1rem; display: grid; gap: 0.45rem; font-size: 0.85rem; color: #475569; }
     .feature-card li { display: inline-flex; align-items: center; gap: 0.45rem; }
 
@@ -525,28 +833,196 @@ PATCH
     .workflow-steps li { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 1rem; border-radius: 16px; background: rgba(255,255,255,0.75); border: 1px solid rgba(148,163,184,0.18); }
     .workflow-steps span { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#6366f1,#ec4899); color: white; display: grid; place-items: center; font-weight: 700; }
     .workflow-stage { position: relative; display: grid; gap: 1.5rem; }
-    .workflow-step-card { padding: 1.6rem; border-radius: 22px; background: linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.82)); color: white; border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 30px 60px -45px rgba(15,23,42,0.6); }
+    .workflow-step-card { padding: 1.7rem; border-radius: 22px; background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(236,72,153,0.78)); color: white; border: 1px solid rgba(148,163,184,0.18); box-shadow: 0 36px 70px -45px rgba(79,70,229,0.55); position: relative; overflow: hidden; }
+    .workflow-step-card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 20% -10%, rgba(255,255,255,0.35), transparent 60%); opacity: 0; transition: opacity 0.4s ease; }
+    .workflow-step-card:hover::after { opacity: 0.6; }
     .workflow-step-card h4 { display: inline-flex; align-items: center; gap: 0.6rem; font-weight: 600; margin-bottom: 0.4rem; }
-    .workflow-step-card p { opacity: 0.8; }
+    .workflow-step-card p { opacity: 0.85; }
 
-    .testimonial-slider { display: grid; gap: 1.5rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-    .testimonial-slider article { border-radius: 24px; padding: 1.8rem; background: rgba(255,255,255,0.78); border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 20px 45px -35px rgba(15,23,42,0.25); display: grid; gap: 1.2rem; }
+    .testimonial-slider { display: grid; gap: 1.6rem; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+    .testimonial-slider article { border-radius: 24px; padding: 1.9rem; background: rgba(255,255,255,0.88); border: 1px solid rgba(203,213,225,0.6); box-shadow: 0 32px 60px -42px rgba(15,23,42,0.28); display: grid; gap: 1.2rem; position: relative; overflow: hidden; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .testimonial-slider article::before { content: ""; position: absolute; inset: -40% -30% 60% -20%; border-radius: 999px; background: linear-gradient(135deg, rgba(236,72,153,0.18), rgba(59,130,246,0.16)); opacity: 0; transform: translateY(24px); transition: opacity 0.4s ease, transform 0.4s ease; }
+    .testimonial-slider article:hover { transform: translateY(-10px); box-shadow: 0 36px 80px -44px rgba(99,102,241,0.32); }
+    .testimonial-slider article:hover::before { opacity: 0.65; transform: translateY(0); }
     .testimonial-slider header { display: flex; align-items: center; gap: 1rem; }
     .testimonial-slider .avatar { width: 48px; height: 48px; border-radius: 999px; background: var(--bg); display: grid; place-items: center; color: #1f2937; font-weight: 700; }
     .testimonial-slider .rating { margin-left: auto; font-size: 0.9rem; color: #f59e0b; }
 
+    .faq-section {
+        position: relative;
+        margin: clamp(2.5rem, 8vw, 5rem) clamp(1.2rem, 6vw, 5rem);
+        border-radius: 32px;
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        box-shadow: 0 40px 80px -48px rgba(15,23,42,0.28);
+        color: #0f172a;
+        overflow: hidden;
+    }
+    .faq-section::before,
+    .faq-section::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+        border-radius: 999px;
+        filter: blur(90px);
+        opacity: 0.55;
+        mix-blend-mode: multiply;
+    }
+    .faq-section::before { width: 320px; height: 320px; top: -140px; left: -120px; background: rgba(99,102,241,0.22); animation: orbFloat 18s ease-in-out infinite; }
+    .faq-section::after { width: 300px; height: 300px; bottom: -160px; right: -140px; background: rgba(236,72,153,0.22); animation: orbFloat 20s ease-in-out infinite reverse; }
+
+    .faq-intro { position: relative; z-index: 1; display: grid; gap: 1rem; text-align: center; max-width: 60ch; margin: 0 auto; }
+    .faq-section .section-title { color: #0f172a; }
+    .faq-section .section-subtitle { color: #64748b; }
+    .faq-badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.22em; font-weight: 700; background: rgba(236, 233, 254, 0.7); border: 1px solid rgba(148, 163, 184, 0.45); color: #475569; }
+
+    .faq-layout {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: clamp(2rem, 5vw, 3rem);
+        align-items: start;
+    }
+    @media (min-width: 992px) {
+        .faq-layout { grid-template-columns: minmax(0, 0.82fr) minmax(0, 1.18fr); }
+    }
+
+    .faq-sidebar {
+        position: relative;
+        padding: clamp(1.6rem, 4vw, 2.4rem);
+        border-radius: 24px;
+        background: linear-gradient(135deg, rgba(248,250,252,0.95), rgba(241,245,249,0.93));
+        border: 1px solid rgba(226, 232, 240, 0.85);
+        color: #1f2937;
+        display: grid;
+        gap: 1.8rem;
+        box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .faq-sidebar__header h3 { font-size: 1.45rem; margin-top: 0.4rem; color: #0f172a; }
+    .faq-sidebar__header p { margin-top: 0.6rem; line-height: 1.6; color: #64748b; }
+    .faq-sidebar__eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.2em; color: #94a3b8; }
+    .faq-metrics { display: grid; gap: 0.85rem; }
+    .faq-metrics div { display: grid; gap: 0.25rem; padding: 0.75rem 1rem; border-radius: 18px; background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(226, 232, 240, 0.9); }
+    .faq-metrics dt { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: #94a3b8; }
+    .faq-metrics dd { margin: 0; font-size: 1.25rem; font-weight: 700; color: #1f2937; }
+    .faq-sidebar__footer { border-top: 1px solid rgba(226, 232, 240, 0.8); padding-top: 1rem; }
+    .faq-sidebar__note { display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.9rem; color: #475569; }
+    .faq-sidebar__note i { margin-top: 0.2rem; color: #6366f1; }
+
+    .faq-collection { display: grid; gap: clamp(1.8rem, 4vw, 2.5rem); }
+    .faq-group { border: 1px solid rgba(226, 232, 240, 0.9); border-radius: 24px; background: rgba(255, 255, 255, 0.97); padding: clamp(1.6rem, 4vw, 2.3rem); display: grid; gap: 1.2rem; box-shadow: 0 22px 55px -40px rgba(15,23,42,0.2); }
+    .faq-group__header { display: grid; gap: 0.5rem; }
+    .faq-group__badge { display: inline-flex; align-items: center; justify-content: center; padding: 0.32rem 0.85rem; border-radius: 999px; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.2em; background: rgba(226, 232, 240, 0.9); color: #475569; border: 1px solid rgba(203, 213, 225, 0.9); }
+    .faq-group__header h3 { font-size: 1.3rem; color: #0f172a; }
+    .faq-group__header p { margin: 0; color: #64748b; line-height: 1.55; }
+    .faq-stack { display: grid; gap: 0.9rem; }
+
+    .faq-card {
+        position: relative;
+        border-radius: 30px;
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        background: rgba(255, 255, 255, 0.96);
+        backdrop-filter: none;
+        overflow: hidden;
+    }
+    .faq-card:hover { border-color: rgba(20, 184, 166, 0.55); box-shadow: 0 30px 60px -40px rgba(0, 255, 224, 0.28); }
+    .faq-card.is-open { border-color: rgba(168, 85, 247, 0.75); box-shadow: 0 36px 72px -42px rgba(129, 140, 248, 0.38); }
+
+    .faq-card__glimmer { display: none; }
+
+    .faq-question {
+        position: relative;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.35rem;
+        padding: 1.5rem 1.9rem;
+        background: transparent;
+        border: none;
+        color: inherit;
+        font-size: 1.05rem;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        z-index: 1;
+    }
+    .faq-card__label { display: flex; align-items: center; gap: 1.05rem; flex: 1; }
+    .faq-card__icon { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 18px; background: linear-gradient(140deg, #6366f1, #94a3b8); color: #f8fafc; box-shadow: 0 12px 22px -18px rgba(79, 70, 229, 0.4); }
+    .faq-card__icon svg { width: 22px; height: 22px; }
+
+    .faq-card__question { display: inline-block; font-size: inherit; line-height: 1.35; color: #1f2937; }
+    .faq-card__toggle {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+    }
+    .faq-toggle-icon { position: absolute; inset: 0; margin: auto; width: 24px; height: 24px; color: rgba(71, 85, 105, 0.6); }
+    .faq-card.is-open .faq-toggle-icon--open { opacity: 0; }
+    .faq-card.is-open .faq-toggle-icon--close { opacity: 1; color: #6366f1; }
+    .faq-toggle-icon--close { opacity: 0; }
+
+    .faq-answer {
+        padding: 0 2rem 1.8rem 5.6rem;
+        border-top: 1px solid rgba(94, 129, 244, 0.18);
+        color: #475569;
+        font-size: 0.98rem;
+        line-height: 1.7;
+        max-height: 0;
+        overflow: hidden;
+        opacity: 0;
+    }
+    .faq-answer p { margin: 1.15rem 0 0; }
+    .faq-card.is-open .faq-answer { opacity: 1; border-top-color: rgba(99, 102, 241, 0.35); }
+
+    @media (max-width: 640px) {
+        .faq-section { margin-inline: clamp(0.5rem, 5vw, 1.4rem); border-radius: 30px; }
+        .faq-layout { gap: 1.6rem; }
+        .faq-sidebar { padding: 1.4rem; }
+        .faq-collection { gap: 1.4rem; }
+        .faq-group { padding: 1.4rem; }
+        .faq-question { padding: 1.2rem 1.2rem; font-size: 1rem; align-items: flex-start; }
+        .faq-card__label { gap: 0.8rem; }
+        .faq-card__icon { width: 42px; height: 42px; border-radius: 15px; }
+        .faq-card__icon svg { width: 20px; height: 20px; }
+        .faq-answer { padding: 0 1.2rem 1.4rem 4.4rem; }
+    }
+
+    @keyframes auroraSpin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+    @keyframes pulseGlow {
+        0%, 100% { opacity: 0.35; transform: scale(1); }
+        50% { opacity: 0.65; transform: scale(1.08); }
+    }
+    @keyframes orbFloat {
+        0%, 100% { transform: translate3d(0,0,0); }
+        50% { transform: translate3d(12px, -18px, 0); }
+    }
+    @keyframes gradientShift {
+        0% { filter: hue-rotate(0deg); }
+        50% { filter: hue-rotate(20deg); }
+        100% { filter: hue-rotate(0deg); }
+    }
+
     .landing-cta {
         position: relative;
         margin: 4rem auto clamp(3rem, 8vw, 6rem);
-        border-radius: 32px;
+        border-radius: 36px;
         padding: clamp(3rem, 6vw, 5rem);
         overflow: hidden;
         color: white;
+        box-shadow: 0 48px 100px -40px rgba(79,70,229,0.45);
     }
     .cta-backdrop {
         position: absolute;
         inset: 0;
-        background: linear-gradient(135deg, rgba(79,70,229,0.95), rgba(236,72,153,0.9));
+        background: linear-gradient(120deg, rgba(79,70,229,0.95), rgba(236,72,153,0.9));
+        animation: gradientShift 14s ease-in-out infinite alternate;
     }
     .cta-content { position: relative; z-index: 1; display: grid; gap: 1.5rem; text-align: center; }
     .cta-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
@@ -561,75 +1037,73 @@ PATCH
     .demo-modal__body { padding: 2.5rem; display: grid; gap: 1.2rem; }
     .demo-video { width: 100%; border-radius: 18px; box-shadow: 0 20px 45px -35px rgba(15,23,42,0.4); }
     @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    @media (max-width: 1023px) {
-        .landing-nav__links { display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: min(90vw, 360px); flex-direction: column; background: rgba(255,255,255,0.92); border-radius: 16px; padding: 1.25rem; border: 1px solid rgba(148,163,184,0.2); box-shadow: 0 30px 60px -45px rgba(15,23,42,0.25); }
-        .landing-nav__links.is-open { display: flex; }
-        .landing-nav__toggle { display: grid; place-items: center; color: #0f172a; }
-        .landing-nav__cta { display: none; }
-        .landing-nav__cta--mobile { display: grid; gap: 0.75rem; margin-top: 1rem; }
-    }
 </style>
 <script>
     (function() {
         lucide.createIcons();
 
-        const observer = new IntersectionObserver(entries => {
+        // --- Intersection Observer for scroll animations ---
+        const scrollObserver = new IntersectionObserver(entries => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('is-visible');
                 }
             });
         }, { threshold: 0.18 });
-        document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
+        document.querySelectorAll('.animate-on-scroll').forEach(el => scrollObserver.observe(el));
 
-        const navToggle = document.querySelector('[data-nav-toggle]');
-        const navMenu = document.querySelector('[data-nav-menu]');
-        const navLinks = document.querySelectorAll('.landing-nav__links a, [data-nav-menu] a');
+        // --- Command Menu Logic ---
+        const menuTrigger = document.getElementById('command-menu-trigger');
+        const commandOverlay = document.getElementById('command-menu-overlay');
+        const backdrop = document.getElementById('command-menu-backdrop');
+        const searchInput = document.getElementById('command-menu-search');
+        const list = document.getElementById('command-menu-list');
+        const links = list.querySelectorAll('li');
 
-        if (navToggle) {
-            navToggle.setAttribute('aria-expanded', 'false');
-        }
-
-        const toggleMenu = (open) => {
-            if (!navMenu || !navToggle) {
-                return;
-            }
-            navMenu.classList.toggle('is-open', open);
-            navToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        const openMenu = () => {
+            commandOverlay.classList.add('is-open');
+            searchInput.focus();
         };
 
-        if (navToggle && navMenu) {
-            navToggle.addEventListener('click', () => {
-                const isOpen = navMenu.classList.contains('is-open');
-                toggleMenu(!isOpen);
-            });
+        const closeMenu = () => {
+            commandOverlay.classList.remove('is-open');
+            searchInput.value = '';
+            filterList('');
+        };
 
-            window.addEventListener('resize', () => {
-                if (window.innerWidth >= 1024) {
-                    toggleMenu(false);
+        const filterList = (query) => {
+            const lowerQuery = query.toLowerCase();
+            links.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(lowerQuery)) {
+                    item.hidden = false;
+                } else {
+                    item.hidden = true;
                 }
             });
-        }
-
-        const handleSmoothScroll = (event) => {
-            const targetId = event.currentTarget.getAttribute('href');
-            if (!targetId || !targetId.startsWith('#')) {
-                return;
-            }
-            event.preventDefault();
-            const section = document.querySelector(targetId);
-            if (section) {
-                section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-            toggleMenu(false);
-            event.currentTarget.blur();
         };
 
-        navLinks.forEach((link) => {
-            link.addEventListener('click', handleSmoothScroll);
+        menuTrigger.addEventListener('click', openMenu);
+        backdrop.addEventListener('click', closeMenu);
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && commandOverlay.classList.contains('is-open')) {
+                closeMenu();
+            }
+        });
+        searchInput.addEventListener('input', (e) => filterList(e.target.value));
+
+        list.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                const href = link.getAttribute('href');
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    document.querySelector(href).scrollIntoView({ behavior: 'smooth' });
+                    closeMenu();
+                }
+            });
         });
 
+        // --- Demo Modal Logic ---
         const demoModal = document.querySelector('[data-demo-modal]');
         const demoTriggers = document.querySelectorAll('[data-demo-trigger]');
         const demoClose = document.querySelector('[data-demo-close]');
@@ -641,6 +1115,7 @@ PATCH
             }
         });
 
+        // --- Hero Hue Animation ---
         const heroPreview = document.getElementById('heroPreview');
         if (heroPreview) {
             let hue = 0;
@@ -650,6 +1125,99 @@ PATCH
                 requestAnimationFrame(cycle);
             };
             cycle();
+        }
+
+        // --- Stats Count-Up Animation ---
+        const statsContainer = document.querySelector('.hero-stats');
+        const animateStat = (el) => {
+            const target = parseInt(el.dataset.value, 10);
+            const prefix = el.dataset.prefix || '';
+            const suffix = el.dataset.suffix || '';
+            const duration = 2000;
+            let start = null;
+
+            const step = (timestamp) => {
+                if (!start) start = timestamp;
+                const progress = Math.min((timestamp - start) / duration, 1);
+                let currentValue = Math.floor(progress * target);
+                
+                if (suffix === 'K') {
+                    el.textContent = prefix + (currentValue / 1000).toFixed(1) + suffix;
+                    if (currentValue === target) {
+                         el.textContent = prefix + (target / 1000) + suffix;
+                    }
+                } else {
+                    el.textContent = prefix + currentValue + suffix;
+                }
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                }
+            };
+            requestAnimationFrame(step);
+        };
+
+        const statObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    document.querySelectorAll('.stat-value').forEach(animateStat);
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        if (statsContainer) {
+            statObserver.observe(statsContainer);
+        }
+
+        // --- FAQ Accordion ---
+        const faqItems = Array.from(document.querySelectorAll('[data-faq-item]'));
+        const setFaqState = (item, expand) => {
+            const button = item.querySelector('.faq-question');
+            const answer = item.querySelector('.faq-answer');
+            if (!button || !answer) return;
+
+            if (expand) {
+                item.classList.add('is-open');
+                button.setAttribute('aria-expanded', 'true');
+                answer.style.maxHeight = answer.scrollHeight + 'px';
+            } else {
+                item.classList.remove('is-open');
+                button.setAttribute('aria-expanded', 'false');
+                answer.style.maxHeight = '0px';
+            }
+        };
+
+        if (faqItems.length) {
+            faqItems.forEach(item => {
+                const button = item.querySelector('.faq-question');
+                const answer = item.querySelector('.faq-answer');
+                if (!button || !answer) {
+                    return;
+                }
+
+                answer.style.maxHeight = '0px';
+
+                button.addEventListener('click', () => {
+                    const shouldExpand = !item.classList.contains('is-open');
+                    faqItems
+                        .filter(other => other !== item)
+                        .forEach(other => setFaqState(other, false));
+                    setFaqState(item, shouldExpand);
+                });
+            });
+
+            window.addEventListener('resize', () => {
+                faqItems.forEach(item => {
+                    if (!item.classList.contains('is-open')) {
+                        return;
+                    }
+                    const answer = item.querySelector('.faq-answer');
+                    if (answer) {
+                        answer.style.maxHeight = answer.scrollHeight + 'px';
+                    }
+                });
+            });
         }
     })();
 </script>

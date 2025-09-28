@@ -10,13 +10,13 @@
     <div class="editor-glow editor-glow--three"></div>
 
     <div class="relative max-w-7xl mx-auto">
-        <div class="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] items-start">
+        <div class="grid gap-10 items-start lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
             <section class="builder-panel glass-surface" id="builderPanel">
                 <div class="builder-header">
                     <div>
                         <p class="text-xs uppercase tracking-[0.4em] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %} your card</p>
                         <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Craft your interactive identity</h1>
-                        <p class="text-sm text-slate-500 mt-1">Fill out the details on the left and scroll the live preview to explore the result.</p>
+                        <p class="text-sm text-slate-500 mt-1">Fill out the details on the left and tailor every section of your card.</p>
                         {% if cards_remaining is not None %}
                             <div class="mt-4 inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold tracking-[0.2em] uppercase limit-pill">
                                 <i data-lucide="layers" class="w-4 h-4"></i>
@@ -27,7 +27,7 @@
                     <span class="builder-badge">
                         <span class="builder-badge__pulse"></span>
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        Live preview
+                        Builder mode
                     </span>
                 </div>
 
@@ -49,12 +49,22 @@
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">First name</label>
-                                {{ form.firstName }}
+                                {% with field=form.firstName %}
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-600 mb-1">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                {% endwith %}
                             </div>
                             <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Last name</label>
-                                {{ form.lastName }}
+                                {% with field=form.lastName %}
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-600 mb-1">
+                                        {{ field.label }}
+                                        {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
+                                    </label>
+                                    {{ field }}
+                                {% endwith %}
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Job title</label>
@@ -121,7 +131,7 @@
                             <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">2</span>
                             Social connections
                         </h2>
-                        <p class="text-sm text-gray-500">Links spring to life on the preview with colour-coded badges.</p>
+                        <p class="text-sm text-gray-500">Links spring to life on the card with colour-coded badges.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Facebook</label>
@@ -246,26 +256,26 @@
                                     <span class="text-xs text-gray-400">Tap an option or use the colour picker</span>
                                 </div>
                                 <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4" id="background-options">
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)"><span>Blush Sunrise</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)"><span>Lavender Dream</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #43cea2 0%, #185a9d 100%)"><span>Emerald Ocean</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)"><span>Royal Velvet</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #e46b7f 0%, #24152f 100%)"><span>Crimson Nebula</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #1f1c2c 0%, #928dab 100%)"><span>Moonlit Orchid</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)"><span>Abyssal Tide</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #20002c 0%, #cbb4d4 100%)"><span>Amethyst Veil</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #000428 0%, #004e92 100%)"><span>Midnight Azure</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)"><span>Celestial Noir</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #b3ffab 0%, #12fff7 100%)"><span>Mint Aura</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)"><span>Dreamscape</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #f6d365 0%, #fda085 100%)"><span>Golden Hour</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)"><span>Tropical Mist</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%)"><span>Cosmic Bloom</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ba5370 0%, #f4e2d8 100%)"><span>Rosé Cloud</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)" style="--gradient: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);"><span>Blush Sunrise</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)" style="--gradient: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);"><span>Lavender Dream</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #43cea2 0%, #185a9d 100%)" style="--gradient: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);"><span>Emerald Ocean</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)" style="--gradient: linear-gradient(135deg, #4568dc 0%, #b06ab3 100%);"><span>Royal Velvet</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #e46b7f 0%, #24152f 100%)" style="--gradient: linear-gradient(135deg, #e46b7f 0%, #24152f 100%);"><span>Crimson Nebula</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #1f1c2c 0%, #928dab 100%)" style="--gradient: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%);"><span>Moonlit Orchid</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)" style="--gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);"><span>Abyssal Tide</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #20002c 0%, #cbb4d4 100%)" style="--gradient: linear-gradient(135deg, #20002c 0%, #cbb4d4 100%);"><span>Amethyst Veil</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #000428 0%, #004e92 100%)" style="--gradient: linear-gradient(135deg, #000428 0%, #004e92 100%);"><span>Midnight Azure</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)" style="--gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);"><span>Celestial Noir</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #b3ffab 0%, #12fff7 100%)" style="--gradient: linear-gradient(135deg, #b3ffab 0%, #12fff7 100%);"><span>Mint Aura</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)" style="--gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);"><span>Dreamscape</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #f6d365 0%, #fda085 100%)" style="--gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);"><span>Golden Hour</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)" style="--gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);"><span>Tropical Mist</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%)" style="--gradient: linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);"><span>Cosmic Bloom</span></button>
+                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ba5370 0%, #f4e2d8 100%)" style="--gradient: linear-gradient(135deg, #ba5370 0%, #f4e2d8 100%);"><span>Rosé Cloud</span></button>
                                 </div>
                                 <div class="flex items-center gap-4">
                                     <label for="customBackgroundPicker" class="text-sm font-semibold text-gray-600">Or choose a custom colour</label>
-                                    <input type="color" id="customBackgroundPicker" class="h-12 w-12 rounded-full border-0 shadow-inner cursor-pointer" value="#ff9a9e" aria-label="Custom background colour picker">
+                                    <input type="color" id="customBackgroundPicker" class="h-12 w-12 rounded-full border-0 shadow-inner cursor-pointer" value="#000000" aria-label="Custom background colour picker">
                                 </div>
                                 <div class="hidden">
                                     {{ form.background_style }}
@@ -287,117 +297,88 @@
                 </form>
             </section>
 
-            <div class="live-preview-wrapper">
-                <aside class="preview-panel">
-                    <div class="preview-panel__header">
-                        <div>
-                            <p class="text-xs uppercase tracking-[0.35rem] text-white/60">Live preview</p>
-                            <h2 class="text-2xl font-semibold text-white">Your card in motion</h2>
-                        </div>
-                        <div class="preview-status">
-                            <span class="preview-status__dot"></span>
-                            Auto-sync
-                        </div>
-                    </div>
-                    <div class="preview-stage">
-                        <div class="preview-scroll" id="previewScroll">
-                            <div id="previewCard" class="preview-card rounded-3xl shadow-2xl overflow-hidden text-white">
-                                <div class="p-8 backdrop-blur-sm bg-white/0" id="previewContent">
-                                    <div class="flex flex-col items-center text-center gap-5">
-                                        <div class="relative">
-                                            <div id="previewAvatarFallback" class="w-28 h-28 rounded-full bg-white/25 border border-white/70 flex items-center justify-center text-white/80 text-4xl font-semibold tracking-wide">
-                                                <i data-lucide="user" class="w-10 h-10"></i>
-                                            </div>
-                                            <img id="previewAvatarImg" src="{% if card and card.avatar %}{{ card.avatar.url }}{% endif %}" alt="Avatar preview" class="hidden w-28 h-28 rounded-full object-cover border-4 border-white shadow-xl">
-                                        </div>
-                                        <div>
-                                            <h2 id="previewName" class="text-2xl font-bold tracking-tight">Your Name</h2>
-                                            <p id="previewJob" class="text-sm uppercase tracking-[0.3em] text-white/80">Your role</p>
-                                            <p id="previewCompany" class="text-base text-white/80">Company</p>
-                                        </div>
-                                    </div>
-                                    <div id="previewLogoRow" class="preview-brand hidden">
-                                        <div class="preview-brand__badge">
-                                            <div id="previewLogoFallback" class="preview-brand__fallback">
-                                                <i data-lucide="building-2"></i>
-                                            </div>
-                                            <img id="previewLogoImg" src="{% if card and card.logo %}{{ card.logo.url }}{% endif %}" alt="Logo preview" class="preview-brand__image {% if not card or not card.logo %}hidden{% endif %}">
-                                        </div>
-                                        <span id="previewLogoText" class="preview-brand__text">Brand name</span>
-                                    </div>
-                                    <div class="mt-8 space-y-3" id="previewContacts">
-                                        <p id="previewEmailRow" class="preview-contact"><i data-lucide="mail" class="w-5 h-5"></i><span id="previewEmail">hello@example.com</span></p>
-                                        <p id="previewPhoneRow" class="preview-contact"><i data-lucide="phone" class="w-5 h-5"></i><span id="previewPhone">+00 000 000</span></p>
-                                        <p id="previewWebsiteRow" class="preview-contact"><i data-lucide="globe" class="w-5 h-5"></i><a id="previewWebsite" href="#" target="_blank">example.com</a></p>
-                                        <p id="previewAddressRow" class="preview-contact"><i data-lucide="map-pin" class="w-5 h-5"></i><span id="previewAddress">City, Country</span></p>
-                                        <p id="previewBirthdayRow" class="preview-contact"><i data-lucide="cake" class="w-5 h-5"></i><span id="previewBirthday">Birthday</span></p>
-                                    </div>
-                                    <p id="previewNotes" class="mt-6 text-sm italic text-white/90 hidden"></p>
-                                    <div id="previewSocials" class="mt-8 flex flex-wrap justify-center gap-3">
-                                        <span class="preview-social" data-social-preview="facebook" style="--brand-color:#1877F2;">
-                                            <i data-lucide="facebook" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="whatsapp" style="--brand-color:#25D366;">
-                                            <i data-lucide="message-circle" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="youtube" style="--brand-color:#FF0000;">
-                                            <i data-lucide="youtube" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="instagram" style="--brand-color:#E4405F;">
-                                            <i data-lucide="instagram" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="twitter" style="--brand-color:#1DA1F2;">
-                                            <i data-lucide="twitter" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="linkedin" style="--brand-color:#0A66C2;">
-                                            <i data-lucide="linkedin" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="github" style="--brand-color:#181717;">
-                                            <i data-lucide="github" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="tiktok" style="--brand-color:#FF0050;">
-                                            <i data-lucide="music-2" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="snapchat" style="--brand-color:#FFFC00;">
-                                            <i data-lucide="ghost" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="likee" style="--brand-color:#FF6F61;">
-                                            <i data-lucide="heart" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="pinterest" style="--brand-color:#E60023;">
-                                            <i data-lucide="pin" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="telegram" style="--brand-color:#229ED9;">
-                                            <i data-lucide="send" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="threads" style="--brand-color:#111111;">
-                                            <i data-lucide="at-sign" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="behance" style="--brand-color:#1769FF;">
-                                            <i data-lucide="palette" class="w-5 h-5"></i>
-                                        </span>
-                                        <span class="preview-social" data-social-preview="dribbble" style="--brand-color:#EA4C89;">
-                                            <i data-lucide="basketball" class="w-5 h-5"></i>
-                                        </span>
-                                    </div>
+            <aside class="preview-pane" aria-label="Live card preview">
+                <div class="preview-pane__sticky" id="previewScroll">
+                    <header class="preview-pane__header">
+                        <span class="preview-pane__eyebrow">Live preview</span>
+                        <h2 class="preview-pane__title">Your card in real time</h2>
+                        <p class="preview-pane__subtitle">Every field you update is reflected instantly. Try changing names, colours, or social links.</p>
+                    </header>
+                    <article class="simple-preview" id="previewCard">
+                        <div class="simple-preview__body">
+                            <div class="simple-preview__row">
+                                <div class="simple-avatar">
+                                    <img id="previewAvatarImg" class="simple-avatar__img hidden" alt="Avatar preview">
+                                    <span id="previewAvatarFallback" class="simple-avatar__fallback">
+                                        <i data-lucide="user" class="w-6 h-6"></i>
+                                    </span>
+                                </div>
+                                <div class="simple-identity">
+                                    <p id="previewName" class="simple-name">Your Name</p>
+                                    <p id="previewJob" class="simple-role">Your role</p>
+                                    <p id="previewCompany" class="simple-company">Company</p>
                                 </div>
                             </div>
-                            <div class="preview-card trail-card text-white/80">
-                                <div class="p-8 space-y-4">
-                                    <h3 class="text-lg font-semibold">Scroll for more ✦</h3>
-                                    <p class="text-sm leading-relaxed">Populate more fields to watch this preview animate in real time. Social badges pulse when a link is active, and backgrounds morph instantly.</p>
-                                    <div class="flex gap-2 flex-wrap">
-                                        <span class="trail-pill">Responsive preview</span>
-                                        <span class="trail-pill">Animated gradients</span>
-                                        <span class="trail-pill">Scroll snap</span>
-                                    </div>
+
+                            <div id="previewLogoRow" class="simple-logo hidden">
+                                <div class="simple-logo__thumb">
+                                    <img id="previewLogoImg" class="simple-logo__img hidden" alt="Brand logo preview">
+                                    <span id="previewLogoFallback" class="simple-logo__fallback">
+                                        <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                    </span>
                                 </div>
+                                <p id="previewLogoText" class="simple-logo__text">Brand name</p>
+                            </div>
+
+                            <ul class="simple-contact">
+                                <li id="previewEmailRow" class="simple-contact__item">
+                                    <i data-lucide="mail" class="w-4 h-4"></i>
+                                    <span id="previewEmail">hello@example.com</span>
+                                </li>
+                                <li id="previewPhoneRow" class="simple-contact__item">
+                                    <i data-lucide="phone" class="w-4 h-4"></i>
+                                    <span id="previewPhone">+00 000 000</span>
+                                </li>
+                                <li id="previewWebsiteRow" class="simple-contact__item">
+                                    <i data-lucide="globe" class="w-4 h-4"></i>
+                                    <a id="previewWebsite" class="simple-link" rel="nofollow noopener">example.com</a>
+                                </li>
+                                <li id="previewAddressRow" class="simple-contact__item">
+                                    <i data-lucide="map-pin" class="w-4 h-4"></i>
+                                    <span id="previewAddress">City, Country</span>
+                                </li>
+                                <li id="previewBirthdayRow" class="simple-contact__item">
+                                    <i data-lucide="calendar" class="w-4 h-4"></i>
+                                    <span id="previewBirthday">Birthday</span>
+                                </li>
+                            </ul>
+
+                            <section class="simple-notes hidden" id="previewNotesSection">
+                                <h3 class="simple-notes__label">Notes</h3>
+                                <p id="previewNotes" class="simple-notes__text"></p>
+                            </section>
+
+                            <div class="simple-socials" aria-label="Social links">
+                                <span class="simple-social hidden" data-social-preview="facebook"><i data-lucide="facebook" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="whatsapp"><i data-lucide="message-circle" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="youtube"><i data-lucide="youtube" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="instagram"><i data-lucide="instagram" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="twitter"><i data-lucide="twitter" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="linkedin"><i data-lucide="linkedin" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="github"><i data-lucide="github" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="tiktok"><i data-lucide="music-2" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="snapchat"><i data-lucide="ghost" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="likee"><i data-lucide="heart" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="pinterest"><i data-lucide="pin" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="telegram"><i data-lucide="send" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="threads"><i data-lucide="at-sign" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="behance"><i data-lucide="palette" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="dribbble"><i data-lucide="basketball" class="w-4 h-4"></i></span>
                             </div>
                         </div>
-                    </div>
-                    <p class="preview-footer">Changes appear instantly. Backgrounds are saved automatically.</p>
-                </aside>
-            </div>
+                    </article>
+                </div>
+            </aside>
         </div>
     </div>
 </div>
@@ -482,123 +463,11 @@
         transform: translateY(-2px);
     }
 
-    .live-preview-wrapper {
-        position: static;
-    }
-    @media (min-width: 1024px) {
-        .live-preview-wrapper {
-            position: sticky;
-            top: 80px;
-            height: fit-content;
-        }
-    }
+    .hidden { display: none !important; }
 
-    .preview-panel {
-        position: relative;
-        border-radius: 32px;
-        padding: clamp(1.8rem, 3vw, 2.6rem);
-        background: linear-gradient(160deg, rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.98));
-        box-shadow: 0 40px 70px -40px rgba(15, 23, 42, 0.6);
-        display: flex;
-        flex-direction: column;
-        gap: 1.6rem;
-        overflow: hidden;
-    }
-    .preview-panel::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(60% 60% at 20% 10%, rgba(236, 72, 153, 0.25), transparent 65%),
-                    radial-gradient(50% 70% at 80% 15%, rgba(56, 189, 248, 0.18), transparent 70%);
-        opacity: 0.6;
-        pointer-events: none;
-    }
-    .preview-panel > * { position: relative; z-index: 1; }
-
-    .preview-panel__header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-    }
-    .preview-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.26em;
-        color: rgba(226, 232, 240, 0.75);
-    }
-    .preview-status__dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: #22c55e;
-        box-shadow: 0 0 12px #22c55e;
-        animation: pulseStatus 1.8s ease-in-out infinite;
-    }
-    @keyframes pulseStatus { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
-
-    .preview-stage {
-        position: relative;
-        border-radius: 28px;
-        background: rgba(15, 23, 42, 0.55);
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        padding: clamp(1.2rem, 2vw, 1.8rem);
-    }
-    .preview-scroll {
-        max-height: clamp(420px, 72vh, 760px);
-        overflow-y: auto;
-        scroll-snap-type: y proximity;
-        padding-right: clamp(0.25rem, 0.8vw, 0.75rem);
-    }
-    .preview-scroll::-webkit-scrollbar { width: 6px; }
-    .preview-scroll::-webkit-scrollbar-track { background: transparent; }
-    .preview-scroll::-webkit-scrollbar-thumb { background: rgba(226, 232, 240, 0.25); border-radius: 999px; }
-
-    .preview-card {
-        background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
-        transition: background 0.8s ease, transform 0.4s ease, box-shadow 0.4s ease;
-        animation: floaty 10s ease-in-out infinite;
-        scroll-snap-align: center;
-        margin-bottom: 1.5rem;
-    }
-    .preview-card:hover {
-        transform: translateY(-8px) scale(1.01);
-        box-shadow: 0 30px 60px -20px rgba(239, 68, 68, 0.35);
-    }
-    .trail-card {
-        background: linear-gradient(135deg, rgba(14, 116, 144, 0.55), rgba(30, 64, 175, 0.55));
-        border: 1px solid rgba(148, 197, 255, 0.2);
-        animation: none;
-        margin-bottom: 0;
-    }
-    .trail-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.45rem 0.85rem;
-        border-radius: 999px;
-        background: rgba(255, 255, 255, 0.12);
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.18em;
-    }
-    .preview-footer {
-        margin-top: 0.5rem;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.22em;
-        color: rgba(226, 232, 240, 0.55);
-        text-align: center;
-    }
-
-    @keyframes floaty {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-6px); }
-        100% { transform: translateY(0px); }
+    .required-indicator {
+        color: #dc2626;
+        margin-left: 0.25rem;
     }
 
     .bg-option {
@@ -644,65 +513,145 @@
         z-index: 2;
     }
 
-    .preview-contact {
+    .preview-pane { position: relative; }
+    .preview-pane__sticky {
+        position: sticky;
+        top: clamp(1.5rem, 10vh, 5rem);
+        display: flex;
+        flex-direction: column;
+        gap: 1.75rem;
+    }
+    .preview-pane__header {
+        background: #0f172a;
+        color: #e2e8f0;
+        border-radius: 1.5rem;
+        padding: clamp(1.4rem, 2.5vw, 2.1rem);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+        box-shadow: 0 20px 45px -30px rgba(15, 23, 42, 0.8);
+    }
+    .preview-pane__eyebrow {
+        display: inline-block;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.22em;
+        font-weight: 600;
+        color: rgba(226, 232, 240, 0.65);
+    }
+    .preview-pane__title {
+        margin-top: 0.6rem;
+        font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+        font-weight: 700;
+    }
+    .preview-pane__subtitle {
+        margin-top: 0.45rem;
+        font-size: 0.9rem;
+        color: rgba(226, 232, 240, 0.8);
+        line-height: 1.6;
+    }
+    .simple-preview {
+        background: #000000;
+        border-radius: 1.6rem;
+        color: #f8fafc;
+        padding: clamp(1.6rem, 2.5vw, 2.2rem);
+        box-shadow: 0 30px 65px -35px rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        transition: background 0.4s ease;
+    }
+    .simple-preview__body { display: flex; flex-direction: column; gap: 1.4rem; }
+    .simple-preview__row { display: flex; gap: 1rem; align-items: center; }
+    .simple-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 1.2rem;
+        background: rgba(15, 23, 42, 0.55);
+        display: grid;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .simple-avatar__img { width: 100%; height: 100%; object-fit: cover; }
+    .simple-avatar__fallback { color: rgba(226, 232, 240, 0.85); }
+    .simple-identity { display: flex; flex-direction: column; gap: 0.35rem; }
+    .simple-name {
+        font-size: clamp(1.3rem, 2.4vw, 1.8rem);
+        font-weight: 700;
+    }
+    .simple-role {
+        font-size: 1rem;
+        color: rgba(226, 232, 240, 0.78);
+    }
+    .simple-company {
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        color: rgba(226, 232, 240, 0.6);
+    }
+    .simple-logo {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        padding: 0.65rem 1rem;
+        padding: 0.75rem 1rem;
+        border-radius: 1.1rem;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .simple-logo__thumb {
+        width: 40px;
+        height: 40px;
         border-radius: 0.9rem;
-        background-color: rgba(255, 255, 255, 0.16);
-        backdrop-filter: blur(6px);
-        border: 1px solid rgba(255, 255, 255, 0.25);
-        font-weight: 500;
-        letter-spacing: 0.02em;
-    }
-    .preview-contact a { text-decoration: none; color: inherit; }
-    .preview-brand {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.75rem;
-        margin-top: 0.75rem;
-    }
-    .preview-brand__badge {
-        width: 48px;
-        height: 48px;
-        border-radius: 9999px;
         overflow: hidden;
         display: grid;
         place-items: center;
-        background: rgba(255, 255, 255, 0.22);
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        box-shadow: 0 14px 32px -20px rgba(15, 23, 42, 0.6);
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(148, 163, 184, 0.3);
     }
-    .preview-brand__fallback { display: grid; place-items: center; color: rgba(255, 255, 255, 0.85); }
-    .preview-brand__fallback i { width: 22px; height: 22px; }
-    .preview-brand__image { width: 100%; height: 100%; object-fit: cover; }
-    .preview-brand__text { font-size: 0.9rem; font-weight: 600; }
-
-    .preview-social {
-        width: 44px;
-        height: 44px;
+    .simple-logo__img { width: 100%; height: 100%; object-fit: cover; }
+    .simple-logo__fallback { color: rgba(226, 232, 240, 0.8); }
+    .simple-logo__text { font-size: 0.95rem; font-weight: 600; }
+    .simple-contact { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
+    .simple-contact__item {
+        display: flex;
+        align-items: center;
+        gap: 0.55rem;
+        font-size: 0.9rem;
+        background: rgba(15, 23, 42, 0.5);
+        border-radius: 0.9rem;
+        padding: 0.65rem 0.75rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .simple-link { color: inherit; text-decoration: none; }
+    .simple-link:hover { text-decoration: underline; }
+    .simple-notes {
+        background: rgba(15, 23, 42, 0.55);
+        border-radius: 1.1rem;
+        padding: 0.9rem 1rem;
+        border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+    .simple-notes__label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: rgba(226, 232, 240, 0.65);
+        margin-bottom: 0.4rem;
+    }
+    .simple-notes__text { font-size: 0.95rem; line-height: 1.6; color: rgba(248, 250, 252, 0.9); white-space: pre-line; }
+    .simple-socials { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+    .simple-social {
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.2);
-        color: var(--brand-color);
-        backdrop-filter: blur(6px);
+        background: rgba(255, 255, 255, 0.18);
+        color: rgba(15, 23, 42, 0.85);
         border: 1px solid rgba(255, 255, 255, 0.35);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .preview-social.hidden { display: none; }
-    .preview-social:hover {
-        transform: translateY(-3px) scale(1.05);
-        box-shadow: 0 15px 30px -20px rgba(15, 23, 42, 0.45);
     }
 
     @media (max-width: 1023px) {
-        .preview-card { animation: none; }
-        .preview-scroll { max-height: none; }
+        .preview-pane__sticky { position: static; }
     }
+
 </style>
 
 <script>
@@ -710,9 +659,7 @@
         const form = document.getElementById('card-builder-form');
         if (!form) { return; }
 
-        const builderPanel = document.getElementById('builderPanel');
-        const previewScroll = document.getElementById('previewScroll');
-        const fallbackBackground = 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)';
+        const fallbackBackground = '#000000';
         const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','pinterest','telegram','threads','behance','dribbble'];
         const inputs = {};
         fieldIds.forEach(name => {
@@ -721,6 +668,35 @@
                 inputs[name] = el;
             }
         });
+
+        const getFieldValue = name => {
+            const direct = inputs[name];
+            const baseControl = direct || (form && form.elements ? form.elements[name] : null);
+            if (!baseControl) { return ''; }
+
+            if (typeof RadioNodeList !== 'undefined' && baseControl instanceof RadioNodeList) {
+                return (baseControl.value || '').trim();
+            }
+
+            if (baseControl.value !== undefined) {
+                if (baseControl.type === 'file') { return ''; }
+                return (baseControl.value || '').trim();
+            }
+
+            const length = baseControl.length;
+            if (typeof length === 'number' && length > 0) {
+                for (let i = 0; i < length; i += 1) {
+                    const option = baseControl[i];
+                    if (!option) { continue; }
+                    if (option.checked || option.selected) {
+                        if (option.type === 'file') { return ''; }
+                        return (option.value || '').trim();
+                    }
+                }
+            }
+
+            return '';
+        };
 
         const previewCard = document.getElementById('previewCard');
         const previewName = document.getElementById('previewName');
@@ -741,8 +717,21 @@
         const previewAddress = document.getElementById('previewAddress');
         const previewBirthday = document.getElementById('previewBirthday');
         const previewNotes = document.getElementById('previewNotes');
+        const previewNotesSection = document.getElementById('previewNotesSection');
         const previewAvatarImg = document.getElementById('previewAvatarImg');
         const previewAvatarFallback = document.getElementById('previewAvatarFallback');
+        const hasPreview = Boolean(
+            previewCard &&
+            previewName &&
+            previewJob &&
+            previewCompany &&
+            previewEmail &&
+            previewPhone &&
+            previewWebsite &&
+            previewAddress &&
+            previewBirthday &&
+            previewNotes
+        );
         const backgroundField = document.getElementById('id_background_style');
         const backgroundOptions = document.querySelectorAll('[data-bg-option]');
         const customPicker = document.getElementById('customBackgroundPicker');
@@ -762,18 +751,20 @@
         }
 
         const COUNTRY_DATA_URL = "{% static 'cards/country_codes.json' %}";
+        const phonePickerContainer = document.querySelector('[data-country-picker="phone"]');
+        const whatsappPickerContainer = document.querySelector('[data-country-picker="whatsapp"]');
         const countryPickerConfigs = {
             phone: {
                 type: 'phone',
-                container: document.querySelector('[data-country-picker="phone"]'),
+                container: phonePickerContainer,
                 hiddenInput: phoneCountryField,
-                defaultCode: (document.querySelector('[data-country-picker="phone"]')?.dataset.defaultCode) || '880'
+                defaultCode: (phonePickerContainer && phonePickerContainer.dataset ? phonePickerContainer.dataset.defaultCode : undefined) || '880'
             },
             whatsapp: {
                 type: 'whatsapp',
-                container: document.querySelector('[data-country-picker="whatsapp"]'),
+                container: whatsappPickerContainer,
                 hiddenInput: whatsappCountryField,
-                defaultCode: (document.querySelector('[data-country-picker="whatsapp"]')?.dataset.defaultCode) || '880'
+                defaultCode: (whatsappPickerContainer && whatsappPickerContainer.dataset ? whatsappPickerContainer.dataset.defaultCode : undefined) || '880'
             }
         };
         let countryDataset = [];
@@ -797,17 +788,21 @@
         };
 
         const closeCountryDropdown = (config) => {
-            if (!config?.dropdown) { return; }
+            if (!config || !config.dropdown) { return; }
             config.dropdown.classList.add('hidden');
-            config.button?.setAttribute('aria-expanded', 'false');
-            config.searchInput.value = '';
+            if (config.button) {
+                config.button.setAttribute('aria-expanded', 'false');
+            }
+            if (config.searchInput) {
+                config.searchInput.value = '';
+            }
             config.filteredCountries = config.allCountries;
             config.activeIndex = -1;
             openCountryPicker = openCountryPicker === config ? null : openCountryPicker;
         };
 
         const setCountrySelection = (config, country, trigger = true) => {
-            if (!country || !config?.hiddenInput) { return; }
+            if (!country || !config || !config.hiddenInput) { return; }
             config.selectedCountry = country;
             config.hiddenInput.value = country.dialDigits;
             if (config.container) {
@@ -842,12 +837,10 @@
         };
 
         const updatePreview = () => {
+            if (!hasPreview) { return; }
             const values = {};
-            Object.entries(inputs).forEach(([name, el]) => {
-                if (!el) { return; }
-                if (el.type === 'file') { return; }
-                const value = el.value?.trim() || '';
-                values[name] = value;
+            fieldIds.forEach(name => {
+                values[name] = getFieldValue(name);
             });
 
             const fullName = [values.firstName, values.lastName].filter(Boolean).join(' ').trim() || 'Your Name';
@@ -856,19 +849,21 @@
             previewCompany.textContent = values.company || 'Company';
 
             const logoName = values.logo_name;
-            if (logoName || (previewLogoImg && !previewLogoImg.classList.contains('hidden'))) {
-                previewLogoRow.classList.remove('hidden');
-                previewLogoText.textContent = logoName || 'Brand name';
-                if (!logoName) {
-                    previewLogoText.classList.add('opacity-70');
+            if (previewLogoRow && previewLogoText) {
+                const hasLogoImage = Boolean(previewLogoImg && !previewLogoImg.classList.contains('hidden'));
+                if (logoName || hasLogoImage) {
+                    previewLogoRow.classList.remove('hidden');
+                    previewLogoText.textContent = logoName || 'Brand name';
+                    if (previewLogoFallback) {
+                        if (hasLogoImage) {
+                            previewLogoFallback.classList.add('hidden');
+                        } else {
+                            previewLogoFallback.classList.remove('hidden');
+                        }
+                    }
                 } else {
-                    previewLogoText.classList.remove('opacity-70');
+                    previewLogoRow.classList.add('hidden');
                 }
-                if (previewLogoFallback) {
-                    previewLogoFallback.classList.toggle('hidden', Boolean(previewLogoImg && !previewLogoImg.classList.contains('hidden')));
-                }
-            } else {
-                previewLogoRow.classList.add('hidden');
             }
 
             const toggleRow = (rowElement, hasValue) => {
@@ -896,9 +891,15 @@
             if (values.notes) {
                 previewNotes.textContent = values.notes;
                 previewNotes.classList.remove('hidden');
+                if (previewNotesSection) {
+                    previewNotesSection.classList.remove('hidden');
+                }
             } else {
                 previewNotes.textContent = '';
                 previewNotes.classList.add('hidden');
+                if (previewNotesSection) {
+                    previewNotesSection.classList.add('hidden');
+                }
             }
 
             socialElements.forEach(elem => {
@@ -949,7 +950,10 @@
             try {
                 const response = await fetch(COUNTRY_DATA_URL, { cache: 'force-cache' });
                 const data = await response.json();
-                countryDataset = data;
+                countryDataset = data.map(country => ({
+                    ...country,
+                    dialDigits: String(country.dial_code || '').replace(/[^0-9]/g, '')
+                })).filter(country => country.dialDigits.length);
             } catch (err) {
                 console.warn('Unable to load country data', err);
                 countryDataset = [];
@@ -958,7 +962,7 @@
         };
 
         const initCountryPicker = async (config) => {
-            if (!config?.container || !config.hiddenInput) { return; }
+            if (!config || !config.container || !config.hiddenInput) { return; }
             const allCountries = await loadCountryData();
             if (!allCountries.length) { return; }
             config.allCountries = allCountries;
@@ -968,24 +972,29 @@
             config.searchInput = config.container.querySelector('[data-country-search]');
             config.list = config.container.querySelector('[data-country-list]');
             config.emptyState = config.container.querySelector('[data-country-empty]');
-            config.buttonFlag = config.button?.querySelector('[data-country-flag]');
-            config.buttonCode = config.button?.querySelector('[data-country-code]');
+            config.buttonFlag = config.button ? config.button.querySelector('[data-country-flag]') : null;
+            config.buttonCode = config.button ? config.button.querySelector('[data-country-code]') : null;
             config.activeIndex = -1;
 
             const renderCountries = () => {
                 if (!config.list) { return; }
                 config.list.innerHTML = '';
                 if (!config.filteredCountries.length) {
-                    config.emptyState?.classList.remove('hidden');
+                    if (config.emptyState) {
+                        config.emptyState.classList.remove('hidden');
+                    }
                     return;
                 }
-                config.emptyState?.classList.add('hidden');
+                if (config.emptyState) {
+                    config.emptyState.classList.add('hidden');
+                }
+                const activeTerm = config.searchInput ? config.searchInput.value : '';
                 config.filteredCountries.forEach((country, index) => {
                     const li = document.createElement('li');
                     li.innerHTML = `
                         <button type="button" class="flex items-center gap-3 w-full px-3 py-2 text-left text-sm hover:bg-pink-50">
                             <span class="text-lg">${country.flag}</span>
-                            <span class="flex-1">${highlightMatch(country.name, config.searchInput.value)}</span>
+                            <span class="flex-1">${highlightMatch(country.name, activeTerm)}</span>
                             <span class="text-xs text-gray-400">${country.dial_code}</span>
                         </button>
                     `;
@@ -1006,41 +1015,57 @@
                     closeCountryDropdown(openCountryPicker);
                 }
                 config.dropdown.classList.remove('hidden');
-                config.button?.setAttribute('aria-expanded', 'true');
-                config.searchInput?.focus({ preventScroll: true });
+                if (config.button) {
+                    config.button.setAttribute('aria-expanded', 'true');
+                }
+                if (config.searchInput) {
+                    try {
+                        config.searchInput.focus({ preventScroll: true });
+                    } catch (err) {
+                        config.searchInput.focus();
+                    }
+                }
                 openCountryPicker = config;
             };
 
-            config.button?.addEventListener('click', () => {
-                if (config.dropdown?.classList.contains('hidden')) {
-                    openDropdown();
-                } else {
-                    closeCountryDropdown(config);
-                }
-            });
+            if (config.button) {
+                config.button.addEventListener('click', () => {
+                    if (config.dropdown && config.dropdown.classList.contains('hidden')) {
+                        openDropdown();
+                    } else {
+                        closeCountryDropdown(config);
+                    }
+                });
+            }
 
-            config.searchInput?.addEventListener('input', () => {
-                const term = config.searchInput.value.trim().toLowerCase();
-                config.filteredCountries = config.allCountries.filter(country =>
-                    country.name.toLowerCase().includes(term) || country.dialDigits.includes(term)
-                );
-                config.activeIndex = config.filteredCountries.length ? 0 : -1;
-                renderCountries();
-            });
+            if (config.searchInput) {
+                config.searchInput.addEventListener('input', () => {
+                    const term = config.searchInput.value.trim().toLowerCase();
+                    config.filteredCountries = config.allCountries.filter(country =>
+                        country.name.toLowerCase().includes(term) || country.dialDigits.includes(term)
+                    );
+                    config.activeIndex = config.filteredCountries.length ? 0 : -1;
+                    renderCountries();
+                });
+            }
 
             if (config.dropdown) {
                 config.dropdown.addEventListener('keydown', event => {
                     if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) { return; }
                     if (event.key === 'Escape') {
                         closeCountryDropdown(config);
-                        config.button?.focus();
+                        if (config.button) {
+                            config.button.focus();
+                        }
                         return;
                     }
                     if (event.key === 'Enter' && config.activeIndex >= 0) {
                         const country = config.filteredCountries[config.activeIndex];
                         setCountrySelection(config, country);
                         closeCountryDropdown(config);
-                        config.button?.focus();
+                        if (config.button) {
+                            config.button.focus();
+                        }
                         event.preventDefault();
                         return;
                     }
@@ -1053,9 +1078,13 @@
                             config.activeIndex = (config.activeIndex - 1 + config.filteredCountries.length) % config.filteredCountries.length;
                         }
                         renderCountries();
-                        const buttons = config.list?.querySelectorAll('button');
-                        const active = buttons?.[config.activeIndex];
-                        active?.scrollIntoView({ block: 'nearest' });
+                        if (config.list) {
+                            const buttons = config.list.querySelectorAll('button');
+                            const activeButton = buttons[config.activeIndex];
+                            if (activeButton && activeButton.scrollIntoView) {
+                                activeButton.scrollIntoView({ block: 'nearest' });
+                            }
+                        }
                     }
                 });
             }
@@ -1112,12 +1141,9 @@
                 customPicker.value = backgroundField.value.trim();
             }
         } else {
-            const firstOption = backgroundOptions[0];
-            if (firstOption) {
-                setActiveBackground(firstOption);
-                applyBackground(firstOption.getAttribute('data-bg-option'));
-            } else {
-                applyBackground(fallbackBackground);
+            applyBackground(fallbackBackground);
+            if (customPicker) {
+                customPicker.value = fallbackBackground;
             }
         }
 
@@ -1125,6 +1151,24 @@
             const input = inputs[name];
             if (!input) { return; }
             input.addEventListener('input', updatePreview);
+            input.addEventListener('change', updatePreview);
+        });
+
+        const isFormElement = el => {
+            if (!el || !el.tagName) { return false; }
+            const tag = el.tagName.toUpperCase();
+            return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+        };
+
+        form.addEventListener('input', event => {
+            if (isFormElement(event.target)) {
+                updatePreview();
+            }
+        });
+        form.addEventListener('change', event => {
+            if (isFormElement(event.target)) {
+                updatePreview();
+            }
         });
 
         if (whatsappCountryField) {
@@ -1192,7 +1236,7 @@
         }
 
         const avatarInput = document.getElementById('id_avatar');
-        if (avatarInput) {
+        if (avatarInput && previewAvatarImg && previewAvatarFallback) {
             avatarInput.addEventListener('change', event => {
                 const [file] = event.target.files;
                 if (!file) {
@@ -1216,40 +1260,9 @@
             previewAvatarFallback.classList.add('hidden');
         }
 
-        const syncPreviewScrollWithPage = () => {
-            if (!builderPanel || !previewScroll) { return; }
-            if (window.innerWidth < 1024) {
-                previewScroll.scrollTop = 0;
-                return;
-            }
-
-            const docScrollable = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
-            const progress = Math.min(Math.max(window.scrollY / docScrollable, 0), 1);
-            const previewRange = Math.max(previewScroll.scrollHeight - previewScroll.clientHeight, 0);
-            previewScroll.scrollTop = previewRange * progress;
-        };
-
-        let isTicking = false;
-        const handleScroll = () => {
-            if (isTicking) { return; }
-            isTicking = true;
-            requestAnimationFrame(() => {
-                syncPreviewScrollWithPage();
-                isTicking = false;
-            });
-        };
-
-        const handleResize = () => {
-            syncPreviewScrollWithPage();
-        };
-
         syncPhoneValue(false);
         syncWhatsappLink(false);
         updatePreview();
-        syncPreviewScrollWithPage();
-
-        window.addEventListener('scroll', handleScroll, { passive: true });
-        window.addEventListener('resize', handleResize);
     })();
 </script>
 {% endblock %}

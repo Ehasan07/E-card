@@ -38,7 +38,7 @@
                                 <div class="flex flex-wrap items-center gap-3 text-sm text-slate-600">
                                     <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 text-slate-600 font-semibold">
                                         <i data-lucide="layers" class="w-4 h-4"></i>
-                                        {{ request.requested_plan|title }} plan
+                                        {{ request.request_type_display }}
                                     </span>
                                     {% if request.card %}
                                         <a href="{% url 'view_card' request.card.slug %}" class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 text-pink-600 font-semibold hover:bg-pink-200 transition">
@@ -77,38 +77,69 @@
                                 <p class="text-slate-700 leading-relaxed">{{ request.message }}</p>
                             </div>
                         {% endif %}
-                        <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,260px)]">
-                            <form action="{% url 'admin_handle_upgrade' request.id 'approve' %}" method="post" class="bg-white border border-slate-100 rounded-2xl p-4 space-y-4">
-                                {% csrf_token %}
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Increase card allowance</label>
-                                    <div class="flex items-center gap-3">
-                                        <input type="number" name="card_limit" min="1" class="w-24 px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400" placeholder="e.g. 5">
-                                        <label class="inline-flex items-center gap-2 text-sm text-slate-600">
-                                            <input type="checkbox" name="reactivate_card" class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-200">
-                                            Reactivate card instantly
-                                        </label>
-                                    </div>
+                        {% if request.status == request.STATUS_PENDING %}
+                            {% if request.card %}
+                                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,260px)]">
+                                    <form action="{% url 'admin_handle_upgrade' request.id 'approve' %}" method="post" class="bg-white border border-slate-100 rounded-2xl p-4 space-y-4">
+                                        {% csrf_token %}
+                                        <p class="text-sm text-slate-600">Approve to bring <strong>{{ request.card.slug }}</strong> back online. A note to the user is optional.</p>
+                                        <input type="hidden" name="reactivate_card" value="on">
+                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Admin notes (optional)</label>
+                                        <textarea name="admin_notes" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400" placeholder="Let them know the card is live again"></textarea>
+                                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-white font-semibold shadow-lg hover:shadow-xl transition">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                            Approve & reactivate
+                                        </button>
+                                    </form>
+                                    <form action="{% url 'admin_handle_upgrade' request.id 'reject' %}" method="post" class="bg-white border border-slate-100 rounded-2xl p-4 space-y-3">
+                                        {% csrf_token %}
+                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Reject with context</label>
+                                        <textarea name="admin_notes" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-rose-200 focus:border-rose-400" placeholder="Explain why the card can’t be reactivated"></textarea>
+                                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-rose-500/90 text-white font-semibold hover:bg-rose-500 transition">
+                                            <i data-lucide="x" class="w-4 h-4"></i>
+                                            Reject politely
+                                        </button>
+                                    </form>
                                 </div>
-                                <div>
-                                    <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Admin notes (optional)</label>
-                                    <textarea name="admin_notes" rows="2" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400" placeholder="Add a friendly note"></textarea>
+                            {% else %}
+                                <div class="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,260px)]">
+                                    <form action="{% url 'admin_handle_upgrade' request.id 'approve' %}" method="post" class="bg-white border border-slate-100 rounded-2xl p-4 space-y-4">
+                                        {% csrf_token %}
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Increase card allowance</label>
+                                            <input type="number" name="card_limit" min="1" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400" placeholder="Set the new limit (e.g. 8)">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Admin notes (optional)</label>
+                                            <textarea name="admin_notes" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-400" placeholder="Confirm the new allowance or add a welcome message"></textarea>
+                                        </div>
+                                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-white font-semibold shadow-lg hover:shadow-xl transition">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                            Approve & update
+                                        </button>
+                                    </form>
+                                    <form action="{% url 'admin_handle_upgrade' request.id 'reject' %}" method="post" class="bg-white border border-slate-100 rounded-2xl p-4 space-y-3">
+                                        {% csrf_token %}
+                                        <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Reject with context</label>
+                                        <textarea name="admin_notes" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-rose-200 focus:border-rose-400" placeholder="Tell them what to adjust before reapplying"></textarea>
+                                        <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-rose-500/90 text-white font-semibold hover:bg-rose-500 transition">
+                                            <i data-lucide="x" class="w-4 h-4"></i>
+                                            Reject politely
+                                        </button>
+                                    </form>
                                 </div>
-                                <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-white font-semibold shadow-lg hover:shadow-xl transition">
-                                    <i data-lucide="check" class="w-4 h-4"></i>
-                                    Approve & upgrade
-                                </button>
-                            </form>
-                            <form action="{% url 'admin_handle_upgrade' request.id 'reject' %}" method="post" class="bg-white border border-slate-100 rounded-2xl p-4 space-y-3">
-                                {% csrf_token %}
-                                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-[0.3em] mb-2">Reject with context</label>
-                                <textarea name="admin_notes" rows="3" class="w-full px-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-rose-200 focus:border-rose-400" placeholder="Let them know what to fix"></textarea>
-                                <button type="submit" class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-2xl bg-rose-500/90 text-white font-semibold hover:bg-rose-500 transition">
-                                    <i data-lucide="x" class="w-4 h-4"></i>
-                                    Reject politely
-                                </button>
-                            </form>
-                        </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-sm text-slate-600 flex items-center gap-3">
+                                <i data-lucide="check-circle" class="w-5 h-5 text-emerald-500"></i>
+                                <div>
+                                    <p class="font-semibold text-slate-700">Request already {{ request.get_status_display|lower }}.</p>
+                                    {% if request.responded_at %}
+                                        <p class="text-slate-500">Handled on {{ request.responded_at|date:'M j, Y · H:i' }}{% if request.handled_by %} by {{ request.handled_by.get_full_name|default:request.handled_by.username }}{% endif %}.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
                     </article>
                 {% endfor %}
             {% else %}

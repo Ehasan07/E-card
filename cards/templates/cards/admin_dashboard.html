@@ -369,7 +369,7 @@
         display: grid;
         gap: 2.5rem;
     }
-.panel {
+    .panel {
         background: rgba(255,255,255,0.95);
         border-radius: 1.75rem;
         border: 1px solid rgba(226,232,240,0.6);
@@ -607,34 +607,81 @@
         .admin-shell {
             padding: 2rem 1.25rem;
         }
-        .table-shell {
-            overflow-x: auto;
-        }
-        .premium-table {
-            min-width: 900px;
-        }
     }
 
-    @media (max-width: 768px) {
+    @media screen and (max-width: 768px) {
         .hero-copy h1 {
             font-size: 2.4rem;
         }
         .hero-actions {
             gap: 0.5rem;
         }
-        .premium-table thead th {
-            font-size: 0.7rem;
-        }
-        .premium-table tbody td {
-            padding: 1rem 0.75rem;
-            font-size: 0.9rem;
-        }
-        .premium-table th:first-child,
-        .premium-table td:first-child {
-            left: 0;
+        .table-shell {
+            overflow-x: visible;
         }
         .premium-table {
-            min-width: 760px;
+            table-layout: fixed;
+        }
+        .premium-table thead {
+            border: none;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+        .premium-table tr {
+            display: block;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            background: #fff;
+            border: 1px solid rgba(226,232,240,0.8);
+        }
+        .premium-table tbody tr:nth-child(odd),
+        .premium-table tbody tr:nth-child(even) {
+            background: #fff;
+        }
+        .premium-table td {
+            display: block;
+            text-align: right;
+            border-bottom: 1px solid #f3f4f6;
+            padding: 1rem;
+        }
+        .premium-table td::before {
+            content: attr(data-label);
+            float: left;
+            font-weight: 600;
+            color: #475569;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .premium-table td:last-child {
+            border-bottom: 0;
+        }
+        .premium-table thead th:first-child,
+        .premium-table tbody td:first-child {
+            position: static;
+            box-shadow: none;
+            background: transparent;
+        }
+        .premium-table tbody td.actions-cell {
+            display: block;
+            text-align: center;
+        }
+        .action-stack, .card-action-stack {
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        .action-form {
+            flex-direction: row;
+            align-items: center;
         }
         .stack-btn {
             max-width: 110px;
@@ -643,6 +690,12 @@
         }
         .action-form input[type="number"] {
             width: 70px;
+        }
+        .empty-row {
+            display: table-cell;
+        }
+        .empty-row:before {
+            content: "";
         }
     }
 </style>

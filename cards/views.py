@@ -153,6 +153,79 @@ def dashboard(request):
     }
     return render(request, 'cards/dashboard.html', context)
 
+
+@login_required
+def user_messages(request):
+    profile = getattr(request.user, 'profile', None)
+    current_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
+
+    user_cards = Card.objects.filter(user=request.user).order_by('-created_at')
+    pending_requests = UpgradeRequest.objects.filter(user=request.user, status=UpgradeRequest.STATUS_PENDING)
+    responded_requests = UpgradeRequest.objects.filter(user=request.user).exclude(status=UpgradeRequest.STATUS_PENDING)
+
+    offline_cards = list(user_cards.filter(is_active=False))
+    pending_card_ids = set(
+        pending_requests.filter(card__isnull=False).values_list('card_id', flat=True)
+    )
+
+    upgrade_history = UpgradeRequest.objects.filter(user=request.user).select_related('card').order_by('-created_at')
+
+    context = {
+        'current_cards': user_cards.count(),
+        'current_limit': current_limit,
+        'pending_upgrade_count': pending_requests.count(),
+        'responded_messages_count': responded_requests.count(),
+        'offline_cards': offline_cards,
+        'pending_card_ids': pending_card_ids,
+        'upgrade_requests': upgrade_history,
+    }
+    return render(request, 'cards/user_messages.html', context)
+
+
+@login_required
+@require_POST
+def request_card_limit_increase(request):
+    profile = getattr(request.user, 'profile', None)
+    current_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
+
+    desired_limit_raw = request.POST.get('desired_limit', '').strip()
+    note = (request.POST.get('note') or '').strip()
+
+    try:
+        desired_limit = int(desired_limit_raw)
+    except (TypeError, ValueError):
+        messages.error(request, 'Enter a valid number for your desired limit.')
+        return redirect('user_messages')
+
+    if desired_limit <= current_limit:
+        messages.info(request, 'Your requested limit is already covered by your current plan.')
+        return redirect('user_messages')
+
+    existing_pending = UpgradeRequest.objects.filter(
+        user=request.user,
+        status=UpgradeRequest.STATUS_PENDING,
+        card__isnull=True,
+        requested_plan='card_limit_increase'
+    ).exists()
+
+    if existing_pending:
+        messages.info(request, 'You already have a limit request in review. We will be in touch soon.')
+        return redirect('user_messages')
+
+    details = f"Requested limit: {desired_limit}"
+    if note:
+        details = f"{details}\n\nNotes:\n{note}"
+
+    UpgradeRequest.objects.create(
+        user=request.user,
+        card=None,
+        requested_plan='card_limit_increase',
+        message=details
+    )
+
+    messages.success(request, 'Thanks! Our team will review your request shortly.')
+    return redirect('user_messages')
+
 @login_required
 def create_card(request):
     profile = getattr(request.user, 'profile', None)

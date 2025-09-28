@@ -27,6 +27,15 @@
                         <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
                         Logout
                     </a>
+                    <a href="{% url 'user_messages' %}" class="message-box-btn">
+                        <span class="icon"><i data-lucide="inbox" class="w-4 h-4"></i></span>
+                        Message box
+                        {% if responded_messages_count %}
+                            <span class="message-pill" title="Responses from admin">{{ responded_messages_count }}</span>
+                        {% elif pending_upgrade_count %}
+                            <span class="message-pill message-pill--pending" title="Pending requests">{{ pending_upgrade_count }}</span>
+                        {% endif %}
+                    </a>
                     <a href="{% url 'create_card' %}" class="group relative inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden">
                         <span class="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 group-hover:opacity-90 transition"></span>
                         <span class="absolute -inset-0.5 bg-gradient-to-r from-rose-300 to-pink-400 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
@@ -148,10 +157,10 @@
                                         {% else %}
                                             <form action="{% url 'request_upgrade' card.slug %}" method="post">
                                                 {% csrf_token %}
-                                                <input type="hidden" name="plan" value="monthly_upgrade">
+                                                <input type="hidden" name="plan" value="card_reactivation">
                                                 <button type="submit" class="card-action upgrade">
-                                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
-                                                    Request upgrade
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                    Request reactivation
                                                 </button>
                                             </form>
                                         {% endif %}
@@ -497,6 +506,54 @@
         color: #b91c1c;
         position: relative;
         z-index: 1;
+    }
+    .message-box-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.8rem 1.4rem;
+        border-radius: 1.1rem;
+        font-weight: 600;
+        color: #1e3a8a;
+        background: rgba(191, 219, 254, 0.72);
+        border: 1px solid rgba(191, 219, 254, 0.9);
+        box-shadow: 0 18px 40px -28px rgba(37, 99, 235, 0.35);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .message-box-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 24px 52px -26px rgba(59, 130, 246, 0.4);
+    }
+    .message-box-btn .icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 0.9rem;
+        background: rgba(59,130,246,0.18);
+        color: #1d4ed8;
+        position: relative;
+        z-index: 1;
+    }
+    .message-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.8rem;
+        padding: 0.15rem 0.45rem;
+        border-radius: 999px;
+        background: rgba(16, 185, 129, 0.16);
+        color: #047857;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+    }
+    .message-pill--pending {
+        background: rgba(251, 191, 36, 0.18);
+        color: #92400e;
     }
     @media (max-width: 768px) {
         .card-preview { padding: 1.2rem; }
