@@ -1,70 +1,99 @@
-# V-Card Studio Feature Guide
+# MY-Card Studio – Feature Guide
 
-A snapshot of the capabilities that make V-Card Studio an immersive, secure, and shareable digital identity platform.
-
-## Core Experiences
-### Immersive Landing
-- Animated hero with hue-rotating gradients and interactive preview device.
-- Feature grid, workflow timeline, testimonial slider, and CTA deck inspired by high-end SaaS marketing pages.
-- Responsive navbar with mobile drawer, scroll-triggered reveals, and premium glassmorphism.
-
-### Builder & Preview
-- Two-panel layout with form inputs versus live animated preview.
-- Scroll-sync preview: as you scroll the builder, the preview glides in tandem on desktop.
-- Form sections: personal info, socials, styling, with icons and micro copy for clarity.
-- Background palette: 16 gradient presets spanning light, vibrant, and deep/dark themes plus custom color picker.
-- Smart contrast detection toggles text color for optimum readability.
-- Avatar and logo upload with instant preview + fallback badges.
-
-### Public V-Card View
-- Responsive layout with brand badge, contact chips, quick action buttons, and social icon grid.
-- Email/website copy buttons, phone call/SMS actions, and save-to-contacts (vCard) trigger.
-- QR download and share prompts with consistent glass styling.
-- Admin preview banner with “Back to dashboard” link when accessed by superusers.
-
-## Security & Account Management
-### Direct Password Reset Flow
-1. User provides their email or phone number on the "Forgot Password" page.
-2. If the account exists, the user is immediately redirected to the "Set New Password" page.
-3. The user sets and confirms their new password.
-4. Upon success, the password is changed, and the user is prompted to log in.
-- This flow is direct and does not require any email or OTP verification.
-
-### Authentication/Authorization
-- Standard register/login flow with phone number capture.
-- Admin login gated to superusers with custom login view and brand-consistent UI.
-- Admin-only routes decorated with `user_passes_test` for security.
-
-## Data Visibility & Export
-- Admin dashboard: glass panels display total users, cards, moderation queue counts.
-- Toggle stat cards reveal user and card tables; links to view/edit/delete.
-- CSV export: zipped bundle with `users.csv` + `cards.csv`, capturing dynamic card JSON fields.
-- Excel export: multi-sheet workbook (Users, Cards) using `openpyxl`.
-
-## Documentation Portal
-- `/documentation/` renders an animated documentation page with cards, gradient toggles, and README markdown.
-- Sections: interface overview, security layers, designer tips, quick reference snippets.
-
-## Styling & Frontend
-- Tailwind foundation with custom CSS for gradients, blur, pulse, and scroll animations.
-- Lucide icon set throughout dashboards, forms, and marketing assets.
-- Hue-rotate animation on hero preview; nav fixed with blur/shadow, mobile drawer transitions.
-
-## Testing
-- `cards.test_dashboards.DashboardTests`: covers dashboard access states, redirect logic, and counts.
-- Run with `python manage.py test cards.tests cards.test_dashboards`.
-
-## Deployment Touchpoints
-- PostgreSQL-backed settings via `python-decouple` / `dj-database-url`.
-- Gunicorn + systemd units (`gunicorn.service`, `gunicorn.socket`).
-- Nginx reverse proxy (`nginx.conf`) with SSL recommendations.
-- `deploy.sh` bootstrap script for Ubuntu environment setup.
-
-## Roadmap Ideas (Optional Enhancements)
-- Card analytics dashboard (views by day, device share).
-- Team workspaces for collaborative card creation.
-- Template marketplace with community gradients and layouts.
-- Webhooks / Zapier integration for automatic contact sync.
+This document captures the major product areas, UX decisions, and technical behaviours that define MY-Card Studio.
 
 ---
-This feature guide represents the current UX + engineering state of V-Card Studio—from landing page wow-factor to direct account recovery and admin exports.
+## 1. Marketing & Acquisition
+- **Landing page**
+  - Animated hero with gradient cycling and a card preview device.
+  - Feature grid, timeline/"how it works" section, testimonials, and pricing-style CTA rows.
+  - Responsive navigation with glassmorphism, sticky header, and mobile drawer.
+- **Documentation portal**
+  - `/documentation/` renders markdown with animated tiles, gradient toggles, and quick links.
+  - Great entry point for onboarding, design guidelines, and developer references.
+
+---
+## 2. Builder Experience
+- **Two-panel layout** – Form inputs on the left, live preview on the right. Scrolling the form animates the preview into view.
+- **Sectioned workflow**
+  1. Personal details (names, job, company, contact info)
+  2. Social & messaging links (Messenger, Discord, Parrale, etc.)
+  3. Styling (avatar, logo, gradients, notes)
+- **Validation & guidance**
+  - Case-insensitive username/email uniqueness checks.
+  - Phone validation prevents duplicates, normalises digits, and highlights when a number is reused.
+  - Business spotlight field enforces contextual copy depending on the chosen highlight (phone, email, website).
+- **Visual polish**
+  - 16 gradient presets with custom colour picker fallback.
+  - Smart text-contrast detection flips colours for readability.
+  - Avatar/logo preview with fallback initials badge.
+  - Social preview chips inherit brand colours for instant feedback.
+
+---
+## 3. Public Card View
+- **Layout**
+  - Hero banner with avatar/logo, contact chips, quick actions (call, SMS, copy, save contact).
+  - Sections for primary contact details, role/company, business spotlight, notes, and social dock.
+- **Quick actions**
+  - Copy-to-clipboard buttons for email/website.
+  - Call/SMS tel links with graceful fallback messaging.
+  - QR download button (auto-named `my-card-qrcode.png`).
+- **Admin awareness**
+  - Superusers see a “Back to dashboard” banner when viewing cards.
+  - Offline cards redirect visitors to contextual inactive pages (owner vs public view).
+
+---
+## 4. Account & Security
+- **Registration** – Captures username, email, password, and phone number. Phone storage is normalised and deduplicated across users.
+- **Login** – Standard Django session authentication with brand-aligned UI.
+- **Password reset** – Lightweight three-step flow: identify via email/phone → set new password → confirmation. No OTP/email loop required.
+- **Profiles** – Each user receives a `Profile` record (phone, card limit, OTP metadata for future features).
+
+---
+## 5. Admin & Operations
+- **Dashboard**
+  - Stat cards for total users, cards, and pending upgrade requests.
+  - Detailed tables with card status, quick view/edit links, and reactivation buttons.
+  - Card limit management per user with inline forms.
+- **Moderation**
+  - Approve/reject upgrade requests, optionally reactivating cards in the same flow.
+  - Toggle card `is_active` state with context-sensitive messaging.
+- **Exports**
+  - CSV bundle (`users.csv`, `cards.csv`) zipped for quick download.
+  - Excel workbook (Users, Cards) with dynamic headers derived from JSONFields.
+
+---
+## 6. Supporting Services
+- **QR generation** – Every card generates a QR image pointing to the public URL with `?qr=1` query for analytics.
+- **Media handling** – Avatars, logos, and QR codes stored under `/media`; fallback logic keeps the UI consistent when uploads are missing.
+- **Styling system** – Tailwind-inspired utility classes with custom CSS modules for gradients, glass panels, and animations. Lucide icons everywhere for consistency.
+
+---
+## 7. Testing
+- `cards.tests.CardViewTests` – Card slug routing, owner/visitor context, business highlight rendering.
+- `cards.tests.BusinessCardCreationTests` – Business builder happy path and validation errors.
+- `cards.tests.RegistrationFormTests` – Username/email/phone uniqueness guards.
+- `cards.test_dashboards.DashboardTests` (noted in README) – Admin dashboard access and stats.
+
+Run the curated suites with:
+```bash
+python manage.py test cards.tests.CardViewTests cards.tests.BusinessCardCreationTests cards.tests.RegistrationFormTests
+```
+
+---
+## 8. Deployment Considerations
+- Environment variables loaded via `python-decouple` (`.env`).
+- Production stack: Gunicorn (systemd units provided) behind Nginx (see `nginx.conf`).
+- PostgreSQL recommended; SQLite acceptable for prototypes or local dev.
+- Static assets served from `/staticfiles` after running `collectstatic`.
+- `deploy.sh` enumerates package installs, permissions, and service restarts.
+
+---
+## 9. Future Enhancements
+- Analytics dashboard (unique views, conversions, spotlight engagement).
+- Team workspaces and role-based access control.
+- Template marketplace for community gradients/layout variations.
+- Webhook integrations for CRM/contact sync.
+
+---
+*This guide mirrors the current implementation of MY-Card Studio and should be updated whenever new features ship or workflows change.*

@@ -10,6 +10,7 @@ urlpatterns = [
     path('messages/', views.user_messages, name='user_messages'),
     path('messages/request-limit/', views.request_card_limit_increase, name='request_card_limit_increase'),
     path('create/', views.create_card, name='create_card'),
+    path('create/business/', views.create_business_card, name='create_business_card'),
     path('card/<slug:slug>/', views.view_card, name='view_card'),
     path('card/<slug:slug>/edit/', views.edit_card, name='edit_card'),
     path('card/<slug:slug>/request-upgrade/', views.request_upgrade, name='request_upgrade'),

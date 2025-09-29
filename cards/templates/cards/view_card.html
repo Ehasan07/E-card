@@ -1,7 +1,7 @@
 {% extends 'cards/base.html' %}
 {% load static %}
 
-{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }}'s V-Card{% endblock %}
+{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }}'s MY-Card{% endblock %}
 
 {% block content %}
 <div class="vcard-page relative min-h-screen bg-slate-950 text-slate-100 px-4 py-16 overflow-hidden">
@@ -199,6 +199,33 @@
                         </article>
                     {% endif %}
 
+                    {% if business_highlight %}
+                        <article class="capsule-card capsule-card--highlight">
+                            <div class="capsule-card__icon"><i data-lucide="{{ business_highlight.icon }}"></i></div>
+                            <div class="capsule-card__content">
+                                <span class="capsule-card__label">{{ business_highlight.label }}</span>
+                                {% if business_highlight.type == 'photo' %}
+                                    <div class="capsule-card__media">
+                                        <img src="{{ business_highlight.media_url }}" alt="{{ business_highlight.media_alt }}">
+                                    </div>
+                                {% else %}
+                                    <div class="capsule-card__value-row">
+                                        {% if business_highlight.link %}
+                                            <a href="{{ business_highlight.link }}" class="capsule-card__value capsule-card__value--link"{% if business_highlight.type == 'website' %} target="_blank" rel="noopener"{% endif %}>{{ business_highlight.value }}</a>
+                                        {% else %}
+                                            <span class="capsule-card__value">{{ business_highlight.value }}</span>
+                                        {% endif %}
+                                        {% if business_highlight.link and business_highlight.type != 'photo' %}
+                                            <button type="button" class="capsule-card__copy" aria-label="Copy highlight" data-copy="{{ business_highlight.copy_value|default:business_highlight.link|default:business_highlight.value }}" data-copy-label="Copied!">
+                                                <i data-lucide="copy"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endif %}
+
                     {% if card.card_data.birthday %}
                         <article class="capsule-card">
                             <div class="capsule-card__icon"><i data-lucide="cake"></i></div>
@@ -294,6 +321,24 @@
                             <a href="{{ card.card_data.likee }}" target="_blank" class="social-tile social-likee" title="Likee">
                                 <i data-lucide="heart"></i>
                                 <span>Likee</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.messenger %}
+                            <a href="{{ card.card_data.messenger }}" target="_blank" class="social-tile social-messenger" title="Messenger">
+                                <i data-lucide="message-square"></i>
+                                <span>Messenger</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.discord %}
+                            <a href="{{ card.card_data.discord }}" target="_blank" class="social-tile social-discord" title="Discord">
+                                <i data-lucide="gamepad-2"></i>
+                                <span>Discord</span>
+                            </a>
+                        {% endif %}
+                        {% if card.card_data.parrale %}
+                            <a href="{{ card.card_data.parrale }}" target="_blank" class="social-tile social-parrale" title="Parrale">
+                                <i data-lucide="waves"></i>
+                                <span>Parrale</span>
                             </a>
                         {% endif %}
                         {% if card.card_data.pinterest %}
@@ -852,6 +897,26 @@
         white-space: normal;
         line-height: 1.7;
     }
+    .capsule-card--highlight {
+        background: rgba(16,185,129,0.12);
+        border-color: rgba(16,185,129,0.45);
+        box-shadow: 0 28px 60px -38px rgba(16,185,129,0.5);
+    }
+    .capsule-card--highlight .capsule-card__label {
+        color: #34d399;
+    }
+    .capsule-card__media {
+        margin-top: 0.85rem;
+        border-radius: 1rem;
+        overflow: hidden;
+        border: 1px solid rgba(16,185,129,0.24);
+        box-shadow: inset 0 0 0 1px rgba(16,185,129,0.18);
+    }
+    .capsule-card__media img {
+        display: block;
+        width: 100%;
+        height: auto;
+    }
     .capsule-card__copy {
         flex: 0 0 auto;
         width: 44px;
@@ -970,6 +1035,9 @@
     .social-tiktok { background: linear-gradient(135deg,#010101 0%,#ff0050 50%,#00f2ea 100%); }
     .social-snapchat { background: #FFFC00; color: #1f2937; }
     .social-likee { background: linear-gradient(135deg,#FF0050 0%,#FF7A59 40%,#FFB347 70%,#FFE29F 100%); }
+    .social-messenger { background: linear-gradient(135deg,#00c6ff,#0078ff,#7b11f9); }
+    .social-discord { background: #5865F2; }
+    .social-parrale { background: linear-gradient(135deg,#ff9a9e,#fad0c4); }
     .social-pinterest { background: #E60023; }
     .social-telegram { background: #229ED9; }
     .social-threads { background: #101010; }
@@ -1073,7 +1141,7 @@
                 if (!qrCodeImg) { return; }
                 const link = document.createElement('a');
                 link.href = qrCodeImg.src;
-                link.download = 'v-card-qrcode.png';
+                link.download = 'my-card-qrcode.png';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);

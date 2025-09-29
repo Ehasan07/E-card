@@ -30,6 +30,13 @@ class Profile(models.Model):
             self.save(update_fields=["card_limit"])
 
 class Card(models.Model):
+    TYPE_PERSONAL = 'personal'
+    TYPE_BUSINESS = 'business'
+    TYPE_CHOICES = [
+        (TYPE_PERSONAL, 'Personal'),
+        (TYPE_BUSINESS, 'Business'),
+    ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     card_data = models.JSONField(default=dict)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
@@ -38,6 +45,7 @@ class Card(models.Model):
     slug = models.SlugField(max_length=150, unique=True, blank=True)
     is_active = models.BooleanField(default=True)
     text_color = models.CharField(max_length=20, default='#FFFFFF')
+    card_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_PERSONAL)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def get_absolute_url(self):

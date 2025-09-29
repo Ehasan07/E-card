@@ -36,15 +36,22 @@
                             <span class="message-pill message-pill--pending" title="Pending requests">{{ pending_upgrade_count }}</span>
                         {% endif %}
                     </a>
-                    <a href="{% url 'create_card' %}" class="group relative inline-flex items-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden">
-                        <span class="absolute inset-0 bg-gradient-to-r from-pink-500 to-rose-500 group-hover:opacity-90 transition"></span>
-                        <span class="absolute -inset-0.5 bg-gradient-to-r from-rose-300 to-pink-400 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
-                        <span class="relative flex items-center gap-3">
-                            <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                            Create new card
-                            <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
-                        </span>
-                    </a>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="{% url 'create_card' %}" class="cta-pill cta-pill--personal">
+                            <span class="cta-pill__ring"></span>
+                            <span class="cta-pill__label">
+                                <i data-lucide="user" class="w-4 h-4"></i>
+                                Personal card
+                            </span>
+                        </a>
+                        <a href="{% url 'create_business_card' %}" class="cta-pill cta-pill--business">
+                            <span class="cta-pill__ring"></span>
+                            <span class="cta-pill__label">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                Business card
+                            </span>
+                        </a>
+                    </div>
                 </div>
             </div>
 
@@ -121,6 +128,7 @@
                                         <div>
                                             <h3 class="text-lg font-semibold text-gray-900">{{ card.card_data.firstName|default:'Card' }} {{ card.card_data.lastName|default:card.id }}</h3>
                                             <p class="text-sm text-gray-500">{{ card.card_data.jobTitle|default:'No title set yet' }}</p>
+                                            <span class="type-pill {% if card.card_type == 'business' %}type-pill--business{% endif %}">{{ card.get_card_type_display }}</span>
                                         </div>
                                         <span class="status-pill {% if card.is_active %}status-pill--live{% else %}status-pill--offline{% endif %}">
                                             <span class="status-dot"></span>
@@ -177,10 +185,16 @@
                     </div>
                     <h2 class="text-2xl font-semibold text-gray-800">No cards yet</h2>
                     <p class="text-gray-600 max-w-md mx-auto">Create your first digital card and share it instantly with anyone—add your details, customize the look, and publish.</p>
-                    <a href="{% url 'create_card' %}" class="empty-cta">
-                        <i data-lucide="plus" class="w-4 h-4"></i>
-                        Start designing
-                    </a>
+                    <div class="flex flex-wrap items-center justify-center gap-4 mt-6">
+                        <a href="{% url 'create_card' %}" class="empty-cta">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            Personal card
+                        </a>
+                        <a href="{% url 'create_business_card' %}" class="empty-cta empty-cta--secondary">
+                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            Business card
+                        </a>
+                    </div>
                 </div>
             {% endif %}
         </div>
@@ -421,9 +435,85 @@
         margin-top: 1.5rem;
         box-shadow: 0 20px 45px -25px rgba(236,72,153,0.5);
     }
+    .empty-cta--secondary {
+        background: linear-gradient(135deg, #4338ca, #0ea5e9);
+        box-shadow: 0 20px 45px -25px rgba(14,165,233,0.5);
+    }
     .empty-cta:hover {
         transform: translateY(-2px);
         box-shadow: 0 25px 60px -25px rgba(236,72,153,0.65);
+    }
+    .empty-cta--secondary:hover {
+        box-shadow: 0 25px 60px -25px rgba(14,165,233,0.65);
+    }
+    .cta-pill {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.9rem 1.5rem;
+        border-radius: 1.25rem;
+        font-weight: 600;
+        color: #0f172a;
+        background: rgba(255,255,255,0.92);
+        border: 1px solid rgba(226,232,240,0.75);
+        box-shadow: 0 20px 40px -28px rgba(15,23,42,0.35);
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .cta-pill__ring {
+        position: absolute;
+        inset: -30%;
+        background: radial-gradient(circle, rgba(236,72,153,0.08) 0%, rgba(255,255,255,0) 65%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .cta-pill__label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+    .cta-pill:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 28px 60px -26px rgba(236,72,153,0.35);
+    }
+    .cta-pill:hover .cta-pill__ring { opacity: 1; }
+    .cta-pill--business {
+        color: #1f2937;
+        border-color: rgba(148,163,184,0.5);
+    }
+    .cta-pill--business .cta-pill__ring {
+        background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(255,255,255,0) 65%);
+    }
+    .cta-pill--personal .cta-pill__ring {
+        background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, rgba(255,255,255,0) 65%);
+    }
+    .type-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-top: 0.6rem;
+        padding: 0.35rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(59,130,246,0.1);
+        color: #1d4ed8;
+        font-weight: 600;
+    }
+    .type-pill::before {
+        content: '';
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: currentColor;
+    }
+    .type-pill--business {
+        background: rgba(236,72,153,0.12);
+        color: #be185d;
     }
     .back-home-btn {
         position: relative;

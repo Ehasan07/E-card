@@ -1,7 +1,7 @@
 {% extends 'cards/base.html' %}
 {% load static %}
 
-{% block title %}{% if card %}Edit V-Card{% else %}Create V-Card{% endif %}{% endblock %}
+{% block title %}{% if card %}Edit {{ builder_variant.page_title|default:'MY-Card' }}{% else %}Create {{ builder_variant.page_title|default:'MY-Card' }}{% endif %}{% endblock %}
 
 {% block content %}
 <div class="editor-canvas relative min-h-screen px-4 py-16 overflow-hidden">
@@ -15,8 +15,8 @@
                 <div class="builder-header">
                     <div>
                         <p class="text-xs uppercase tracking-[0.4em] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %} your card</p>
-                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Craft your interactive identity</h1>
-                        <p class="text-sm text-slate-500 mt-1">Fill out the details on the left and tailor every section of your card.</p>
+                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900">{{ builder_variant.heading|default:'Craft your interactive identity' }}</h1>
+                        <p class="text-sm text-slate-500 mt-1">{{ builder_variant.subheading|default:'Fill out the details on the left and tailor every section of your card.' }}</p>
                         {% if cards_remaining is not None %}
                             <div class="mt-4 inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold tracking-[0.2em] uppercase limit-pill">
                                 <i data-lucide="layers" class="w-4 h-4"></i>
@@ -27,7 +27,7 @@
                     <span class="builder-badge">
                         <span class="builder-badge__pulse"></span>
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        Builder mode
+                        {{ builder_variant.badge|default:'Builder mode' }}
                     </span>
                 </div>
 
@@ -119,6 +119,21 @@
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Birthday</label>
                                 {{ form.birthday }}
                             </div>
+                            {% if form.extra_highlight %}
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-semibold text-gray-600 mb-1">Business spotlight</label>
+                                    {{ form.extra_highlight }}
+                                    <p class="mt-2 text-xs text-gray-500">Select which detail you want highlighted on the live business card. Leave blank to skip the extra spotlight.</p>
+                                </div>
+                                <div class="md:col-span-2" data-highlight-content-wrapper{% if not form.extra_highlight.value %} hidden{% endif %}>
+                                    <label class="block text-sm font-semibold text-gray-600 mb-1">Spotlight detail</label>
+                                    {{ form.extra_highlight_content }}
+                                    <p class="mt-2 text-xs text-gray-500" data-highlight-hint>Provide the exact information that should appear. For phone numbers use digits only.</p>
+                                    <p class="mt-2 text-xs text-indigo-500 hidden" data-highlight-phone-note>
+                                        We’ll format the number for you. Enter digits only or leave blank to reuse the phone number you set above.
+                                    </p>
+                                </div>
+                            {% endif %}
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Notes</label>
                                 {{ form.notes }}
@@ -197,6 +212,18 @@
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Likee</label>
                                 {{ form.likee }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Messenger</label>
+                                {{ form.messenger }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Discord</label>
+                                {{ form.discord }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Parrale</label>
+                                {{ form.parrale }}
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Pinterest</label>
@@ -291,7 +318,7 @@
                         </a>
                         <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 shadow-lg hover:shadow-xl transition">
                             <i data-lucide="save" class="w-4 h-4"></i>
-                            Save card
+                            {{ builder_variant.submit_label|default:'Save card' }}
                         </button>
                     </div>
                 </form>
@@ -369,6 +396,9 @@
                                 <span class="simple-social hidden" data-social-preview="tiktok"><i data-lucide="music-2" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="snapchat"><i data-lucide="ghost" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="likee"><i data-lucide="heart" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="messenger"><i data-lucide="message-square" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="discord"><i data-lucide="gamepad-2" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="parrale"><i data-lucide="waves" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="pinterest"><i data-lucide="pin" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="telegram"><i data-lucide="send" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="threads"><i data-lucide="at-sign" class="w-4 h-4"></i></span>
@@ -643,10 +673,30 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        background: rgba(255, 255, 255, 0.18);
-        color: rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(255, 255, 255, 0.35);
+        color: #ffffff;
+        box-shadow: 0 12px 28px -18px rgba(15,23,42,0.55);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
+    .simple-social i { width: 18px; height: 18px; }
+    .simple-social:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -20px rgba(15,23,42,0.65); }
+    .simple-social[data-social-preview="facebook"] { background: #1877F2; }
+    .simple-social[data-social-preview="whatsapp"] { background: #25D366; }
+    .simple-social[data-social-preview="youtube"] { background: #FF0000; }
+    .simple-social[data-social-preview="instagram"] { background: linear-gradient(135deg,#F58529,#DD2A7B,#8134AF,#515BD4); }
+    .simple-social[data-social-preview="twitter"] { background: #1DA1F2; }
+    .simple-social[data-social-preview="linkedin"] { background: #0A66C2; }
+    .simple-social[data-social-preview="github"] { background: #181717; }
+    .simple-social[data-social-preview="tiktok"] { background: linear-gradient(135deg,#010101 0%,#ff0050 50%,#00f2ea 100%); }
+    .simple-social[data-social-preview="snapchat"] { background: #FFFC00; color: #1f2937; }
+    .simple-social[data-social-preview="likee"] { background: linear-gradient(135deg,#FF0050 0%,#FF7A59 40%,#FFB347 70%,#FFE29F 100%); }
+    .simple-social[data-social-preview="messenger"] { background: linear-gradient(135deg,#8b5cf6,#5b21b6,#3b82f6); }
+    .simple-social[data-social-preview="discord"] { background: #5865F2; }
+    .simple-social[data-social-preview="parrale"] { background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #1f2937; }
+    .simple-social[data-social-preview="pinterest"] { background: #E60023; }
+    .simple-social[data-social-preview="telegram"] { background: #229ED9; }
+    .simple-social[data-social-preview="threads"] { background: #101010; }
+    .simple-social[data-social-preview="behance"] { background: #0057ff; }
+    .simple-social[data-social-preview="dribbble"] { background: linear-gradient(135deg,#ec4899,#f472b6); }
 
     @media (max-width: 1023px) {
         .preview-pane__sticky { position: static; }
@@ -660,7 +710,7 @@
         if (!form) { return; }
 
         const fallbackBackground = '#000000';
-        const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','pinterest','telegram','threads','behance','dribbble'];
+        const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','messenger','discord','parrale','pinterest','telegram','threads','behance','dribbble'];
         const inputs = {};
         fieldIds.forEach(name => {
             const el = document.getElementById(`id_${name}`);
@@ -1263,6 +1313,70 @@
         syncPhoneValue(false);
         syncWhatsappLink(false);
         updatePreview();
+    })();
+
+    (function() {
+        const select = document.getElementById('id_extra_highlight');
+        const wrapper = document.querySelector('[data-highlight-content-wrapper]');
+        const input = document.getElementById('id_extra_highlight_content');
+        const hint = wrapper ? wrapper.querySelector('[data-highlight-hint]') : null;
+        const phoneNote = wrapper ? wrapper.querySelector('[data-highlight-phone-note]') : null;
+
+        if (!select || !wrapper || !input) { return; }
+
+        const hints = {
+            phone: 'Enter the phone number you want highlighted. Digits only; country code optional.',
+            email: 'Enter the contact email that should appear in the spotlight.',
+            website: 'Enter the website URL starting with https://',
+            default: 'Provide the exact information that should appear. For phone numbers use digits only.'
+        };
+
+        const fillFromField = (fieldId) => {
+            const field = document.getElementById(fieldId);
+            if (field && !input.value) {
+                input.value = field.value || '';
+            }
+        };
+
+        const sanitizeDigits = value => (value || '').replace(/\D/g, '');
+
+        const handleState = () => {
+            const choice = (select.value || '').toLowerCase();
+            if (phoneNote) { phoneNote.classList.add('hidden'); }
+            if (!choice) {
+                wrapper.hidden = true;
+                input.value = '';
+                return;
+            }
+
+            wrapper.hidden = false;
+            if (hint) {
+                hint.textContent = hints[choice] || hints.default;
+            }
+
+            if (!input.value) {
+                if (choice === 'phone') {
+                    const localField = document.getElementById('id_phone_number_local');
+                    const digits = sanitizeDigits(localField ? localField.value : '') || sanitizeDigits(document.getElementById('id_phone_number') ? document.getElementById('id_phone_number').value : '');
+                    if (digits) {
+                        input.value = digits;
+                    }
+                }
+                if (choice === 'email') {
+                    fillFromField('id_email');
+                }
+                if (choice === 'website') {
+                    fillFromField('id_website');
+                }
+            }
+
+            if (choice === 'phone' && phoneNote) {
+                phoneNote.classList.remove('hidden');
+            }
+        };
+
+        handleState();
+        select.addEventListener('change', handleState);
     })();
 </script>
 {% endblock %}

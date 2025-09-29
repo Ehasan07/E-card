@@ -1,10 +1,14 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import URLValidator, validate_email
 
 from .models import Card, Profile, DEFAULT_CARD_LIMIT
 
 import re
+
+
+FIELD_BASE_CLASSES = 'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition'
 
 
 COUNTRY_CHOICES = [
@@ -87,6 +91,9 @@ class CardForm(forms.ModelForm):
     tiktok = forms.URLField(required=False)
     snapchat = forms.URLField(required=False)
     likee = forms.URLField(required=False)
+    messenger = forms.URLField(required=False)
+    discord = forms.URLField(required=False)
+    parrale = forms.URLField(required=False)
     pinterest = forms.URLField(required=False)
     telegram = forms.URLField(required=False)
     threads = forms.URLField(required=False)
@@ -105,14 +112,13 @@ class CardForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        base_classes = 'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition'
         for name, field in self.fields.items():
             widget = field.widget
             if isinstance(widget, forms.FileInput):
                 widget.attrs.setdefault('class', 'w-full text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-pink-100 file:text-pink-600 hover:file:bg-pink-200 cursor-pointer')
             else:
                 existing = widget.attrs.get('class', '')
-                widget.attrs['class'] = f"{existing} {base_classes}".strip()
+                widget.attrs['class'] = f"{existing} {FIELD_BASE_CLASSES}".strip()
         self.fields['logo_name'].widget.attrs.setdefault('placeholder', 'Brand or company name')
         self.initial_whatsapp = ''
         self.initial_phone = ''
@@ -228,6 +234,85 @@ class CardForm(forms.ModelForm):
         return cleaned_data
 
 
+BUSINESS_HIGHLIGHT_CHOICES = [
+    ('', 'No extra highlight'),
+    ('phone', 'Highlight phone contact'),
+    ('website', 'Highlight website link'),
+    ('email', 'Highlight email address'),
+]
+
+
+class BusinessCardForm(CardForm):
+    extra_highlight = forms.ChoiceField(
+        required=False,
+        choices=BUSINESS_HIGHLIGHT_CHOICES,
+        widget=forms.Select()
+    )
+    extra_highlight_content = forms.CharField(
+        required=False,
+        max_length=300,
+        widget=forms.TextInput()
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        highlight_field = self.fields['extra_highlight']
+        existing = highlight_field.widget.attrs.get('class', '')
+        highlight_field.widget.attrs['class'] = f"{existing} {FIELD_BASE_CLASSES}".strip()
+        highlight_field.widget.attrs.setdefault('aria-label', 'Choose a highlight section for business card')
+
+        content_field = self.fields['extra_highlight_content']
+        content_existing = content_field.widget.attrs.get('class', '')
+        content_field.widget.attrs['class'] = f"{content_existing} {FIELD_BASE_CLASSES}".strip()
+        content_field.widget.attrs.setdefault('placeholder', 'Add the detail to spotlight')
+
+        if self.instance.pk and isinstance(self.instance.card_data, dict):
+            highlight_value = self.instance.card_data.get('extra_highlight_content', '')
+            if highlight_value and not self.initial.get('extra_highlight_content'):
+                self.initial['extra_highlight_content'] = highlight_value
+
+    def clean(self):
+        cleaned_data = super().clean()
+        highlight_choice = (cleaned_data.get('extra_highlight') or '').strip().lower()
+        highlight_content = (cleaned_data.get('extra_highlight_content') or '').strip()
+
+        if highlight_choice in {'phone', 'email', 'website'} and not highlight_content:
+            self.add_error('extra_highlight_content', 'Add the information you want to spotlight.')
+
+        if highlight_choice == 'phone' and highlight_content:
+            digits = re.sub(r'\D', '', highlight_content)
+            if not digits:
+                self.add_error('extra_highlight_content', 'Enter digits only for the highlighted phone number.')
+            else:
+                cleaned_data['extra_highlight_content'] = digits
+
+        if highlight_choice == 'email' and highlight_content:
+            try:
+                validate_email(highlight_content)
+            except Exception:
+                self.add_error('extra_highlight_content', 'Enter a valid email for the highlight.')
+
+        if highlight_choice == 'website' and highlight_content:
+            url_value = highlight_content
+            if not url_value.startswith(('http://', 'https://')):
+                url_value = f'https://{url_value}'
+            validator = URLValidator()
+            try:
+                validator(url_value)
+            except Exception:
+                self.add_error('extra_highlight_content', 'Enter a valid website URL.')
+            else:
+                cleaned_data['extra_highlight_content'] = url_value
+
+        if highlight_choice not in {'phone', 'email', 'website'}:
+            cleaned_data['extra_highlight'] = ''
+            cleaned_data['extra_highlight_content'] = ''
+        else:
+            cleaned_data['extra_highlight_content'] = cleaned_data.get('extra_highlight_content', '').strip()
+
+        return cleaned_data
+
+
 class UserForm(forms.ModelForm):
     email = forms.EmailField(
         required=True,
@@ -300,13 +385,12 @@ class ProfileForm(forms.ModelForm):
         # Hide the combined phone field; the UI captures country + local number separately.
         self.fields['phone_number'].widget = forms.HiddenInput()
 
-        base_classes = 'w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition'
         for name, field in self.fields.items():
             widget = field.widget
             if isinstance(widget, forms.FileInput):
                 continue
             existing = widget.attrs.get('class', '')
-            widget.attrs['class'] = f"{existing} {base_classes}".strip()
+            widget.attrs['class'] = f"{existing} {FIELD_BASE_CLASSES}".strip()
 
         self.fields['phone_number_local'].widget.attrs.setdefault('placeholder', 'Phone number')
         self.fields['phone_number_local'].widget.attrs.setdefault('inputmode', 'numeric')
@@ -349,16 +433,59 @@ class ProfileForm(forms.ModelForm):
         if local_digits and not country_code:
             self.add_error('phone_country', 'Select a country code.')
 
+        # Keep the sanitized local number so the value redisplays consistently.
+        cleaned_data['phone_number_local'] = local_digits
+
+        normalized_local = local_digits
+        if local_digits:
+            # Track common variants so we can block registrations that try the same
+            # number with different formatting (with/without country code, leading zero, etc.).
+            normalized_local = local_digits.lstrip('0') or local_digits
+
         if local_digits and country_code:
-            cleaned_data['phone_number'] = f"{country_code}{local_digits}"
+            final_number = f"{country_code}{normalized_local}"
+            cleaned_data['phone_number'] = final_number
+        elif local_digits:
+            final_number = local_digits
+            cleaned_data['phone_number'] = final_number
         elif self.instance.pk and self.instance.phone_number:
-            cleaned_data['phone_number'] = self.instance.phone_number
+            final_number = self.instance.phone_number
+            cleaned_data['phone_number'] = final_number
         else:
+            final_number = ''
             cleaned_data['phone_number'] = ''
 
-        final_number = cleaned_data.get('phone_number')
         if final_number:
-            qs = Profile.objects.filter(phone_number=final_number)
+            variants = {
+                final_number,
+                f"+{final_number}",
+                local_digits,
+                normalized_local,
+            }
+
+            if country_code and normalized_local:
+                variants.update({
+                    f"{country_code}{normalized_local}",
+                    f"+{country_code}{normalized_local}",
+                })
+
+            if country_code and local_digits and local_digits != normalized_local:
+                variants.update({
+                    f"{country_code}{local_digits}",
+                    f"+{country_code}{local_digits}",
+                })
+
+            if normalized_local and not local_digits.startswith('0'):
+                zero_prefixed = f"0{normalized_local}"
+                variants.update({
+                    zero_prefixed,
+                    f"{country_code}{zero_prefixed}" if country_code else zero_prefixed,
+                    f"+{country_code}{zero_prefixed}" if country_code else zero_prefixed,
+                })
+
+            variants = {value for value in variants if value}
+
+            qs = Profile.objects.filter(phone_number__in=variants)
             if self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():

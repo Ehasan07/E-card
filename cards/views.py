@@ -11,7 +11,16 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
 from django.db.models import Count
 from django.http import Http404
-from .forms import UserForm, ProfileForm, ForgotPasswordForm, CardForm, COUNTRY_CHOICES, AdminCardLimitForm
+from .forms import (
+    UserForm,
+    ProfileForm,
+    ForgotPasswordForm,
+    CardForm,
+    BUSINESS_HIGHLIGHT_CHOICES,
+    BusinessCardForm,
+    COUNTRY_CHOICES,
+    AdminCardLimitForm,
+)
 from .models import (
     Card,
     Profile,
@@ -44,6 +53,38 @@ OTP_EXPIRY_MINUTES = 5
 OTP_RATE_LIMIT_SECONDS = 60
 OTP_MAX_ATTEMPTS = 5
 OTP_EMAIL_FROM = 'dss@dupno.com'
+
+
+CARD_FORM_BY_TYPE = {
+    Card.TYPE_PERSONAL: CardForm,
+    Card.TYPE_BUSINESS: BusinessCardForm,
+}
+
+
+CARD_VARIANT_CONFIG = {
+    Card.TYPE_PERSONAL: {
+        'slug': Card.TYPE_PERSONAL,
+        'page_title': 'Personal MY-Card',
+        'badge': 'Builder mode',
+        'heading': 'Craft your interactive identity',
+        'subheading': 'Fill out the details on the left and tailor every section of your card.',
+        'submit_label': 'Save card',
+        'success_message': 'Card published! Share your new link right away.',
+        'cta_label': 'Create personal card',
+        'empty_cta': 'Start personal card',
+    },
+    Card.TYPE_BUSINESS: {
+        'slug': Card.TYPE_BUSINESS,
+        'page_title': 'Business MY-Card',
+        'badge': 'Business builder',
+        'heading': 'Launch your business presence',
+        'subheading': 'Keep your brand details and callouts aligned for clients and partners.',
+        'submit_label': 'Save business card',
+        'success_message': 'Business card is live! Share it with your network.',
+        'cta_label': 'Create business card',
+        'empty_cta': 'Start business card',
+    },
+}
 
 
 def _normalize_whatsapp_link(value: str) -> str:
@@ -228,10 +269,22 @@ def request_card_limit_increase(request):
 
 @login_required
 def create_card(request):
+    return _handle_card_creation(request, Card.TYPE_PERSONAL)
+
+
+@login_required
+def create_business_card(request):
+    return _handle_card_creation(request, Card.TYPE_BUSINESS)
+
+
+def _handle_card_creation(request, card_type: str):
     profile = getattr(request.user, 'profile', None)
     card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
     total_cards = Card.objects.filter(user=request.user).count()
     remaining_cards = card_limit - total_cards
+
+    variant = CARD_VARIANT_CONFIG.get(card_type, CARD_VARIANT_CONFIG[Card.TYPE_PERSONAL])
+    form_class = CARD_FORM_BY_TYPE.get(card_type, CardForm)
 
     if remaining_cards <= 0:
         first_card = Card.objects.filter(user=request.user).order_by('created_at').first()
@@ -243,26 +296,25 @@ def create_card(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        form = CardForm(request.POST, request.FILES)
+        form = form_class(request.POST, request.FILES)
         if form.is_valid():
-            excluded_keys = {'avatar', 'logo', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
-            card_data = {key: value for key, value in form.cleaned_data.items() if key not in excluded_keys}
-
             card = form.save(commit=False)
             card.user = request.user
-            card.card_data = card_data
+            card.card_type = card_type
+            card.card_data = _extract_card_form_payload(form)
             card.save()
 
-            messages.success(request, 'Card published! Share your new link right away.')
+            messages.success(request, variant['success_message'])
             return redirect('view_card', slug=card.slug)
         messages.error(request, 'Fix the highlighted details so we can create your card.')
     else:
-        form = CardForm()
+        form = form_class()
 
     context = {
         'form': form,
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
+        'builder_variant': variant,
     }
     return render(request, 'cards/create_card.html', context)
 
@@ -278,8 +330,11 @@ def edit_card(request, slug):
     total_cards = Card.objects.filter(user=request.user).count()
     remaining_cards = max(card_limit - total_cards, 0)
 
+    form_class = CARD_FORM_BY_TYPE.get(card.card_type, CardForm)
+    builder_variant = CARD_VARIANT_CONFIG.get(card.card_type, CARD_VARIANT_CONFIG[Card.TYPE_PERSONAL])
+
     if request.method == 'POST':
-        form = CardForm(request.POST, request.FILES, instance=card)
+        form = form_class(request.POST, request.FILES, instance=card)
         if form.is_valid():
             _apply_card_form_updates(card, form)
             form.save() # This re-triggers the model's save method, updating QR code etc.
@@ -288,13 +343,14 @@ def edit_card(request, slug):
     else:
         # Pre-populate form with existing data
         initial_data = _card_initial_data(card)
-        form = CardForm(instance=card, initial=initial_data)
+        form = form_class(instance=card, initial=initial_data)
 
     context = {
         'form': form,
         'card': card,
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
+        'builder_variant': builder_variant,
     }
     return render(request, 'cards/create_card.html', context)
 
@@ -303,17 +359,29 @@ def edit_card(request, slug):
 def admin_edit_card(request, slug):
     card = get_object_or_404(Card, slug=slug)
 
+    form_class = CARD_FORM_BY_TYPE.get(card.card_type, CardForm)
+    builder_variant = CARD_VARIANT_CONFIG.get(card.card_type, CARD_VARIANT_CONFIG[Card.TYPE_PERSONAL])
+
     if request.method == 'POST':
-        form = CardForm(request.POST, request.FILES, instance=card)
+        form = form_class(request.POST, request.FILES, instance=card)
         if form.is_valid():
             _apply_card_form_updates(card, form)
             form.save()
             return redirect('admin_dashboard')
     else:
         initial_data = _card_initial_data(card)
-        form = CardForm(instance=card, initial=initial_data)
+        form = form_class(instance=card, initial=initial_data)
 
-    return render(request, 'cards/create_card.html', {'form': form, 'card': card, 'admin_edit': True})
+    return render(
+        request,
+        'cards/create_card.html',
+        {
+            'form': form,
+            'card': card,
+            'admin_edit': True,
+            'builder_variant': builder_variant,
+        }
+    )
 
 def view_card(request, slug):
     card = get_object_or_404(Card, slug=slug)
@@ -375,6 +443,7 @@ def view_card(request, slug):
         'phone_display': phone_display,
         'phone_tel': phone_tel,
         'profile_views': profile_views,
+        'business_highlight': _resolve_business_highlight(card, phone_display, phone_tel),
     }
     return render(request, 'cards/view_card.html', context)
 
@@ -637,6 +706,87 @@ def _apply_card_form_updates(card, form):
             card.card_data[key] = value
         elif key in card.card_data:
             card.card_data[key] = value
+
+
+def _extract_card_form_payload(form):
+    excluded_keys = {'avatar', 'logo', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
+    payload = {}
+    for key, value in form.cleaned_data.items():
+        if key in excluded_keys:
+            continue
+        payload[key] = value
+    return payload
+
+
+def _resolve_business_highlight(card: Card, phone_display: str, phone_tel: str):
+    if card.card_type != Card.TYPE_BUSINESS:
+        return None
+
+    card_data = card.card_data if isinstance(card.card_data, dict) else {}
+    choice = (card_data.get('extra_highlight') or '').strip()
+    content = (card_data.get('extra_highlight_content') or '').strip()
+    if not choice:
+        return None
+
+    choice = choice.lower()
+
+    if choice == 'phone':
+        number_source = content or card_data.get('phone') or phone_display
+        digits, display = _normalize_phone_number(number_source)
+        if not digits and phone_display:
+            digits = re.sub(r'\D', '', phone_tel)
+            display = phone_display
+        if not digits:
+            return None
+        return {
+            'type': 'phone',
+            'icon': 'phone',
+            'label': 'Call us directly',
+            'value': display,
+            'link': f'tel:+{digits}' if digits else '',
+            'copy_value': f'+{digits}' if digits else '',
+        }
+
+    if choice == 'website':
+        website = content or card_data.get('website')
+        if not website:
+            return None
+        display = re.sub(r'^https?://', '', website).rstrip('/')
+        return {
+            'type': 'website',
+            'icon': 'globe',
+            'label': 'Visit our website',
+            'value': display,
+            'link': website,
+            'copy_value': website,
+        }
+
+    if choice == 'email':
+        email = content or card_data.get('email')
+        if not email:
+            return None
+        return {
+            'type': 'email',
+            'icon': 'mail',
+            'label': 'Email our team',
+            'value': email,
+            'link': f'mailto:{email}',
+            'copy_value': email,
+        }
+
+    if choice == 'photo':
+        image = card.logo or card.avatar
+        if not image:
+            return None
+        return {
+            'type': 'photo',
+            'icon': 'image',
+            'label': 'Brand highlight',
+            'media_url': image.url,
+            'media_alt': content or card.card_data.get('logo_name') or 'Featured brand asset',
+        }
+
+    return None
 
 
 def _build_card_row(card: Card, extra_keys):

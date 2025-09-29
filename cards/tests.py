@@ -71,6 +71,23 @@ class CardViewTests(TestCase):
         self.assertTrue(response.context['show_guest_cta'])
         self.assertContains(response, 'Create a card for yourself')
 
+    def test_business_card_highlight_phone(self):
+        self.card.card_type = Card.TYPE_BUSINESS
+        self.card.card_data.update({'extra_highlight': 'phone', 'extra_highlight_content': '880123456789'})
+        self.card.save(update_fields=['card_type', 'card_data'])
+
+        response = self.client.get(self.card.get_absolute_url())
+        self.assertContains(response, 'Call us directly')
+        self.assertContains(response, '+880 123456789')
+
+    def test_business_card_highlight_skips_when_data_missing(self):
+        self.card.card_type = Card.TYPE_BUSINESS
+        self.card.card_data.update({'extra_highlight': 'website'})
+        self.card.save(update_fields=['card_type', 'card_data'])
+
+        response = self.client.get(self.card.get_absolute_url())
+        self.assertNotContains(response, 'Visit our website')
+
 
 class PasswordResetOtpTests(TestCase):
 
@@ -130,3 +147,119 @@ class PasswordResetOtpTests(TestCase):
         self.assertTrue(self.user.check_password('NewSecurePass123!'))
         self.profile.refresh_from_db()
         self.assertIsNone(self.profile.otp_requested_at)
+
+
+class RegistrationFormTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.url = reverse('register')
+
+    def _payload(self, **overrides):
+        data = {
+            'username': 'brandnewstudio',
+            'email': 'owner@example.com',
+            'password': 'StrongerPass123!',
+            'phone_country': '880',
+            'phone_number_local': '1782793008',
+        }
+        data.update(overrides)
+        phone_country = data.get('phone_country', '') or ''
+        phone_local = data.get('phone_number_local', '') or ''
+        data['phone_number'] = f"{phone_country}{phone_local}"
+        return data
+
+    def test_username_validation_detects_existing_case_insensitive(self):
+        existing = User.objects.create_user(
+            username='takenname',
+            email='taken@example.com',
+            password='TakenPass123!'
+        )
+        Profile.objects.create(user=existing, phone_number='8801999111222')
+
+        response = self.client.post(self.url, self._payload(username='TakenName', email='new@example.com'))
+        self.assertEqual(response.status_code, 200)
+        form = response.context['user_form']
+        self.assertIn('username', form.errors)
+        self.assertIn('This username is already taken.', form.errors['username'])
+
+    def test_phone_validation_blocks_existing_number_variants(self):
+        user = User.objects.create_user(username='owner', email='owner@example.com', password='OwnerPass123!')
+        Profile.objects.create(user=user, phone_number='88001782793008')
+
+        response = self.client.post(
+            self.url,
+            self._payload(username='duplicate', email='duplicate@example.com', phone_number_local='01782793008')
+        )
+        self.assertEqual(response.status_code, 200)
+        form = response.context['profile_form']
+        self.assertIn('phone_number_local', form.errors)
+        self.assertIn('This phone number is already registered with another account.', form.errors['phone_number_local'])
+
+    def test_phone_validation_detects_numbers_without_leading_zero_variant(self):
+        user = User.objects.create_user(username='other', email='other@example.com', password='OtherPass123!')
+        Profile.objects.create(user=user, phone_number='01782793008')
+
+        response = self.client.post(
+            self.url,
+            self._payload(username='dup2', email='dup2@example.com', phone_number_local='1782793008')
+        )
+        self.assertEqual(response.status_code, 200)
+        form = response.context['profile_form']
+        self.assertIn('phone_number_local', form.errors)
+        self.assertIn('This phone number is already registered with another account.', form.errors['phone_number_local'])
+
+    def test_successful_registration_stores_normalized_phone(self):
+        response = self.client.post(
+            self.url,
+            self._payload(username='freshstudio', email='fresh@example.com', phone_number_local='01799911122'),
+            follow=True
+        )
+        self.assertEqual(response.redirect_chain[-1][0], reverse('dashboard'))
+        user = User.objects.get(username='freshstudio')
+        self.assertTrue(user.check_password('StrongerPass123!'))
+        self.assertEqual(user.profile.phone_number, '8801799911122')
+
+
+class BusinessCardCreationTests(TestCase):
+
+    def setUp(self):
+        self.client = Client()
+        self.user = User.objects.create_user(username='bizowner', password='password123', email='bizowner@example.com')
+        Profile.objects.create(user=self.user, phone_number='8801777000000')
+        self.client.login(username='bizowner', password='password123')
+        self.url = reverse('create_business_card')
+
+    def _payload(self, **overrides):
+        data = {
+            'firstName': 'Biz',
+            'lastName': 'Owner',
+            'company': 'BizOne',
+            'jobTitle': 'Director',
+            'email': 'biz@company.com',
+            'birthday': '',
+            'phone': '8801777000000',
+            'website': 'https://example.com',
+            'address': '123 Market Street',
+            'notes': 'Preferred contact after 10am.',
+            'background_style': '#000000',
+            'extra_highlight': 'email',
+            'extra_highlight_content': 'hello@bizone.com',
+        }
+        data.update(overrides)
+        return data
+
+    def test_creates_business_card_with_highlight(self):
+        response = self.client.post(self.url, self._payload(), follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        card = Card.objects.get(user=self.user)
+        self.assertEqual(card.card_type, Card.TYPE_BUSINESS)
+        self.assertEqual(card.card_data.get('extra_highlight'), 'email')
+        self.assertEqual(card.card_data.get('extra_highlight_content'), 'hello@bizone.com')
+
+    def test_requires_highlight_content_when_selected(self):
+        response = self.client.post(self.url, self._payload(extra_highlight_content=''), follow=True)
+        form = response.context['form']
+        self.assertIn('extra_highlight_content', form.errors)
+        self.assertIn('Add the information you want to spotlight.', form.errors['extra_highlight_content'])
