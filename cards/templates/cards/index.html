@@ -53,6 +53,10 @@
                         <i data-lucide="play-circle" class="w-5 h-5"></i>
                         Watch interactive demo
                     </button>
+                    <a class="hero-btn ghost" href="#feedback">
+                        <i data-lucide="message-circle" class="w-5 h-5"></i>
+                        Share feedback
+                    </a>
                 </div>
                 <div class="hero-stats">
                     <div>
@@ -413,6 +417,49 @@
                     </div>
                 </section>
             </div>
+        </div>
+    </section>
+
+    <section id="feedback" class="landing-section animate-on-scroll">
+        <div class="feedback-shell">
+            <div class="feedback-intro">
+                <span class="feedback-tag"><i data-lucide="message-square"></i> Share your thoughts</span>
+                <h2>Tell us how MY-Card can improve</h2>
+                <p>Drop a note for the admin team—feature ideas, bugs, or wins. We read every message to keep shipping better tools.</p>
+            </div>
+            <form method="post" action="{% url 'submit_feedback' %}" class="feedback-form">
+                {% csrf_token %}
+                <div class="feedback-grid">
+                    <label class="feedback-field">
+                        <span>Name</span>
+                        {{ feedback_form.name }}
+                        {% if feedback_form.name.errors %}
+                            <span class="feedback-error">{{ feedback_form.name.errors|join:', ' }}</span>
+                        {% endif %}
+                    </label>
+                    <label class="feedback-field">
+                        <span>Email <small>(optional)</small></span>
+                        {{ feedback_form.email }}
+                        {% if feedback_form.email.errors %}
+                            <span class="feedback-error">{{ feedback_form.email.errors|join:', ' }}</span>
+                        {% endif %}
+                    </label>
+                </div>
+                <label class="feedback-field">
+                    <span>Message</span>
+                    {{ feedback_form.message }}
+                    {% if feedback_form.message.errors %}
+                        <span class="feedback-error">{{ feedback_form.message.errors|join:', ' }}</span>
+                    {% endif %}
+                </label>
+                {% if feedback_form.non_field_errors %}
+                    <div class="feedback-error">{{ feedback_form.non_field_errors|join:', ' }}</div>
+                {% endif %}
+                <button type="submit" class="hero-btn primary feedback-submit">
+                    <i data-lucide="send"></i>
+                    Send feedback
+                </button>
+            </form>
         </div>
     </section>
 
@@ -1026,6 +1073,24 @@
     }
     .cta-content { position: relative; z-index: 1; display: grid; gap: 1.5rem; text-align: center; }
     .cta-actions { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+    #feedback { padding: clamp(4rem, 6vw, 6rem) 0; }
+    .feedback-shell { display: grid; gap: 2.5rem; max-width: 1100px; margin: 0 auto; padding: 0 clamp(1.5rem, 4vw, 3rem); align-items: start; }
+    @media (min-width: 900px) {
+        .feedback-shell { grid-template-columns: minmax(0, 360px) minmax(0, 1fr); }
+    }
+    .feedback-intro { display: grid; gap: 1rem; }
+    .feedback-intro h2 { font-size: clamp(1.8rem, 3vw, 2.6rem); font-weight: 700; color: #0f172a; }
+    .feedback-intro p { color: #475569; line-height: 1.7; }
+    .feedback-tag { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: #ec4899; background: rgba(236,72,153,0.12); padding: 0.4rem 0.9rem; border-radius: 999px; width: fit-content; }
+    .feedback-form { background: rgba(255,255,255,0.92); border-radius: 22px; padding: clamp(2rem, 4vw, 2.75rem); box-shadow: 0 30px 80px -45px rgba(15,23,42,0.35); display: grid; gap: 1.5rem; border: 1px solid rgba(226,232,240,0.75); }
+    .feedback-grid { display: grid; gap: 1.25rem; }
+    @media (min-width: 600px) {
+        .feedback-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+    }
+    .feedback-field { display: grid; gap: 0.6rem; font-size: 0.95rem; color: #0f172a; }
+    .feedback-field small { color: #94a3b8; font-weight: 500; }
+    .feedback-error { color: #dc2626; font-size: 0.8rem; font-weight: 500; }
+    .feedback-submit { justify-self: start; display: inline-flex; align-items: center; gap: 0.5rem; }
 
     .animate-on-scroll { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
     .animate-on-scroll.is-visible { opacity: 1; transform: translateY(0); }
@@ -1041,6 +1106,13 @@
 <script>
     (function() {
         lucide.createIcons();
+
+        {% if scroll_to_feedback %}
+        const feedbackSection = document.getElementById('feedback');
+        if (feedbackSection) {
+            feedbackSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        {% endif %}
 
         // --- Intersection Observer for scroll animations ---
         const scrollObserver = new IntersectionObserver(entries => {

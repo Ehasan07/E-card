@@ -56,6 +56,14 @@
                 <p class="metric-sub">Awaiting concierge review</p>
             </div>
         </article>
+        <article class="metric-card metric-trigger" data-target="feedback-panel">
+            <div class="metric-icon gradient-amber"><i data-lucide="message-circle"></i></div>
+            <div>
+                <p class="metric-label">Feedback Inbox</p>
+                <p class="metric-value">{{ feedback_count }}</p>
+                <p class="metric-sub">Latest platform impressions</p>
+            </div>
+        </article>
     </div>
 
     <section class="data-panels">
@@ -211,6 +219,52 @@
                 </table>
             </div>
         </div>
+        <div class="panel is-hidden" id="feedback-panel">
+            <header class="panel-head">
+                <div>
+                    <p class="panel-tag"><i data-lucide="message-square"></i> Feedback stream</p>
+                    <h2>User feedback messages</h2>
+                </div>
+                <span class="panel-count">{{ feedback_entries|length }} messages</span>
+            </header>
+            <div class="table-shell">
+                <table class="premium-table">
+                    <thead>
+                        <tr>
+                            <th><span class="th-label"><i data-lucide="user"></i>Name</span></th>
+                            <th><span class="th-label"><i data-lucide="mail"></i>Email</span></th>
+                            <th><span class="th-label"><i data-lucide="calendar"></i>Received</span></th>
+                            <th><span class="th-label"><i data-lucide="message-circle"></i>Message</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in feedback_entries %}
+                        <tr>
+                            <td data-label="Name">
+                                <div class="cell-with-icon">
+                                    <span class="avatar-pill"><i data-lucide="user"></i></span>
+                                    <div>
+                                        <strong>{{ entry.name }}</strong>
+                                        <p class="sub">Feedback ID #{{ entry.id }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td data-label="Email">{{ entry.email|default:'—' }}</td>
+                            <td data-label="Received">{{ entry.created_at|date:"M d, Y H:i" }}</td>
+                            <td data-label="Message" class="feedback-message-cell">
+                                <p class="feedback-message-text">{{ entry.message }}</p>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="empty-row">No feedback submitted yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </section>
 </div>
 
@@ -472,6 +526,14 @@
         align-items: center;
         gap: 0.75rem;
     }
+    .feedback-message-cell {
+        max-width: 420px;
+    }
+    .feedback-message-text {
+        white-space: pre-wrap;
+        line-height: 1.6;
+        color: #1f2937;
+    }
     .avatar-pill {
         width: 36px;
         height: 36px;
@@ -672,6 +734,13 @@
             display: block;
             text-align: center;
         }
+        .feedback-message-cell {
+            text-align: left;
+            max-width: none;
+        }
+        .feedback-message-text {
+            text-align: left;
+        }
         .action-stack, .card-action-stack {
             flex-direction: row;
             flex-wrap: wrap;
@@ -705,7 +774,8 @@
         const metricCards = document.querySelectorAll('.metric-card');
         const panels = {
             users: document.getElementById('users-panel'),
-            cards: document.getElementById('cards-panel')
+            cards: document.getElementById('cards-panel'),
+            feedback: document.getElementById('feedback-panel')
         };
 
         const openPanel = (key) => {
@@ -725,6 +795,8 @@
                     openPanel('users');
                 } else if (target.includes('cards')) {
                     openPanel('cards');
+                } else if (target.includes('feedback')) {
+                    openPanel('feedback');
                 }
             });
         });

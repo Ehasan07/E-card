@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import URLValidator, validate_email
 
-from .models import Card, Profile, DEFAULT_CARD_LIMIT
+from .models import Card, Profile, DEFAULT_CARD_LIMIT, Feedback
 
 import re
 
@@ -511,3 +511,17 @@ class AdminCardLimitForm(forms.Form):
             'invalid': 'Enter how many cards this user may create.'
         }
     )
+
+
+class FeedbackForm(forms.ModelForm):
+    class Meta:
+        model = Feedback
+        fields = ['name', 'email', 'message']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            css_classes = 'w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-pink-400 focus:ring-2 focus:ring-pink-200 transition'
+            field.widget.attrs.setdefault('class', css_classes)
+            if field_name == 'message':
+                field.widget.attrs.setdefault('rows', 4)

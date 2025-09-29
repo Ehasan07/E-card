@@ -20,6 +20,7 @@ from .forms import (
     BusinessCardForm,
     COUNTRY_CHOICES,
     AdminCardLimitForm,
+    FeedbackForm,
 )
 from .models import (
     Card,
@@ -28,6 +29,7 @@ from .models import (
     UpgradeRequest,
     SubscriptionPlan,
     Subscription,
+    Feedback,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
@@ -122,7 +124,24 @@ def _normalize_phone_number(value: str, default_code: str = '880') -> tuple[str,
 
 
 def index(request):
-    return render(request, 'cards/index.html')
+    return render(request, 'cards/index.html', {
+        'feedback_form': FeedbackForm()
+    })
+
+
+@require_POST
+def submit_feedback(request):
+    form = FeedbackForm(request.POST)
+    if form.is_valid():
+        form.save()
+        messages.success(request, 'Thanks for sharing your feedback — the team will take a look.')
+        return redirect(f"{reverse('index')}#feedback")
+    else:
+        messages.error(request, 'Please fix the highlighted details before sending your feedback.')
+    return render(request, 'cards/index.html', {
+        'feedback_form': form,
+        'scroll_to_feedback': True,
+    }, status=400)
 
 
 def register(request):
@@ -469,6 +488,7 @@ def admin_dashboard(request):
         .order_by('-date_joined')
     )
     cards = Card.objects.select_related('user', 'user__profile').order_by('-created_at')
+    feedback_entries = list(Feedback.objects.all())
 
     user_records = []
     for user in users:
@@ -501,6 +521,8 @@ def admin_dashboard(request):
         'all_cards': cards,
         'all_users': user_records,
         'pending_request_count': pending_requests.count(),
+        'feedback_entries': feedback_entries,
+        'feedback_count': len(feedback_entries),
     }
     return render(request, 'cards/admin_dashboard.html', context)
 

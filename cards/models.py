@@ -212,3 +212,16 @@ class UpgradeRequest(models.Model):
 
     def __str__(self):
         return f"UpgradeRequest({self.user}, {self.get_status_display()})"
+
+
+class Feedback(models.Model):
+    name = models.CharField(max_length=150)
+    email = models.EmailField(blank=True)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Feedback from {self.name}"
