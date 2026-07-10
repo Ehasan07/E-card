@@ -15,6 +15,7 @@
         </a>
         <ul class="mc-nav__links">
             <li><a href="{% url 'dashboard' %}" class="mc-nav-link" aria-current="page">{% trans "Dashboard" %}</a></li>
+            <li><a href="{% url 'leads_inbox' %}" class="mc-nav-link">{% trans "Leads" %}</a></li>
             <li><a href="{% url 'user_messages' %}" class="mc-nav-link">{% trans "Messages" %}</a></li>
             <li><a href="{% url 'documentation' %}" class="mc-nav-link">{% trans "Docs" %}</a></li>
         </ul>
@@ -66,10 +67,10 @@
         {# ===== Metric tiles (bento) ===== #}
         <section class="dash-metrics mc-fade-up mc-fade-up--d1">
             <div class="mc-metric">
-                <span class="mc-metric__label"><i data-lucide="id-card"></i> {% trans "Total cards" %}</span>
-                <span class="mc-metric__value">{{ cards|length }}</span>
+                <span class="mc-metric__label"><i data-lucide="eye"></i> {% trans "Total views" %}</span>
+                <span class="mc-metric__value mc-mono">{{ total_views }}</span>
                 <span class="mc-metric__delta">
-                    <i data-lucide="check"></i> {% trans "Active" %}
+                    <i data-lucide="user-plus"></i> {{ total_saves }} {% trans "contact saves" %}
                 </span>
             </div>
             <div class="mc-metric">
@@ -99,12 +100,12 @@
                 {% endif %}
             </div>
             <div class="mc-metric">
-                <span class="mc-metric__label"><i data-lucide="inbox"></i> {% trans "Messages" %}</span>
-                <a href="{% url 'user_messages' %}" class="mc-metric__value" style="text-decoration:none;font-size:1.35rem;">
-                    {% trans "Open inbox" %} <i data-lucide="arrow-right" style="width:1rem;height:1rem;vertical-align:-2px;"></i>
+                <span class="mc-metric__label"><i data-lucide="inbox"></i> {% trans "Leads inbox" %}</span>
+                <a href="{% url 'leads_inbox' %}" class="mc-metric__value" style="text-decoration:none;font-size:1.6rem;">
+                    {{ new_leads }} {% trans "new" %} <i data-lucide="arrow-right" style="width:1rem;height:1rem;vertical-align:-2px;"></i>
                 </a>
                 <span class="mc-metric__delta">
-                    <i data-lucide="mail"></i> {% trans "Upgrade requests & admin replies" %}
+                    <i data-lucide="user-check"></i> {% trans "from card visitors" %}
                 </span>
             </div>
         </section>
@@ -195,6 +196,9 @@
                                 </a>
                                 <a href="{% url 'edit_card' card.slug %}" class="mc-btn mc-btn--primary mc-btn--sm">
                                     <i data-lucide="edit-3"></i> {% trans "Edit" %}
+                                </a>
+                                <a href="{% url 'card_analytics' card.slug %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                                    <i data-lucide="line-chart"></i> {% trans "Analytics" %}
                                 </a>
                                 {% if card.is_active %}
                                     <button type="button" class="mc-btn mc-btn--outline mc-btn--sm" data-copy-url="{{ card.get_absolute_url }}">

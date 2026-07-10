@@ -1,0 +1,194 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Leads — MY-Card{% endblock %}
+{% block page_icon %}inbox{% endblock %}
+{% block page_label %}Leads{% endblock %}
+
+{% block content %}
+<nav class="mc-nav">
+    <div class="mc-container mc-nav__inner">
+        <a href="{% url 'index' %}" class="mc-nav__logo">
+            <span class="mc-nav__logo-mark"></span>
+            MY-Card
+        </a>
+        <ul class="mc-nav__links">
+            <li><a href="{% url 'dashboard' %}" class="mc-nav-link">{% trans "Dashboard" %}</a></li>
+            <li><a href="{% url 'leads_inbox' %}" class="mc-nav-link" aria-current="page">{% trans "Leads" %}</a></li>
+            <li><a href="{% url 'user_messages' %}" class="mc-nav-link">{% trans "Messages" %}</a></li>
+        </ul>
+        <div class="mc-nav__actions">
+            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+            </button>
+            <a href="{% url 'logout' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                <i data-lucide="log-out"></i> {% trans "Sign out" %}
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="lead-page">
+    <div class="lead-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+    </div>
+
+    <div class="mc-container lead-container">
+        <header class="lead-hero mc-fade-up">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    {% trans "Inbox" %}
+                </span>
+                <h1>{% trans "Your leads" %}</h1>
+                <p class="mc-text-muted">
+                    {% blocktrans count total=leads|length %}{{ total }} lead captured from your cards{% plural %}{{ total }} leads captured from your cards{% endblocktrans %}
+                    {% if new_count %} — <span class="mc-text-accent">{{ new_count }} new</span>{% endif %}
+                </p>
+            </div>
+            <div class="lead-filters">
+                <a href="{% url 'leads_inbox' %}" class="mc-btn mc-btn--{% if not status_filter %}primary{% else %}ghost{% endif %} mc-btn--sm">{% trans "All" %}</a>
+                {% for code,label in status_choices %}
+                    <a href="?status={{ code }}" class="mc-btn mc-btn--{% if status_filter == code %}primary{% else %}ghost{% endif %} mc-btn--sm">{{ label }}</a>
+                {% endfor %}
+            </div>
+        </header>
+
+        {% if leads %}
+            <section class="lead-list mc-fade-up mc-fade-up--d1">
+                {% for lead in leads %}
+                    <article class="mc-card lead-item">
+                        <header class="lead-item__head">
+                            <div>
+                                <h3 class="lead-item__name">{{ lead.name }}</h3>
+                                <p class="mc-text-muted lead-item__meta">
+                                    {% trans "For" %} <a href="{% url 'view_card' lead.card.slug %}">{{ lead.card.card_data.firstName|default:lead.card.slug }}</a>
+                                    · {{ lead.created_at|timesince }} {% trans "ago" %}
+                                </p>
+                            </div>
+                            <span class="mc-badge {% if lead.status == 'new' %}mc-badge--accent{% elif lead.status == 'replied' %}mc-badge--success{% else %}mc-badge--info{% endif %}">
+                                {{ lead.get_status_display }}
+                            </span>
+                        </header>
+
+                        <div class="lead-item__body">
+                            {% if lead.email %}
+                                <a href="mailto:{{ lead.email }}" class="lead-item__contact">
+                                    <i data-lucide="mail"></i>{{ lead.email }}
+                                </a>
+                            {% endif %}
+                            {% if lead.phone %}
+                                <a href="tel:{{ lead.phone }}" class="lead-item__contact">
+                                    <i data-lucide="phone"></i>{{ lead.phone }}
+                                </a>
+                            {% endif %}
+                        </div>
+
+                        {% if lead.message %}
+                            <blockquote class="lead-item__msg">"{{ lead.message|linebreaksbr }}"</blockquote>
+                        {% endif %}
+
+                        <footer class="lead-item__actions">
+                            {% if lead.email %}
+                                <a href="mailto:{{ lead.email }}?subject=Re: your message&body=Hi {{ lead.name }},%0D%0A%0D%0A" class="mc-btn mc-btn--primary mc-btn--sm">
+                                    <i data-lucide="reply"></i> {% trans "Reply" %}
+                                </a>
+                            {% endif %}
+                            <form method="post" action="{% url 'lead_update_status' lead.id %}" style="display:inline-flex;gap:0.5rem;">
+                                {% csrf_token %}
+                                {% if lead.status != 'replied' %}
+                                    <button name="status" value="replied" class="mc-btn mc-btn--ghost mc-btn--sm">
+                                        <i data-lucide="check"></i> {% trans "Mark replied" %}
+                                    </button>
+                                {% endif %}
+                                {% if lead.status != 'archived' %}
+                                    <button name="status" value="archived" class="mc-btn mc-btn--outline mc-btn--sm">
+                                        <i data-lucide="archive"></i> {% trans "Archive" %}
+                                    </button>
+                                {% endif %}
+                                {% if lead.status != 'new' %}
+                                    <button name="status" value="new" class="mc-btn mc-btn--outline mc-btn--sm">
+                                        <i data-lucide="rotate-ccw"></i> {% trans "Reopen" %}
+                                    </button>
+                                {% endif %}
+                            </form>
+                        </footer>
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <section class="lead-empty mc-card mc-fade-up mc-fade-up--d1">
+                <div class="lead-empty__icon"><i data-lucide="inbox"></i></div>
+                <h2>{% trans "No leads yet" %}</h2>
+                <p class="mc-text-muted">
+                    {% trans "When a visitor submits the contact form on any of your cards, they'll show up here. Share your card link to start getting leads." %}
+                </p>
+                <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--primary">
+                    <i data-lucide="arrow-right"></i> {% trans "Go to dashboard" %}
+                </a>
+            </section>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.lead-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-6) 0 var(--mc-s-9); overflow: hidden; }
+.lead-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.lead-container { position: relative; z-index: 1; }
+.lead-hero { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--mc-s-5); margin-bottom: var(--mc-s-6); flex-wrap: wrap; }
+.lead-hero h1 { font-size: clamp(1.8rem, 3vw, 2.4rem); margin: var(--mc-s-3) 0 var(--mc-s-2); }
+.lead-hero p { margin: 0; }
+.lead-filters { display: flex; gap: var(--mc-s-2); flex-wrap: wrap; }
+.lead-list { display: grid; gap: var(--mc-s-4); }
+.lead-item { display: flex; flex-direction: column; gap: var(--mc-s-4); padding: var(--mc-s-5); }
+.lead-item__head { display: flex; justify-content: space-between; align-items: flex-start; gap: var(--mc-s-3); flex-wrap: wrap; }
+.lead-item__name { margin: 0 0 var(--mc-s-1); font-size: 1.15rem; }
+.lead-item__meta { margin: 0; font-size: var(--mc-fs-body-sm); }
+.lead-item__meta a { color: var(--mc-accent); }
+.lead-item__body { display: flex; flex-wrap: wrap; gap: var(--mc-s-3); }
+.lead-item__contact {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    padding: 0.5rem 0.85rem;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+}
+.lead-item__contact:hover { color: var(--mc-accent); border-color: var(--mc-border-glow); }
+.lead-item__contact i { width: 1rem; height: 1rem; color: var(--mc-accent); }
+.lead-item__msg {
+    margin: 0;
+    padding: var(--mc-s-3) var(--mc-s-4);
+    border-left: 3px solid var(--mc-accent);
+    background: var(--mc-bg-2);
+    border-radius: 0 var(--mc-r-md) var(--mc-r-md) 0;
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+    font-style: italic;
+}
+.lead-item__actions { display: flex; gap: var(--mc-s-2); flex-wrap: wrap; padding-top: var(--mc-s-3); border-top: 1px solid var(--mc-border); }
+.lead-empty {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: var(--mc-s-8) var(--mc-s-5);
+}
+.lead-empty__icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid; place-items: center;
+}
+.lead-empty__icon i { width: 2rem; height: 2rem; }
+.lead-empty h2 { margin: 0; }
+.lead-empty p { max-width: 480px; margin: 0; }
+</style>
+{% endblock %}

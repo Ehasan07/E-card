@@ -286,6 +286,10 @@
                             <i data-lucide="square-pen"></i>
                             Edit this card
                         </a>
+                        <a href="{% url 'card_analytics' card.slug %}" class="mc-btn mc-btn--outline mc-btn--block">
+                            <i data-lucide="line-chart"></i>
+                            View analytics
+                        </a>
                         <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--block">
                             <i data-lucide="layout-dashboard"></i>
                             Go to dashboard
@@ -312,23 +316,111 @@
 
     {# ---------- Sticky action bar (mobile-first) ---------- #}
     <div class="vc-action-bar" role="toolbar" aria-label="Quick actions">
-        <button id="saveContactBtn" type="button" class="mc-btn mc-btn--primary vc-action-bar__primary"
-                data-first-name="{{ card.card_data.firstName|default:''|escape }}"
-                data-last-name="{{ card.card_data.lastName|default:''|escape }}"
-                data-company="{{ card.card_data.company|default:''|escape }}"
-                data-job-title="{{ card.card_data.jobTitle|default:''|escape }}"
-                data-phone="{{ phone_tel|default:''|escape }}"
-                data-email="{{ card.card_data.email|default:''|escape }}"
-                data-website="{{ card.card_data.website|default:''|escape }}">
+        <a href="{% url 'download_vcard' card.slug %}" class="mc-btn mc-btn--primary vc-action-bar__primary" id="saveContactBtn" data-track-kind="save" data-track-target="vcard">
             <i data-lucide="user-plus"></i>
             <span>Save Contact</span>
-        </button>
+        </a>
+        {% if not is_owner and not is_admin_viewer %}
+            <button type="button" class="mc-btn mc-btn--ghost" id="openLeadBtn">
+                <i data-lucide="message-square-plus"></i>
+                <span>Message Me</span>
+            </button>
+        {% endif %}
         <button id="shareBtn" type="button" class="mc-btn mc-btn--ghost">
             <i data-lucide="share-2"></i>
             <span>Share</span>
         </button>
     </div>
+
+    {# ---------- Lead capture modal ---------- #}
+    {% if not is_owner and not is_admin_viewer %}
+        <div class="vc-lead-modal" id="leadModal" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="vc-lead-modal__backdrop" data-lead-close></div>
+            <div class="vc-lead-modal__card mc-card mc-card--elevated">
+                <button type="button" class="vc-lead-modal__close mc-icon-btn" data-lead-close aria-label="Close">
+                    <i data-lucide="x"></i>
+                </button>
+                <header class="vc-lead-modal__head">
+                    <span class="mc-badge mc-badge--accent">
+                        <span class="mc-badge__dot"></span>
+                        {% if card.card_data.firstName %}Message {{ card.card_data.firstName }}{% else %}Send a message{% endif %}
+                    </span>
+                    <h3>Get in touch</h3>
+                    <p class="mc-text-muted">Share your details and a quick note. {{ card.card_data.firstName|default:"The card owner" }} will get an email right away.</p>
+                </header>
+                <form method="post" action="{% url 'submit_lead' card.slug %}" class="vc-lead-form">
+                    {% csrf_token %}
+                    <label class="mc-label">
+                        <span><i data-lucide="user"></i> Your name</span>
+                        <input class="mc-input" type="text" name="name" required maxlength="150" placeholder="Full name">
+                    </label>
+                    <div class="vc-lead-form__row">
+                        <label class="mc-label">
+                            <span><i data-lucide="mail"></i> Email</span>
+                            <input class="mc-input" type="email" name="email" placeholder="you@example.com">
+                        </label>
+                        <label class="mc-label">
+                            <span><i data-lucide="phone"></i> Phone</span>
+                            <input class="mc-input" type="tel" name="phone" placeholder="+880 …">
+                        </label>
+                    </div>
+                    <label class="mc-label">
+                        <span><i data-lucide="edit-3"></i> Message</span>
+                        <textarea class="mc-textarea" name="message" rows="3" maxlength="2000" placeholder="How can I help?"></textarea>
+                    </label>
+                    <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg mc-btn--block">
+                        <i data-lucide="send"></i>
+                        Send message
+                    </button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 </div>
+
+<style>
+/* Lead capture modal */
+.vc-lead-modal {
+    position: fixed;
+    inset: 0;
+    z-index: var(--mc-z-modal);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: var(--mc-s-4);
+}
+.vc-lead-modal.is-open { display: flex; }
+.vc-lead-modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(5, 6, 11, 0.7);
+    backdrop-filter: blur(8px);
+    animation: mc-fade-up var(--mc-dur-med) var(--mc-ease) both;
+}
+.vc-lead-modal__card {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 520px;
+    padding: clamp(1.5rem, 3vw, 2rem);
+    animation: mc-fade-up var(--mc-dur-med) var(--mc-ease) both;
+    box-shadow: var(--mc-shadow-3), 0 0 0 1px var(--mc-accent-halo);
+}
+.vc-lead-modal__close {
+    position: absolute;
+    top: var(--mc-s-3);
+    right: var(--mc-s-3);
+    width: 36px; height: 36px;
+}
+.vc-lead-modal__head { text-align: center; margin-bottom: var(--mc-s-5); }
+.vc-lead-modal__head .mc-badge { margin-bottom: var(--mc-s-3); }
+.vc-lead-modal__head h3 { margin: 0 0 var(--mc-s-2); font-family: var(--mc-font-display); font-size: 1.5rem; }
+.vc-lead-modal__head p { margin: 0; }
+
+.vc-lead-form { display: grid; gap: var(--mc-s-4); }
+.vc-lead-form__row { display: grid; gap: var(--mc-s-4); grid-template-columns: 1fr; }
+@media (min-width: 480px) { .vc-lead-form__row { grid-template-columns: 1fr 1fr; } }
+</style>
 
 <style>
 /* ============  View-card specific layout  ============ */
@@ -767,34 +859,68 @@
         });
     }
 
-    /* ------- Save Contact (vCard) ------- */
-    var saveBtn = document.getElementById('saveContactBtn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', function() {
-            var first  = this.dataset.firstName || '';
-            var last   = this.dataset.lastName  || '';
-            var company= this.dataset.company   || '';
-            var title  = this.dataset.jobTitle  || '';
-            var phone  = this.dataset.phone     || '';
-            var email  = this.dataset.email     || '';
-            var website= this.dataset.website   || '';
+    /* ------- Analytics tracker: pings /api/track/ on clicks ------- */
+    var CARD_SLUG = "{{ card.slug }}";
+    var CSRF = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+    function track(kind, target) {
+        try {
+            var body = JSON.stringify({ slug: CARD_SLUG, kind: kind, target: target || '' });
+            if (navigator.sendBeacon) {
+                var blob = new Blob([body], { type: 'application/json' });
+                navigator.sendBeacon("{% url 'track_interaction' %}", blob);
+            } else {
+                fetch("{% url 'track_interaction' %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                    body: body,
+                    keepalive: true
+                });
+            }
+        } catch (e) { /* fail silently */ }
+    }
 
-            var lines = ['BEGIN:VCARD','VERSION:3.0'];
-            if (first || last)   lines.push('FN:' + (first + ' ' + last).trim());
-            if (first || last)   lines.push('N:' + last + ';' + first + ';;;');
-            if (company)         lines.push('ORG:' + company);
-            if (title)           lines.push('TITLE:' + title);
-            if (phone)           lines.push('TEL;TYPE=CELL:' + phone);
-            if (email)           lines.push('EMAIL;TYPE=INTERNET:' + email);
-            if (website)         lines.push('URL:' + website);
-            lines.push('END:VCARD');
+    /* Track any element with [data-track-kind] on click */
+    document.querySelectorAll('[data-track-kind]').forEach(function(el) {
+        el.addEventListener('click', function() {
+            track(el.dataset.trackKind, el.dataset.trackTarget || '');
+        });
+    });
 
-            var blob = new Blob([lines.join('\n')], { type: 'text/vcard;charset=utf-8' });
-            var a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = ((first || 'contact') + '-' + (last || 'card')).replace(/\s+/g,'_') + '.vcf';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            setTimeout(function(){ URL.revokeObjectURL(a.href); }, 0);
+    /* Track social-dock link clicks */
+    document.querySelectorAll('.vc-social[data-net]').forEach(function(a) {
+        a.addEventListener('click', function() { track('click', a.dataset.net); });
+    });
+
+    /* Track email / phone / website clicks (find via href pattern) */
+    document.querySelectorAll('.vc-contact a[href^="mailto:"]').forEach(function(a) {
+        a.addEventListener('click', function() { track('click', 'email'); });
+    });
+    document.querySelectorAll('a[href^="tel:"], a[href^="sms:"]').forEach(function(a) {
+        a.addEventListener('click', function() { track('click', a.href.indexOf('sms:') === 0 ? 'sms' : 'phone'); });
+    });
+    document.querySelectorAll('.vc-contact a[target="_blank"]').forEach(function(a) {
+        a.addEventListener('click', function() { track('click', 'website'); });
+    });
+
+    /* ------- Lead capture modal ------- */
+    var modal = document.getElementById('leadModal');
+    var openBtn = document.getElementById('openLeadBtn');
+    if (modal && openBtn) {
+        openBtn.addEventListener('click', function() {
+            modal.classList.add('is-open');
+            modal.setAttribute('aria-hidden', 'false');
+        });
+        modal.querySelectorAll('[data-lead-close]').forEach(function(el) {
+            el.addEventListener('click', function() {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            });
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+            }
         });
     }
 

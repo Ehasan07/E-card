@@ -243,3 +243,70 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback from {self.name}"
+
+
+class CardInteraction(models.Model):
+    KIND_VIEW   = 'view'
+    KIND_CLICK  = 'click'
+    KIND_SAVE   = 'save'
+    KIND_WALLET = 'wallet'
+    KIND_LEAD   = 'lead'
+    KIND_CHOICES = [
+        (KIND_VIEW,   'View'),
+        (KIND_CLICK,  'Click'),
+        (KIND_SAVE,   'Save contact'),
+        (KIND_WALLET, 'Wallet add'),
+        (KIND_LEAD,   'Lead submitted'),
+    ]
+
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='interactions')
+    kind = models.CharField(max_length=16, choices=KIND_CHOICES)
+    target = models.CharField(max_length=120, blank=True)  # e.g. 'linkedin', 'phone', 'email'
+    session_id = models.CharField(max_length=64, blank=True)
+    country = models.CharField(max_length=2, blank=True)   # ISO alpha-2 when available
+    referrer = models.CharField(max_length=255, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['card', 'kind', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_kind_display()} · {self.card} · {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class LeadCapture(models.Model):
+    STATUS_NEW      = 'new'
+    STATUS_REPLIED  = 'replied'
+    STATUS_ARCHIVED = 'archived'
+    STATUS_CHOICES = [
+        (STATUS_NEW,      'New'),
+        (STATUS_REPLIED,  'Replied'),
+        (STATUS_ARCHIVED, 'Archived'),
+    ]
+
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='leads')
+    name = models.CharField(max_length=150)
+    email = models.EmailField(blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    message = models.TextField(blank=True)
+    utm_source = models.CharField(max_length=80, blank=True)
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_NEW)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['card', 'status', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"Lead from {self.name} for {self.card}"
+
+    @property
+    def preferred_contact(self):
+        return self.email or self.phone or ''

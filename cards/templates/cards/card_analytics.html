@@ -1,0 +1,187 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Analytics · {{ card.card_data.firstName|default:card.slug }} — MY-Card{% endblock %}
+{% block page_icon %}line-chart{% endblock %}
+{% block page_label %}Analytics{% endblock %}
+
+{% block content %}
+<nav class="mc-nav">
+    <div class="mc-container mc-nav__inner">
+        <a href="{% url 'index' %}" class="mc-nav__logo">
+            <span class="mc-nav__logo-mark"></span>
+            MY-Card
+        </a>
+        <ul class="mc-nav__links">
+            <li><a href="{% url 'dashboard' %}" class="mc-nav-link">{% trans "Dashboard" %}</a></li>
+            <li><a href="{% url 'leads_inbox' %}" class="mc-nav-link">{% trans "Leads" %}</a></li>
+        </ul>
+        <div class="mc-nav__actions">
+            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme"><i data-lucide="moon" data-mc-theme-icon="moon"></i><i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i></button>
+            <a href="{% url 'view_card' card.slug %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                <i data-lucide="eye"></i> {% trans "View card" %}
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="an-page">
+    <div class="an-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+    </div>
+
+    <div class="mc-container an-container">
+        <header class="an-hero mc-fade-up">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <i data-lucide="line-chart"></i>
+                    {% trans "Last 30 days" %}
+                </span>
+                <h1>{{ card.card_data.firstName|default:_("Untitled") }} {{ card.card_data.lastName }}</h1>
+                <p class="mc-text-muted">{% trans "How your card is performing." %}</p>
+            </div>
+            <a href="{% url 'edit_card' card.slug %}" class="mc-btn mc-btn--ghost">
+                <i data-lucide="edit-3"></i> {% trans "Edit card" %}
+            </a>
+        </header>
+
+        <section class="an-metrics mc-fade-up mc-fade-up--d1">
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="eye"></i> {% trans "Views" %}</span>
+                <span class="mc-metric__value mc-mono">{{ totals.views }}</span>
+                <span class="mc-metric__delta"><i data-lucide="trending-up"></i> {% trans "unique visitors" %}</span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="mouse-pointer-click"></i> {% trans "Clicks" %}</span>
+                <span class="mc-metric__value mc-mono">{{ totals.clicks }}</span>
+                <span class="mc-metric__delta"><i data-lucide="link"></i> {% trans "socials + contacts" %}</span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="user-plus"></i> {% trans "Contact saves" %}</span>
+                <span class="mc-metric__value mc-mono">{{ totals.saves }}</span>
+                <span class="mc-metric__delta"><i data-lucide="download"></i> vCard {% trans "downloads" %}</span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="inbox"></i> {% trans "Leads" %}</span>
+                <span class="mc-metric__value mc-mono">{{ totals.leads }}</span>
+                <span class="mc-metric__delta"><i data-lucide="mail"></i> {% trans "form submissions" %}</span>
+            </div>
+        </section>
+
+        <section class="an-chart mc-card mc-fade-up mc-fade-up--d2">
+            <header>
+                <h2>{% trans "Views over time" %}</h2>
+                <span class="mc-caption">{% trans "Daily count · last 30 days" %}</span>
+            </header>
+            <div class="an-chart__wrap">
+                <svg id="anSparkline" viewBox="0 0 600 160" preserveAspectRatio="none"
+                     xmlns="http://www.w3.org/2000/svg" aria-label="Views chart"></svg>
+            </div>
+        </section>
+
+        <section class="an-clicks mc-card mc-fade-up mc-fade-up--d3">
+            <header>
+                <h2>{% trans "Top clicked links" %}</h2>
+                <span class="mc-caption">{% trans "Which socials & contacts get the most taps" %}</span>
+            </header>
+            {% if top_clicks %}
+                <ul class="an-clicks__list">
+                    {% for row in top_clicks %}
+                        <li class="an-clicks__row">
+                            <span class="an-clicks__label">{{ row.target|default:_("(untagged)") }}</span>
+                            <div class="an-clicks__bar">
+                                <span style="width:{% widthratio row.n top_clicks.0.n 100 %}%;"></span>
+                            </div>
+                            <span class="an-clicks__count mc-mono">{{ row.n }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="mc-text-muted">{% trans "No clicks tracked yet — share your card to start collecting engagement data." %}</p>
+            {% endif %}
+        </section>
+    </div>
+</div>
+
+<style>
+.an-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-6) 0 var(--mc-s-9); overflow: hidden; }
+.an-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.an-container { position: relative; z-index: 1; }
+.an-hero { display: flex; justify-content: space-between; align-items: flex-end; gap: var(--mc-s-5); margin-bottom: var(--mc-s-6); flex-wrap: wrap; }
+.an-hero h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: var(--mc-s-3) 0 var(--mc-s-2); }
+.an-metrics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-4);
+    margin-bottom: var(--mc-s-6);
+}
+@media (min-width: 720px) { .an-metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1080px) { .an-metrics { grid-template-columns: repeat(4, 1fr); } }
+
+.an-chart, .an-clicks { padding: var(--mc-s-5); margin-bottom: var(--mc-s-5); }
+.an-chart header, .an-clicks header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--mc-s-4); flex-wrap: wrap; gap: var(--mc-s-2); }
+.an-chart h2, .an-clicks h2 { margin: 0; font-size: 1.15rem; }
+.an-chart__wrap { position: relative; }
+#anSparkline { width: 100%; height: 200px; display: block; }
+
+.an-clicks__list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-3); }
+.an-clicks__row { display: grid; grid-template-columns: 140px 1fr auto; gap: var(--mc-s-3); align-items: center; }
+.an-clicks__label { font-size: var(--mc-fs-body-sm); color: var(--mc-text-hi); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.an-clicks__bar {
+    height: 6px;
+    background: var(--mc-bg-3);
+    border-radius: var(--mc-r-full);
+    overflow: hidden;
+}
+.an-clicks__bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--mc-accent), var(--mc-cyan));
+    border-radius: inherit;
+    transition: width var(--mc-dur-slow) var(--mc-ease);
+}
+.an-clicks__count { font-size: var(--mc-fs-body-sm); color: var(--mc-text-md); min-width: 30px; text-align: right; }
+
+@media (max-width: 640px) {
+    .an-clicks__row { grid-template-columns: 100px 1fr auto; }
+}
+</style>
+
+<script>
+(function() {
+    var data = {{ sparkline_json|safe }};
+    var svg = document.getElementById('anSparkline');
+    if (!svg || !data.length) return;
+
+    var W = 600, H = 160, P = 8;
+    var max = Math.max.apply(null, data.map(function(d) { return d.count; }));
+    if (max === 0) max = 1;
+
+    var stepX = (W - P * 2) / (data.length - 1);
+    var points = data.map(function(d, i) {
+        var x = P + i * stepX;
+        var y = H - P - (d.count / max) * (H - P * 2);
+        return [x, y];
+    });
+
+    // Path
+    var d = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ');
+    // Area fill (close path to bottom)
+    var area = d + ' L' + points[points.length - 1][0].toFixed(1) + ',' + (H - P) + ' L' + points[0][0].toFixed(1) + ',' + (H - P) + ' Z';
+
+    svg.innerHTML =
+        '<defs>' +
+            '<linearGradient id="anGrad" x1="0" y1="0" x2="0" y2="1">' +
+                '<stop offset="0%" stop-color="#7CFFB2" stop-opacity="0.35"/>' +
+                '<stop offset="100%" stop-color="#7CFFB2" stop-opacity="0"/>' +
+            '</linearGradient>' +
+        '</defs>' +
+        '<path d="' + area + '" fill="url(#anGrad)"/>' +
+        '<path d="' + d + '" fill="none" stroke="#7CFFB2" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+        points.map(function(p, i) {
+            return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="#7CFFB2"><title>' + data[i].date + ': ' + data[i].count + '</title></circle>';
+        }).join('');
+})();
+</script>
+{% endblock %}

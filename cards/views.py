@@ -1,9 +1,12 @@
 import csv
 import json
+import logging
 import re
 import zipfile
 import random
 from io import BytesIO, StringIO
+
+logger = logging.getLogger(__name__)
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
@@ -31,6 +34,8 @@ from .models import (
     Subscription,
     Feedback,
     CardChangeLog,
+    CardInteraction,
+    LeadCapture,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
@@ -46,6 +51,7 @@ from django.http import HttpResponse
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 
 from datetime import timedelta
 
@@ -303,6 +309,12 @@ def dashboard(request):
     total_cards = len(cards)
     remaining_cards = max(card_limit - total_cards, 0)
 
+    # Real analytics across all of the user's cards
+    interactions_qs = CardInteraction.objects.filter(card__user=request.user)
+    total_views = interactions_qs.filter(kind=CardInteraction.KIND_VIEW).count()
+    total_saves = interactions_qs.filter(kind=CardInteraction.KIND_SAVE).count()
+    new_leads = LeadCapture.objects.filter(card__user=request.user, status=LeadCapture.STATUS_NEW).count()
+
     context = {
         'cards': cards,
         'card_limit': card_limit,
@@ -310,6 +322,9 @@ def dashboard(request):
         'at_card_limit': remaining_cards == 0,
         'latest_update': latest_update,
         'latest_update_log': latest_update_log,
+        'total_views': total_views,
+        'total_saves': total_saves,
+        'new_leads': new_leads,
     }
     return render(request, 'cards/dashboard.html', context)
 
@@ -572,23 +587,24 @@ def view_card(request, slug):
             return render(request, 'cards/card_inactive.html', context)
         return render(request, 'cards/card_inactive_public.html', {'card': card}, status=200)
 
-    visited_cards = request.session.get('visited_cards', [])
-    if card.is_active and card.slug not in visited_cards:
-        visited_cards.append(card.slug)
-        request.session['visited_cards'] = visited_cards
-        current_count = card.card_data.get('unique_views') or 0
-        try:
-            current_count = int(current_count)
-        except (TypeError, ValueError):
-            current_count = 0
-        card.card_data['unique_views'] = current_count + 1
-        card.save(update_fields=['card_data'])
+    # Track view interaction (once per session per card) and count total views
+    if card.is_active and not is_owner and not is_admin:
+        visited_cards = request.session.get('visited_cards', [])
+        if card.slug not in visited_cards:
+            visited_cards.append(card.slug)
+            request.session['visited_cards'] = visited_cards
+            try:
+                CardInteraction.objects.create(
+                    card=card,
+                    kind=CardInteraction.KIND_VIEW,
+                    session_id=(request.session.session_key or '')[:64],
+                    referrer=request.META.get('HTTP_REFERER', '')[:255],
+                    user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+                )
+            except Exception as exc:
+                logger.warning("Skipping view tracking for card %s: %s", card.slug, exc)
 
-    profile_views = card.card_data.get('unique_views') or 0
-    try:
-        profile_views = int(profile_views)
-    except (TypeError, ValueError):
-        profile_views = 0
+    profile_views = card.interactions.filter(kind=CardInteraction.KIND_VIEW).count()
 
     # The QR code URL is now generated in the model, but we pass it for consistency
     # Note: The model-generated QR already has ?qr=1.
@@ -1138,3 +1154,244 @@ def reset_password(request):
         form = SetPasswordForm(user)
 
     return render(request, 'cards/reset_password.html', {'form': form})
+
+
+# ============================================================================
+# Sprint 3: Analytics + Lead capture + vCard + Wallet
+# ============================================================================
+
+@csrf_exempt
+@require_POST
+def track_interaction(request):
+    """Lightweight AJAX tracker. Called by view_card JS on link taps."""
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except (ValueError, UnicodeDecodeError):
+        return HttpResponse(status=400)
+
+    slug = payload.get('slug') or ''
+    kind = payload.get('kind') or ''
+    target = (payload.get('target') or '')[:120]
+
+    allowed_kinds = {c[0] for c in CardInteraction.KIND_CHOICES}
+    if kind not in allowed_kinds:
+        return HttpResponse(status=400)
+
+    try:
+        card = Card.objects.get(slug=slug, is_active=True)
+    except Card.DoesNotExist:
+        return HttpResponse(status=404)
+
+    # Ignore owner's own clicks so analytics reflect real traffic
+    if request.user.is_authenticated and request.user == card.user:
+        return HttpResponse(status=204)
+
+    try:
+        CardInteraction.objects.create(
+            card=card,
+            kind=kind,
+            target=target,
+            session_id=(request.session.session_key or '')[:64],
+            referrer=request.META.get('HTTP_REFERER', '')[:255],
+            user_agent=request.META.get('HTTP_USER_AGENT', '')[:255],
+        )
+    except Exception as exc:
+        logger.warning("Track interaction failed for %s/%s: %s", slug, kind, exc)
+        return HttpResponse(status=500)
+
+    return HttpResponse(status=204)
+
+
+@require_POST
+def submit_lead(request, slug):
+    """Public: visitor submits contact form on a card."""
+    card = get_object_or_404(Card, slug=slug, is_active=True)
+
+    name = (request.POST.get('name') or '').strip()[:150]
+    email = (request.POST.get('email') or '').strip()[:254]
+    phone = (request.POST.get('phone') or '').strip()[:30]
+    message = (request.POST.get('message') or '').strip()
+
+    if not name or (not email and not phone):
+        messages.error(request, 'Please share your name and at least one contact detail.')
+        return redirect('view_card', slug=slug)
+
+    lead = LeadCapture.objects.create(
+        card=card,
+        name=name,
+        email=email,
+        phone=phone,
+        message=message,
+        utm_source=(request.POST.get('utm_source') or '')[:80],
+    )
+
+    # Track interaction
+    try:
+        CardInteraction.objects.create(
+            card=card,
+            kind=CardInteraction.KIND_LEAD,
+            target='lead_form',
+            session_id=(request.session.session_key or '')[:64],
+        )
+    except Exception:
+        pass
+
+    # Email the card owner (best-effort)
+    try:
+        owner_email = getattr(card.user, 'email', '') or ''
+        if owner_email:
+            subject = f"New lead from your MY-Card: {name}"
+            body = (
+                f"You just received a new lead through your card '{card.slug}'.\n\n"
+                f"Name:    {name}\n"
+                f"Email:   {email or '—'}\n"
+                f"Phone:   {phone or '—'}\n"
+                f"Message: {message or '—'}\n\n"
+                f"Reply directly to this email or open your inbox: "
+                f"{request.build_absolute_uri(reverse('leads_inbox'))}"
+            )
+            send_mail(
+                subject,
+                body,
+                settings.DEFAULT_FROM_EMAIL,
+                [owner_email],
+                fail_silently=True,
+                reply_to=[email] if email else None,
+            )
+    except Exception as exc:
+        logger.warning("Lead email delivery failed: %s", exc)
+
+    messages.success(request, 'Thanks — your message was delivered.')
+    return redirect('view_card', slug=slug)
+
+
+@login_required
+def leads_inbox(request):
+    """Card owner's inbox of all leads across their cards."""
+    cards = Card.objects.filter(user=request.user)
+    leads_qs = (
+        LeadCapture.objects.filter(card__user=request.user)
+        .select_related('card')
+        .order_by('-created_at')
+    )
+
+    status_filter = request.GET.get('status') or ''
+    if status_filter in {c[0] for c in LeadCapture.STATUS_CHOICES}:
+        leads_qs = leads_qs.filter(status=status_filter)
+
+    new_count = LeadCapture.objects.filter(card__user=request.user, status=LeadCapture.STATUS_NEW).count()
+
+    return render(request, 'cards/leads_inbox.html', {
+        'leads': leads_qs,
+        'cards': cards,
+        'status_filter': status_filter,
+        'new_count': new_count,
+        'status_choices': LeadCapture.STATUS_CHOICES,
+    })
+
+
+@login_required
+@require_POST
+def lead_update_status(request, lead_id):
+    lead = get_object_or_404(LeadCapture, id=lead_id, card__user=request.user)
+    new_status = request.POST.get('status') or ''
+    if new_status in {c[0] for c in LeadCapture.STATUS_CHOICES}:
+        lead.status = new_status
+        lead.save(update_fields=['status', 'updated_at'])
+        messages.success(request, f'Lead marked as {lead.get_status_display().lower()}.')
+    return redirect('leads_inbox')
+
+
+def download_vcard(request, slug):
+    """Serve a .vcf file so any contacts app can save the details."""
+    card = get_object_or_404(Card, slug=slug, is_active=True)
+    d = card.card_data or {}
+
+    first = (d.get('firstName') or '').strip()
+    last = (d.get('lastName') or '').strip()
+    company = (d.get('company') or '').strip()
+    title = (d.get('jobTitle') or '').strip()
+    email = (d.get('email') or '').strip()
+    website = (d.get('website') or '').strip()
+    phone = (d.get('phone') or '').strip()
+    address = (d.get('address') or '').strip()
+    notes = (d.get('notes') or '').strip().replace('\n', '\\n')
+
+    lines = ['BEGIN:VCARD', 'VERSION:3.0']
+    if first or last:
+        lines.append(f'N:{last};{first};;;')
+        lines.append(f'FN:{(first + " " + last).strip()}')
+    if company: lines.append(f'ORG:{company}')
+    if title:   lines.append(f'TITLE:{title}')
+    if phone:
+        tel = phone if phone.startswith('+') else f'+{phone}'
+        lines.append(f'TEL;TYPE=CELL:{tel}')
+    if email:   lines.append(f'EMAIL;TYPE=INTERNET:{email}')
+    if website: lines.append(f'URL:{website}')
+    if address: lines.append(f'ADR:;;{address};;;;')
+    if notes:   lines.append(f'NOTE:{notes}')
+    lines.append('END:VCARD')
+
+    # Track save unless owner
+    if not (request.user.is_authenticated and request.user == card.user):
+        try:
+            CardInteraction.objects.create(
+                card=card,
+                kind=CardInteraction.KIND_SAVE,
+                target='vcard',
+                session_id=(request.session.session_key or '')[:64],
+            )
+        except Exception:
+            pass
+
+    filename = f'{(first or "contact")}-{(last or "card")}.vcf'.replace(' ', '_')
+    response = HttpResponse('\n'.join(lines), content_type='text/vcard; charset=utf-8')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
+
+@login_required
+def card_analytics(request, slug):
+    """Per-card analytics dashboard (owner only)."""
+    card = get_object_or_404(Card, slug=slug, user=request.user)
+    now = timezone.now()
+    since = now - timedelta(days=30)
+
+    qs = card.interactions.filter(created_at__gte=since)
+
+    # Daily view sparkline for the last 30 days
+    daily = {}
+    for iv in qs.filter(kind=CardInteraction.KIND_VIEW):
+        day = iv.created_at.date().isoformat()
+        daily[day] = daily.get(day, 0) + 1
+
+    # Fill zeros so the chart has continuous points
+    from datetime import date as _date
+    sparkline = []
+    for i in range(30):
+        d = (now - timedelta(days=29 - i)).date().isoformat()
+        sparkline.append({'date': d, 'count': daily.get(d, 0)})
+
+    # Top clicked targets
+    top_clicks_qs = (
+        qs.filter(kind=CardInteraction.KIND_CLICK)
+        .values('target')
+        .annotate(n=Count('id'))
+        .order_by('-n')[:8]
+    )
+    top_clicks = list(top_clicks_qs)
+
+    # Overall totals
+    totals = {
+        'views':  qs.filter(kind=CardInteraction.KIND_VIEW).count(),
+        'clicks': qs.filter(kind=CardInteraction.KIND_CLICK).count(),
+        'saves':  qs.filter(kind=CardInteraction.KIND_SAVE).count(),
+        'leads':  qs.filter(kind=CardInteraction.KIND_LEAD).count(),
+    }
+
+    return render(request, 'cards/card_analytics.html', {
+        'card': card,
+        'sparkline_json': json.dumps(sparkline),
+        'top_clicks': top_clicks,
+        'totals': totals,
+    })
