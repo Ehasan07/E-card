@@ -1,841 +1,623 @@
 {% extends 'cards/base.html' %}
 
-{% block title %}Admin Command Center{% endblock %}
+{% block title %}Admin Control · MY-Card{% endblock %}
+{% block page_icon %}shield-check{% endblock %}
+{% block page_label %}Admin{% endblock %}
 
 {% block content %}
-<div class="admin-shell">
-    <div class="admin-hero">
-        <div class="hero-copy">
-            <span class="hero-tag"><i data-lucide="shield-check"></i> Premium Console</span>
-            <h1>Control the entire MY-Card experience</h1>
-            <p>Moderate users, tune allowances, and toggle cards online in seconds. All actions are audited and styled for a premium SaaS feel.</p>
-        </div>
-        <div class="hero-actions">
-            <a href="{% url 'index' %}" class="hero-btn secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Open marketing site">
-                <i data-lucide="home"></i> Home
-            </a>
-            <a href="{% url 'export_cards_csv' %}" class="hero-btn secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download CSV export">
-                <i data-lucide="file-down"></i> CSV Export
-            </a>
-            <a href="{% url 'export_cards_excel' %}" class="hero-btn secondary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Download Excel export">
-                <i data-lucide="table"></i> XLSX Export
-            </a>
-            <a href="{% url 'admin_messages' %}" class="hero-btn tertiary" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Upgrade requests">
-                <i data-lucide="inbox"></i>
+<nav class="mc-nav">
+    <div class="mc-container mc-container--wide mc-nav__inner">
+        <a href="{% url 'index' %}" class="mc-nav__logo">
+            <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+            <span>MY-Card <span class="mc-caption" style="opacity:0.7;letter-spacing:0.24em;">CONTROL</span></span>
+        </a>
+        <ul class="mc-nav__links">
+            <li><a href="{% url 'admin_dashboard' %}" class="mc-nav-link" aria-current="page">Dashboard</a></li>
+            <li><a href="{% url 'admin_messages' %}" class="mc-nav-link">
                 Messages
-                {% if pending_request_count %}<span class="pill">{{ pending_request_count }}</span>{% endif %}
-            </a>
-            <a href="{% url 'logout' %}" class="hero-btn danger" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Logout">
-                <i data-lucide="log-out"></i> Logout
+                {% if pending_request_count %}<span class="ad-nav-pill">{{ pending_request_count }}</span>{% endif %}
+            </a></li>
+        </ul>
+        <div class="mc-nav__actions">
+            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+            </button>
+            <a href="{% url 'logout' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                <i data-lucide="log-out"></i> Sign out
             </a>
         </div>
     </div>
+</nav>
 
-    <div class="metrics-grid">
-        <article class="metric-card metric-trigger" data-target="users-panel">
-            <div class="metric-icon gradient-blue"><i data-lucide="users"></i></div>
-            <div>
-                <p class="metric-label">Total Users</p>
-                <p class="metric-value">{{ total_users }}</p>
-                <p class="metric-sub">Active studios on the platform</p>
-            </div>
-        </article>
-        <article class="metric-card metric-trigger" data-target="cards-panel">
-            <div class="metric-icon gradient-purple"><i data-lucide="id-card"></i></div>
-            <div>
-                <p class="metric-label">Total Cards</p>
-                <p class="metric-value">{{ total_cards }}</p>
-                <p class="metric-sub">Live digital experiences</p>
-            </div>
-        </article>
-        <article class="metric-card">
-            <div class="metric-icon gradient-emerald"><i data-lucide="sparkles"></i></div>
-            <div>
-                <p class="metric-label">Upgrade Requests</p>
-                <p class="metric-value">{{ pending_request_count }}</p>
-                <p class="metric-sub">Awaiting concierge review</p>
-            </div>
-        </article>
-        <article class="metric-card metric-trigger" data-target="feedback-panel">
-            <div class="metric-icon gradient-amber"><i data-lucide="message-circle"></i></div>
-            <div>
-                <p class="metric-label">Feedback Inbox</p>
-                <p class="metric-value">{{ feedback_count }}</p>
-                <p class="metric-sub">Latest platform impressions</p>
-            </div>
-        </article>
+<div class="ad-page">
+    <div class="ad-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--magenta mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;opacity:0.28;"></div>
+        <div class="mc-aurora mc-aurora--cyan"                 style="width:520px;height:520px;bottom:-200px;right:-160px;opacity:0.25;"></div>
     </div>
 
-    <section class="data-panels">
-        <div class="panel is-hidden" id="users-panel">
-            <header class="panel-head">
-                <div>
-                    <p class="panel-tag"><i data-lucide="users"></i> People directory</p>
-                    <h2>All users & allowances</h2>
-                </div>
-                <span class="panel-count">{{ all_users|length }} users</span>
-            </header>
-            <div class="table-shell">
-                <table class="premium-table">
-                    <thead>
-                        <tr>
-                            <th><span class="th-label"><i data-lucide="hash"></i>User ID</span></th>
-                            <th><span class="th-label"><i data-lucide="user"></i>Name</span></th>
-                            <th><span class="th-label"><i data-lucide="mail"></i>Email</span></th>
-                            <th><span class="th-label"><i data-lucide="phone"></i>Phone</span></th>
-                            <th><span class="th-label"><i data-lucide="calendar"></i>Registered</span></th>
-                            <th><span class="th-label"><i data-lucide="bar-chart-2"></i>Allowance</span></th>
-                            <th><span class="th-label"><i data-lucide="circle-check"></i>Status</span></th>
-                            <th><span class="th-label"><i data-lucide="settings-2"></i>Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for user in all_users %}
-                        <tr>
-                            <td data-label="User ID">#{{ user.id }}</td>
-                            <td data-label="Name">
-                                <div class="cell-with-icon">
-                                    <span class="avatar-pill"><i data-lucide="user"></i></span>
-                                    <span>{{ user.name }}</span>
-                                </div>
-                            </td>
-                            <td data-label="Email">{{ user.email|default:'—' }}</td>
-                            <td data-label="Phone">{{ user.phone|default:'—' }}</td>
-                            <td data-label="Registered">{{ user.registered|date:"M d, Y" }}</td>
-                            <td data-label="Allowance">
-                                <span class="allowance-pill"><i data-lucide="layers"></i>{{ user.card_count }} / {{ user.card_limit }}</span>
-                            </td>
-                            <td data-label="Status">
-                                <span class="status-pill {% if user.is_active %}active{% else %}inactive{% endif %}">
-                                    <span class="dot"></span>
-                                    {{ user.status_label }}
-                                </span>
-                            </td>
-                            <td class="actions-cell" data-label="Actions">
-                                <div class="action-stack">
-                                    <form action="{% url 'admin_set_card_limit' user.id %}" method="post" class="action-form">
-                                        {% csrf_token %}
-                                        {{ user.card_limit_form.card_limit }}
-                                        <button type="submit" class="stack-btn save" data-bs-toggle="tooltip" data-bs-placement="left" title="Save allowance">
-                                            <i data-lucide="save"></i>
-                                            Save
-                                        </button>
-                                    </form>
-                                    {% if user.primary_card_slug %}
-                                        <a href="{% url 'admin_edit_card' user.primary_card_slug %}" class="stack-btn edit" data-bs-toggle="tooltip" data-bs-placement="left" title="Edit primary card">
-                                            <i data-lucide="edit"></i>
-                                            Edit
-                                        </a>
-                                    {% else %}
-                                        <span class="stack-btn edit disabled" data-bs-toggle="tooltip" data-bs-placement="left" title="No cards yet">
-                                            <i data-lucide="edit"></i>
-                                            Edit
+    <div class="mc-container mc-container--wide ad-container">
+
+        {# ============ Hero ============ #}
+        <header class="ad-hero mc-fade-up">
+            <div>
+                <span class="mc-badge admin-badge">
+                    <span class="mc-badge__dot"></span>
+                    Backstage · RESTRICTED
+                </span>
+                <h1 class="ad-hero__title">Control the whole MY-Card experience</h1>
+                <p class="mc-text-muted">Users, cards, upgrades, analytics — all in one surface. Every action is logged.</p>
+            </div>
+            <div class="ad-hero__actions">
+                <a href="{% url 'export_cards_csv' %}" class="mc-btn mc-btn--ghost mc-btn--sm">
+                    <i data-lucide="file-down"></i> CSV
+                </a>
+                <a href="{% url 'export_cards_excel' %}" class="mc-btn mc-btn--ghost mc-btn--sm">
+                    <i data-lucide="table"></i> XLSX
+                </a>
+            </div>
+        </header>
+
+        {# ============ Core metrics bento ============ #}
+        <section class="ad-metrics mc-fade-up mc-fade-up--d1">
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="users"></i> Total users</span>
+                <span class="mc-metric__value mc-mono">{{ total_users }}</span>
+                <span class="mc-metric__delta">
+                    <i data-lucide="user-plus"></i> {{ users_this_week }} this week
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="id-card"></i> Total cards</span>
+                <span class="mc-metric__value mc-mono">{{ total_cards }}</span>
+                <span class="mc-metric__delta">
+                    <i data-lucide="user"></i> {{ personal_cards }} personal · <i data-lucide="briefcase"></i> {{ business_cards }} business
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="eye"></i> Platform views</span>
+                <span class="mc-metric__value mc-mono">{{ total_views }}</span>
+                <span class="mc-metric__delta">
+                    <i data-lucide="plus-circle"></i> {{ cards_this_week }} new cards this week
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="inbox"></i> Leads captured</span>
+                <span class="mc-metric__value mc-mono">{{ total_leads }}</span>
+                <span class="mc-metric__delta">
+                    <i data-lucide="mail"></i> {{ new_leads }} unread
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="rocket"></i> Pending upgrades</span>
+                <a href="{% url 'admin_messages' %}" class="mc-metric__value mc-mono" style="text-decoration:none;">
+                    {{ pending_request_count }}
+                </a>
+                <span class="mc-metric__delta">
+                    <i data-lucide="arrow-right"></i> Review in messages
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="message-square"></i> Feedback</span>
+                <span class="mc-metric__value mc-mono">{{ feedback_count }}</span>
+                <span class="mc-metric__delta">
+                    <i data-lucide="thumbs-up"></i> Latest below
+                </span>
+            </div>
+        </section>
+
+        {# ============ Two column: top cards + recent activity ============ #}
+        <section class="ad-two-col mc-fade-up mc-fade-up--d2">
+            <div class="mc-card ad-col">
+                <header class="ad-col__head">
+                    <div>
+                        <h2>Top cards this month</h2>
+                        <span class="mc-caption">By total views</span>
+                    </div>
+                    <i data-lucide="trending-up" style="color:var(--mc-accent);"></i>
+                </header>
+                {% if top_cards %}
+                    <ol class="ad-top-list">
+                        {% for card in top_cards %}
+                            <li class="ad-top-row">
+                                <span class="ad-top-rank mc-mono">#{{ forloop.counter }}</span>
+                                <div class="ad-top-body">
+                                    <a href="{{ card.get_absolute_url }}" target="_blank" rel="noopener" class="ad-top-name">
+                                        {{ card.card_data.firstName|default:'Untitled' }} {{ card.card_data.lastName|default:card.slug }}
+                                    </a>
+                                    <span class="ad-top-meta">
+                                        <span class="mc-badge {% if card.card_type == 'business' %}mc-badge--accent{% else %}mc-badge--info{% endif %}">
+                                            <i data-lucide="{% if card.card_type == 'business' %}briefcase{% else %}user{% endif %}"></i>
+                                            {{ card.get_card_type_display }}
                                         </span>
+                                        · {{ card.user.username }}
+                                    </span>
+                                </div>
+                                <span class="ad-top-value mc-mono">{{ card.view_count }} <i data-lucide="eye"></i></span>
+                            </li>
+                        {% endfor %}
+                    </ol>
+                {% else %}
+                    <p class="mc-text-muted" style="text-align:center;padding:2rem 0;">No card data yet.</p>
+                {% endif %}
+            </div>
+
+            <div class="mc-card ad-col">
+                <header class="ad-col__head">
+                    <div>
+                        <h2>Recent activity</h2>
+                        <span class="mc-caption">Live interaction feed</span>
+                    </div>
+                    <i data-lucide="activity" style="color:var(--mc-accent);"></i>
+                </header>
+                {% if recent_activity %}
+                    <ul class="ad-activity">
+                        {% for iv in recent_activity %}
+                            <li class="ad-activity-row">
+                                <span class="ad-activity-dot ad-activity-dot--{{ iv.kind }}"></span>
+                                <div>
+                                    <span class="ad-activity-kind">{{ iv.get_kind_display }}{% if iv.target %} · {{ iv.target }}{% endif %}</span>
+                                    <span class="ad-activity-meta mc-text-muted">
+                                        {{ iv.card.card_data.firstName|default:iv.card.slug }} · {{ iv.created_at|timesince }} ago
+                                    </span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="mc-text-muted" style="text-align:center;padding:2rem 0;">No activity yet.</p>
+                {% endif %}
+            </div>
+        </section>
+
+        {# ============ Users table with search ============ #}
+        <section class="mc-card ad-users mc-fade-up mc-fade-up--d3">
+            <header class="ad-col__head">
+                <div>
+                    <h2>All users</h2>
+                    <span class="mc-caption">{{ all_users|length }} accounts · Sortable · Searchable</span>
+                </div>
+                <div class="ad-users__controls">
+                    <label class="ad-search">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="userSearch" placeholder="Search name, email, phone…">
+                    </label>
+                    <select id="typeFilter" class="mc-select ad-filter">
+                        <option value="">All types</option>
+                        <option value="personal">Personal only</option>
+                        <option value="business">Business only</option>
+                    </select>
+                </div>
+            </header>
+
+            <div class="ad-table-wrap">
+                <table class="ad-table">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Contact</th>
+                            <th>Cards</th>
+                            <th>Type mix</th>
+                            <th>Allowance</th>
+                            <th>Joined</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        {% for u in all_users %}
+                            <tr class="ad-row"
+                                data-name="{{ u.name|lower }}"
+                                data-email="{{ u.email|lower }}"
+                                data-phone="{{ u.phone|lower }}"
+                                data-personal="{{ u.personal_count }}"
+                                data-business="{{ u.business_count }}">
+                                <td>
+                                    <div class="ad-user-cell">
+                                        <span class="ad-user-avatar">{{ u.name|slice:':1'|upper }}</span>
+                                        <div>
+                                            <span class="ad-user-name">{{ u.name }}</span>
+                                            <span class="ad-user-id mc-mono">#{{ u.id }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="ad-cell-stack">
+                                        <span>{{ u.email|default:'—' }}</span>
+                                        <span class="mc-caption mc-mono">{{ u.phone|default:'—' }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="mc-mono">{{ u.card_count }}</span>
+                                    {% if u.primary_card_slug %}
+                                        <a href="{% url 'view_card' u.primary_card_slug %}" target="_blank" title="View primary card" class="ad-mini-btn">
+                                            <i data-lucide="external-link"></i>
+                                        </a>
                                     {% endif %}
-                                    <form action="{% url 'delete_user_admin' user.id %}" method="post" class="inline-form">
-                                        {% csrf_token %}
-                                        <button type="submit" class="stack-btn danger js-confirm" data-confirm="Delete this user and all of their cards?" data-bs-toggle="tooltip" data-bs-placement="left" title="Delete user">
-                                            <i data-lucide="trash"></i>
-                                            Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="8" class="empty-row">No users found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="panel is-hidden" id="cards-panel">
-            <header class="panel-head">
-                <div>
-                    <p class="panel-tag"><i data-lucide="layout"></i> Moderation queue</p>
-                    <h2>All cards & visibility</h2>
-                </div>
-                <span class="panel-count">{{ all_cards|length }} cards</span>
-            </header>
-            <div class="table-shell">
-                <table class="premium-table">
-                    <thead>
-                        <tr>
-                            <th><span class="th-label"><i data-lucide="user"></i>User</span></th>
-                            <th><span class="th-label"><i data-lucide="link"></i>Slug</span></th>
-                            <th><span class="th-label"><i data-lucide="circle-check"></i>Status</span></th>
-                            <th><span class="th-label"><i data-lucide="calendar"></i>Created</span></th>
-                            <th><span class="th-label"><i data-lucide="settings"></i>Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for card in all_cards %}
-                        <tr>
-                            <td data-label="User">
-                                <div class="cell-with-icon">
-                                    <span class="avatar-pill"><i data-lucide="user"></i></span>
-                                    <div>
-                                        <strong>{{ card.user.username }}</strong>
-                                        <p class="sub">ID #{{ card.user.id }}</p>
+                                </td>
+                                <td>
+                                    <div class="ad-type-mix">
+                                        {% if u.personal_count %}
+                                            <span class="mc-badge mc-badge--info" title="Personal">
+                                                <i data-lucide="user"></i> {{ u.personal_count }}
+                                            </span>
+                                        {% endif %}
+                                        {% if u.business_count %}
+                                            <span class="mc-badge mc-badge--accent" title="Business">
+                                                <i data-lucide="briefcase"></i> {{ u.business_count }}
+                                            </span>
+                                        {% endif %}
+                                        {% if not u.personal_count and not u.business_count %}
+                                            <span class="mc-text-dim">—</span>
+                                        {% endif %}
                                     </div>
-                                </div>
-                            </td>
-                            <td data-label="Slug">{{ card.slug }}</td>
-                            <td data-label="Status">
-                                <span class="status-pill {% if card.is_active %}active{% else %}inactive{% endif %}">
-                                    <span class="dot"></span>
-                                    {% if card.is_active %}Active{% else %}Offline{% endif %}
-                                </span>
-                            </td>
-                            <td data-label="Created">{{ card.created_at|date:"M d, Y" }}</td>
-                            <td class="actions-cell" data-label="Actions">
-                                <div class="card-action-stack">
-                                    <a href="{% url 'view_card' card.slug %}" class="stack-btn neutral" data-bs-toggle="tooltip" data-bs-placement="left" title="Open public view"><i data-lucide="external-link"></i>View</a>
-                                    <form action="{% url 'admin_toggle_card_status' card.slug %}" method="post" class="inline-form">
+                                </td>
+                                <td>
+                                    <form action="{% url 'admin_set_card_limit' u.id %}" method="post" class="ad-limit-form">
                                         {% csrf_token %}
-                                        <button type="submit" class="stack-btn toggle {% if card.is_active %}warning{% else %}success{% endif %}" data-bs-toggle="tooltip" data-bs-placement="left" title="Toggle visibility">
-                                            {% if card.is_active %}<i data-lucide="moon"></i>Make offline{% else %}<i data-lucide="sun"></i>Make active{% endif %}
+                                        {{ u.card_limit_form.card_limit }}
+                                        <button type="submit" class="ad-mini-btn" title="Update limit">
+                                            <i data-lucide="check"></i>
                                         </button>
                                     </form>
-                                    <a href="{% url 'admin_edit_card' card.slug %}" class="stack-btn edit" data-bs-toggle="tooltip" data-bs-placement="left" title="Edit card"><i data-lucide="pen-square"></i>Edit</a>
-                                    <form action="{% url 'delete_card_admin' card.slug %}" method="post" class="inline-form">
-                                        {% csrf_token %}
-                                        <button type="submit" class="stack-btn danger js-confirm" data-confirm="Delete this card?" data-bs-toggle="tooltip" data-bs-placement="left" title="Delete card">
-                                            <i data-lucide="trash"></i>Delete
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="5" class="empty-row">No cards found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <div class="panel is-hidden" id="feedback-panel">
-            <header class="panel-head">
-                <div>
-                    <p class="panel-tag"><i data-lucide="message-square"></i> Feedback stream</p>
-                    <h2>User feedback messages</h2>
-                </div>
-                <span class="panel-count">{{ feedback_entries|length }} messages</span>
-            </header>
-            <div class="table-shell">
-                <table class="premium-table">
-                    <thead>
-                        <tr>
-                            <th><span class="th-label"><i data-lucide="user"></i>Name</span></th>
-                            <th><span class="th-label"><i data-lucide="mail"></i>Email</span></th>
-                            <th><span class="th-label"><i data-lucide="calendar"></i>Received</span></th>
-                            <th><span class="th-label"><i data-lucide="message-circle"></i>Message</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for entry in feedback_entries %}
-                        <tr>
-                            <td data-label="Name">
-                                <div class="cell-with-icon">
-                                    <span class="avatar-pill"><i data-lucide="user"></i></span>
-                                    <div>
-                                        <strong>{{ entry.name }}</strong>
-                                        <p class="sub">Feedback ID #{{ entry.id }}</p>
+                                </td>
+                                <td>
+                                    <span class="mc-mono mc-caption">{{ u.registered|date:"M d, Y" }}</span>
+                                </td>
+                                <td>
+                                    <span class="mc-badge {% if u.is_active %}mc-badge--success{% else %}mc-badge--error{% endif %}">
+                                        <span class="mc-badge__dot"></span>
+                                        {{ u.status_label }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="ad-actions">
+                                        {% if u.primary_card_slug %}
+                                            <a href="{% url 'admin_edit_card' u.primary_card_slug %}" class="ad-mini-btn" title="Edit card">
+                                                <i data-lucide="square-pen"></i>
+                                            </a>
+                                        {% endif %}
+                                        <form action="{% url 'delete_user_admin' u.id %}" method="post"
+                                              onsubmit="return confirm('Delete user {{ u.name }}? This is irreversible.');" style="display:inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="ad-mini-btn ad-mini-btn--danger" title="Delete user">
+                                                <i data-lucide="trash-2"></i>
+                                            </button>
+                                        </form>
                                     </div>
-                                </div>
-                            </td>
-                            <td data-label="Email">{{ entry.email|default:'—' }}</td>
-                            <td data-label="Received">{{ entry.created_at|date:"M d, Y H:i" }}</td>
-                            <td data-label="Message" class="feedback-message-cell">
-                                <p class="feedback-message-text">{{ entry.message }}</p>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4" class="empty-row">No feedback submitted yet.</td>
-                        </tr>
+                                </td>
+                            </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                <p id="userEmpty" class="mc-text-muted" style="text-align:center;padding:1.5rem;display:none;">No users match your filter.</p>
             </div>
-        </div>
+        </section>
 
-    </section>
+        {# ============ Feedback panel ============ #}
+        {% if feedback_entries %}
+            <section class="mc-card ad-feedback mc-fade-up mc-fade-up--d4">
+                <header class="ad-col__head">
+                    <div>
+                        <h2>Recent feedback</h2>
+                        <span class="mc-caption">{{ feedback_count }} total · showing latest {{ feedback_entries|length }}</span>
+                    </div>
+                    <i data-lucide="message-square" style="color:var(--mc-accent);"></i>
+                </header>
+                <ul class="ad-fb-list">
+                    {% for fb in feedback_entries %}
+                        <li class="ad-fb-item">
+                            <div class="ad-fb-head">
+                                <span class="ad-fb-name">{{ fb.name }}</span>
+                                {% if fb.email %}<a href="mailto:{{ fb.email }}" class="mc-caption">{{ fb.email }}</a>{% endif %}
+                                <span class="mc-caption mc-mono">{{ fb.created_at|timesince }} ago</span>
+                            </div>
+                            <p class="ad-fb-msg">{{ fb.message|linebreaksbr }}</p>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </section>
+        {% endif %}
+    </div>
 </div>
 
 <style>
-    html {
-        scroll-behavior: smooth;
-    }
-    .admin-shell {
-        min-height: 100vh;
-        padding: clamp(2rem, 5vw, 3rem);
-        background: linear-gradient(135deg, #f9fafb 0%, #eef2ff 100%);
-    }
-    .admin-hero {
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        margin-bottom: 3rem;
-        padding: clamp(1.6rem, 4vw, 2.4rem);
-        border-radius: 1.75rem;
-        background: linear-gradient(135deg, rgba(249,250,251,0.98) 0%, rgba(238,242,255,0.98) 100%);
-        box-shadow: 0 28px 60px -38px rgba(15,23,42,0.25);
-    }
-    @media (min-width: 992px) {
-        .admin-hero {
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: flex-start;
-        }
-    }
-    .hero-copy {
-        max-width: 560px;
-        display: grid;
-        gap: 1.25rem;
-    }
-    .hero-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.6rem 1.2rem;
-        border-radius: 999px;
-        background: rgba(15,23,42,0.9);
-        color: rgba(255,255,255,0.9);
-        font-size: 0.7rem;
-        letter-spacing: 0.35em;
-        text-transform: uppercase;
-    }
-    .hero-copy h1 {
-        font-size: clamp(2.4rem, 5vw, 3.6rem);
-        font-weight: 600;
-        color: #0f172a;
-        line-height: 1.05;
-    }
-    .hero-copy p {
-        font-size: clamp(1rem, 2vw, 1.15rem);
-        color: #64748b;
-    }
-    .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        align-items: center;
-    }
-    .hero-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.65rem 1.25rem;
-        border-radius: 999px;
-        font-weight: 600;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .hero-btn.secondary {
-        background: rgba(255,255,255,0.85);
-        color: #1f2937;
-        border: 1px solid rgba(148,163,184,0.35);
-        box-shadow: 0 20px 40px -28px rgba(15,23,42,0.35);
-    }
-    .hero-btn.tertiary {
-        position: relative;
-        background: rgba(236,72,153,0.12);
-        color: #be185d;
-        border: 1px solid rgba(236,72,153,0.25);
-        box-shadow: 0 20px 40px -30px rgba(236,72,153,0.35);
-    }
-    .hero-btn.danger {
-        background: rgba(254,226,226,0.85);
-        color: #b91c1c;
-        border: 1px solid rgba(248,113,113,0.4);
-        box-shadow: 0 20px 40px -28px rgba(248,113,113,0.35);
-    }
-    .hero-btn:hover {
-        transform: translateY(-2px);
-    }
-    .hero-btn .pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 1.5rem;
-        padding: 0.05rem 0.4rem;
-        border-radius: 999px;
-        background: #ec4899;
-        color: #fff;
-        font-size: 0.65rem;
-        font-weight: 700;
-    }
-    .metrics-grid {
-        display: grid;
-        gap: 1.5rem;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        margin-bottom: 3rem;
-    }
-    .metric-card {
-        display: flex;
-        gap: 1rem;
-        padding: 1.6rem;
-        border-radius: 1.5rem;
-        background: rgba(255,255,255,0.9);
-        border: 1px solid rgba(226,232,240,0.6);
-        box-shadow: 0 25px 55px -38px rgba(79,70,229,0.35);
-        backdrop-filter: blur(10px);
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .metric-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 32px 70px -40px rgba(79,70,229,0.45);
-    }
-    .metric-icon {
-        width: 3.2rem;
-        height: 3.2rem;
-        border-radius: 1.1rem;
-        display: grid;
-        place-items: center;
-        color: #fff;
-    }
-    .gradient-blue { background: linear-gradient(135deg, #60a5fa, #2563eb); }
-    .gradient-purple { background: linear-gradient(135deg, #c084fc, #7c3aed); }
-    .gradient-emerald { background: linear-gradient(135deg, #34d399, #059669); }
-    .metric-label {
-        font-size: 0.75rem;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        color: #64748b;
-        margin-bottom: 0.25rem;
-    }
-    .metric-value {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #111827;
-    }
-    .metric-sub {
-        font-size: 0.85rem;
-        color: #94a3b8;
-    }
-    .data-panels {
-        display: grid;
-        gap: 2.5rem;
-    }
-    .panel {
-        background: rgba(255,255,255,0.95);
-        border-radius: 1.75rem;
-        border: 1px solid rgba(226,232,240,0.6);
-        box-shadow: 0 30px 70px -45px rgba(15,23,42,0.25);
-        backdrop-filter: blur(10px);
-        padding: clamp(1.5rem, 3vw, 2.25rem);
-    }
-    .panel.is-hidden {
-        display: none;
-    }
-    .panel-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-    .panel-tag {
-        font-size: 0.75rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #6366f1;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-    }
-    .panel-head h2 {
-        font-size: 1.6rem;
-        font-weight: 600;
-        color: #0f172a;
-    }
-    .panel-count {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.9rem;
-        border-radius: 999px;
-        background: rgba(99,102,241,0.12);
-        color: #4338ca;
-        font-weight: 600;
-        font-size: 0.75rem;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-    }
-    .table-shell {
-        overflow-x: auto;
-    }
-    .premium-table {
-        width: 100%;
-        border-collapse: collapse;
-        table-layout: auto;
-    }
-    .premium-table thead th {
-        font-size: 0.75rem;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-        color: #475569;
-        text-align: left;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid rgba(148,163,184,0.25);
-        background: rgba(255,255,255,0.97);
-        position: sticky;
-        top: 0;
-        z-index: 6;
-    }
-    .premium-table thead th .th-label {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-    }
-    .premium-table tbody td {
-        padding: 1.25rem 1rem;
-        font-size: 0.98rem;
-        color: #1f2937;
-        border-bottom: 1px solid rgba(226,232,240,0.8);
-        background: inherit;
-    }
-    .premium-table tbody tr:nth-child(odd) {
-        background: rgba(249,250,251,0.9);
-    }
-    .premium-table tbody tr:nth-child(even) {
-        background: rgba(238,242,255,0.8);
-    }
-    .premium-table tbody tr {
-        transition: background 0.2s ease, transform 0.2s ease;
-    }
-    .premium-table tbody tr:hover {
-        background: rgba(224,231,255,0.95);
-    }
-    .premium-table thead th:first-child,
-    .premium-table tbody td:first-child {
-        position: sticky;
-        left: 0;
-        z-index: 7;
-        background: rgba(255,255,255,0.98);
-        box-shadow: 4px 0 12px -6px rgba(15,23,42,0.25);
-    }
-    .cell-with-icon {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-    .feedback-message-cell {
-        max-width: 420px;
-    }
-    .feedback-message-text {
-        white-space: pre-wrap;
-        line-height: 1.6;
-        color: #1f2937;
-    }
-    .avatar-pill {
-        width: 36px;
-        height: 36px;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        background: rgba(99,102,241,0.12);
-        color: #4338ca;
-    }
-    .cell-with-icon .sub {
-        font-size: 0.75rem;
-        color: #94a3b8;
-    }
-    .allowance-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.35rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(236,72,153,0.12);
-        color: #be185d;
-        font-size: 0.8rem;
-        font-weight: 600;
-    }
-    .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.4rem 0.9rem;
-        border-radius: 999px;
-        font-size: 0.8rem;
-        font-weight: 600;
-        border: 1px solid transparent;
-    }
-    .status-pill .dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-    }
-    .status-pill.active {
-        background: rgba(52,211,153,0.12);
-        border-color: rgba(52,211,153,0.3);
-        color: #047857;
-    }
-    .status-pill.active .dot { background: #10b981; }
-    .status-pill.inactive {
-        background: rgba(148,163,184,0.15);
-        border-color: rgba(148,163,184,0.25);
-        color: #475569;
-    }
-    .status-pill.inactive .dot { background: #94a3b8; }
-    .premium-table tbody td.actions-cell {
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-    }
-    .action-stack {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        width: 100%;
-        min-height: 100%;
-    }
-    .action-form {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .action-form input[type="number"] {
-        width: 80px;
-        padding: 0.45rem 0.6rem;
-        border-radius: 0.9rem;
-        border: 1px solid rgba(203,213,225,0.8);
-        background: rgba(255,255,255,0.98);
-        text-align: center;
-        font-weight: 600;
-        color: #1f2937;
-    }
-    .stack-btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.4rem;
-        padding: 0.4rem 0.85rem;
-        border-radius: 999px;
-        border: none;
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #fff;
-        box-shadow: 0 20px 42px -28px rgba(15,23,42,0.45);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        white-space: nowrap;
-        max-width: 120px;
-        width: 120px;
-        text-align: center;
-    }
-    .stack-btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 24px 50px -30px rgba(79,70,229,0.4);
-    }
-    .stack-btn.save { background: linear-gradient(135deg, #2563eb, #4338ca); }
-    .stack-btn.edit { background: linear-gradient(135deg, #10b981, #047857); }
-    .stack-btn.edit.disabled {
-        background: rgba(148,163,184,0.45);
-        cursor: not-allowed;
-        box-shadow: none;
-    }
-    .stack-btn.danger { background: linear-gradient(135deg, #ef4444, #b91c1c); }
-    .stack-btn.neutral { background: linear-gradient(135deg, #60a5fa, #2563eb); }
-    .stack-btn.toggle.warning { background: linear-gradient(135deg, #f59e0b, #b45309); }
-    .stack-btn.toggle.success { background: linear-gradient(135deg, #34d399, #059669); }
-    .card-action-stack {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 0.5rem;
-        width: 100%;
-        min-height: 100%;
-    }
-    .inline-form { display: inline; }
-    .empty-row {
-        text-align: center;
-        padding: 2rem 0;
-        color: #94a3b8;
-        font-weight: 500;
-    }
+/* ===== Admin dashboard theme accents ===== */
+.ad-page {
+    --admin-accent: #B78BFF;
+    --admin-accent-halo: rgba(183, 139, 255, 0.15);
+    --admin-accent-glow: rgba(183, 139, 255, 0.35);
+    position: relative;
+    min-height: calc(100vh - 72px);
+    padding: var(--mc-s-6) 0 var(--mc-s-9);
+    overflow: hidden;
+}
+.ad-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.ad-container { position: relative; z-index: 1; }
+.mc-nav__logo-mark--admin { background: linear-gradient(135deg, var(--admin-accent), var(--mc-magenta)); box-shadow: 0 0 20px var(--admin-accent-glow); }
 
-    @media (max-width: 991.98px) {
-        .admin-shell {
-            padding: 2rem 1.25rem;
-        }
-    }
+.ad-nav-pill {
+    display: inline-block;
+    padding: 2px 6px;
+    margin-left: 4px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    border-radius: var(--mc-r-full);
+    background: var(--admin-accent);
+    color: var(--mc-text-inv);
+}
 
-    @media screen and (max-width: 768px) {
-        .hero-copy h1 {
-            font-size: 2.4rem;
-        }
-        .hero-actions {
-            gap: 0.5rem;
-        }
-        .table-shell {
-            overflow-x: visible;
-        }
-        .premium-table {
-            table-layout: fixed;
-        }
-        .premium-table thead {
-            border: none;
-            clip: rect(0 0 0 0);
-            height: 1px;
-            margin: -1px;
-            overflow: hidden;
-            padding: 0;
-            position: absolute;
-            width: 1px;
-        }
-        .premium-table tr {
-            display: block;
-            border-radius: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
-            background: #fff;
-            border: 1px solid rgba(226,232,240,0.8);
-        }
-        .premium-table tbody tr:nth-child(odd),
-        .premium-table tbody tr:nth-child(even) {
-            background: #fff;
-        }
-        .premium-table td {
-            display: block;
-            text-align: right;
-            border-bottom: 1px solid #f3f4f6;
-            padding: 1rem;
-        }
-        .premium-table td::before {
-            content: attr(data-label);
-            float: left;
-            font-weight: 600;
-            color: #475569;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-        .premium-table td:last-child {
-            border-bottom: 0;
-        }
-        .premium-table thead th:first-child,
-        .premium-table tbody td:first-child {
-            position: static;
-            box-shadow: none;
-            background: transparent;
-        }
-        .premium-table tbody td.actions-cell {
-            display: block;
-            text-align: center;
-        }
-        .feedback-message-cell {
-            text-align: left;
-            max-width: none;
-        }
-        .feedback-message-text {
-            text-align: left;
-        }
-        .action-stack, .card-action-stack {
-            flex-direction: row;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 0.75rem;
-            padding: 0.5rem 0;
-        }
-        .action-form {
-            flex-direction: row;
-            align-items: center;
-        }
-        .stack-btn {
-            max-width: 110px;
-            padding: 0.35rem 0.7rem;
-            font-size: 0.75rem;
-        }
-        .action-form input[type="number"] {
-            width: 70px;
-        }
-        .empty-row {
-            display: table-cell;
-        }
-        .empty-row:before {
-            content: "";
-        }
-    }
+.admin-badge {
+    color: var(--admin-accent);
+    border-color: rgba(183, 139, 255, 0.4);
+    background: var(--admin-accent-halo);
+}
+
+/* Hero */
+.ad-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--mc-s-5);
+    margin-bottom: var(--mc-s-6);
+    flex-wrap: wrap;
+}
+.ad-hero__title { font-size: clamp(1.6rem, 3vw, 2.4rem); margin: var(--mc-s-3) 0 var(--mc-s-2); }
+.ad-hero__actions { display: flex; gap: var(--mc-s-2); flex-wrap: wrap; }
+
+/* Metrics bento */
+.ad-metrics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-3);
+    margin-bottom: var(--mc-s-6);
+}
+@media (min-width: 640px)  { .ad-metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px)  { .ad-metrics { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px) { .ad-metrics { grid-template-columns: repeat(6, 1fr); } }
+
+/* Two column (top cards + activity) */
+.ad-two-col {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-4);
+    margin-bottom: var(--mc-s-6);
+}
+@media (min-width: 900px) { .ad-two-col { grid-template-columns: 1fr 1fr; } }
+
+.ad-col { padding: var(--mc-s-5); }
+.ad-col__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--mc-s-4);
+    padding-bottom: var(--mc-s-3);
+    border-bottom: 1px solid var(--mc-border);
+    gap: var(--mc-s-3);
+}
+.ad-col__head h2 { margin: 0 0 4px; font-size: 1.15rem; }
+
+/* Top cards list */
+.ad-top-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-2); }
+.ad-top-row {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: var(--mc-s-3);
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+}
+.ad-top-rank {
+    width: 32px;
+    text-align: center;
+    color: var(--mc-accent);
+    font-weight: 700;
+}
+.ad-top-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.ad-top-name { font-weight: 600; color: var(--mc-text-hi); text-decoration: none; }
+.ad-top-name:hover { color: var(--mc-accent); }
+.ad-top-meta { font-size: var(--mc-fs-caption); color: var(--mc-text-md); display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ad-top-value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    font-weight: 600;
+    white-space: nowrap;
+}
+.ad-top-value i { width: 0.85rem; height: 0.85rem; }
+
+/* Activity feed */
+.ad-activity { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-2); }
+.ad-activity-row {
+    display: flex;
+    gap: var(--mc-s-3);
+    align-items: flex-start;
+    padding: var(--mc-s-2) var(--mc-s-3);
+    border-radius: var(--mc-r-sm);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+}
+.ad-activity-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 6px;
+    background: var(--mc-accent);
+    box-shadow: 0 0 8px var(--mc-accent-glow);
+}
+.ad-activity-dot--view   { background: var(--mc-info);    box-shadow: 0 0 8px rgba(96, 165, 250, 0.4); }
+.ad-activity-dot--click  { background: var(--mc-cyan);    box-shadow: 0 0 8px rgba(56, 225, 255, 0.4); }
+.ad-activity-dot--save   { background: var(--mc-accent);  box-shadow: 0 0 8px var(--mc-accent-glow); }
+.ad-activity-dot--wallet { background: var(--mc-warn);    box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+.ad-activity-dot--lead   { background: var(--mc-magenta); box-shadow: 0 0 8px rgba(244, 113, 255, 0.4); }
+.ad-activity-row > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.ad-activity-kind { font-weight: 600; font-size: var(--mc-fs-body-sm); color: var(--mc-text-hi); }
+.ad-activity-meta { font-size: var(--mc-fs-caption); }
+
+/* Users section */
+.ad-users { padding: var(--mc-s-5); margin-bottom: var(--mc-s-6); }
+.ad-users__controls { display: flex; gap: var(--mc-s-2); flex-wrap: wrap; }
+.ad-search {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    padding: 6px 12px;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-full);
+    min-width: 220px;
+}
+.ad-search i { width: 1rem; height: 1rem; color: var(--mc-text-md); }
+.ad-search input {
+    background: transparent;
+    border: none;
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+    outline: none;
+    width: 100%;
+}
+.ad-filter {
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-full);
+    color: var(--mc-text-hi);
+    padding: 6px 32px 6px 12px;
+    font-size: var(--mc-fs-body-sm);
+    outline: none;
+}
+.ad-filter:focus { border-color: var(--admin-accent); box-shadow: 0 0 0 3px var(--admin-accent-halo); }
+
+.ad-table-wrap { overflow-x: auto; }
+.ad-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--mc-fs-body-sm);
+}
+.ad-table thead th {
+    text-align: left;
+    padding: var(--mc-s-2) var(--mc-s-3);
+    background: var(--mc-bg-2);
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-caption);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--mc-border);
+    white-space: nowrap;
+}
+.ad-table tbody td {
+    padding: var(--mc-s-3);
+    border-bottom: 1px solid var(--mc-border);
+    color: var(--mc-text-hi);
+    vertical-align: middle;
+}
+.ad-table tbody tr.ad-row:hover { background: var(--mc-bg-2); }
+
+.ad-user-cell { display: flex; align-items: center; gap: var(--mc-s-3); }
+.ad-user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--admin-accent), var(--mc-cyan));
+    color: var(--mc-text-inv);
+    display: grid;
+    place-items: center;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+.ad-user-name { display: block; font-weight: 600; color: var(--mc-text-hi); }
+.ad-user-id { display: block; font-size: var(--mc-fs-caption); color: var(--mc-text-md); }
+
+.ad-cell-stack { display: flex; flex-direction: column; gap: 2px; }
+.ad-type-mix { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.ad-mini-btn {
+    display: inline-flex;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    color: var(--mc-text-md);
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--mc-dur-fast) var(--mc-ease);
+    text-decoration: none;
+}
+.ad-mini-btn:hover { color: var(--admin-accent); border-color: var(--admin-accent); }
+.ad-mini-btn i { width: 0.9rem; height: 0.9rem; }
+.ad-mini-btn--danger:hover { color: var(--mc-error); border-color: var(--mc-error); }
+.ad-actions { display: flex; gap: 4px; }
+
+.ad-limit-form { display: inline-flex; gap: 4px; align-items: center; }
+.ad-limit-form input[type="number"] {
+    width: 60px;
+    padding: 4px 8px;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-sm);
+    color: var(--mc-text-hi);
+    font-family: var(--mc-font-mono);
+    font-size: var(--mc-fs-body-sm);
+    text-align: center;
+    outline: none;
+}
+.ad-limit-form input[type="number"]:focus { border-color: var(--admin-accent); }
+
+/* Feedback */
+.ad-feedback { padding: var(--mc-s-5); }
+.ad-fb-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-3); }
+.ad-fb-item {
+    padding: var(--mc-s-4);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-md);
+}
+.ad-fb-head {
+    display: flex;
+    gap: var(--mc-s-3);
+    align-items: center;
+    margin-bottom: var(--mc-s-2);
+    flex-wrap: wrap;
+}
+.ad-fb-name { font-weight: 700; color: var(--mc-text-hi); }
+.ad-fb-msg { margin: 0; color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); line-height: 1.55; }
 </style>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const metricCards = document.querySelectorAll('.metric-card');
-        const panels = {
-            users: document.getElementById('users-panel'),
-            cards: document.getElementById('cards-panel'),
-            feedback: document.getElementById('feedback-panel')
-        };
+(function() {
+    // ------- User table: live search + type filter -------
+    var search = document.getElementById('userSearch');
+    var typeFilter = document.getElementById('typeFilter');
+    var rows = document.querySelectorAll('#userTableBody .ad-row');
+    var empty = document.getElementById('userEmpty');
 
-        const openPanel = (key) => {
-            Object.values(panels).forEach(panel => panel?.classList.add('is-hidden'));
-            if (panels[key]) {
-                panels[key].classList.remove('is-hidden');
-            }
-        };
-
-        metricCards.forEach(card => {
-            const target = card.dataset.target;
-            if (!target) {
-                return;
-            }
-            card.addEventListener('click', () => {
-                if (target.includes('users')) {
-                    openPanel('users');
-                } else if (target.includes('cards')) {
-                    openPanel('cards');
-                } else if (target.includes('feedback')) {
-                    openPanel('feedback');
-                }
-            });
+    function applyFilters() {
+        var q = (search.value || '').trim().toLowerCase();
+        var typ = typeFilter.value;
+        var visible = 0;
+        rows.forEach(function(row) {
+            var haystack = row.dataset.name + ' ' + row.dataset.email + ' ' + row.dataset.phone;
+            var matchesSearch = !q || haystack.indexOf(q) !== -1;
+            var matchesType = true;
+            if (typ === 'personal')  matchesType = Number(row.dataset.personal) > 0;
+            if (typ === 'business')  matchesType = Number(row.dataset.business) > 0;
+            var show = matchesSearch && matchesType;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
         });
-
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.forEach((tooltipTriggerEl) => {
-            if (window.bootstrap?.Tooltip) {
-                new bootstrap.Tooltip(tooltipTriggerEl);
-            }
-        });
-
-        document.querySelectorAll('.js-confirm').forEach((button) => {
-            button.addEventListener('click', (event) => {
-                event.preventDefault();
-                const form = button.closest('form');
-                if (!form) {
-                    return;
-                }
-                const message = button.dataset.confirm || 'Are you sure?';
-                if (window.Swal) {
-                    Swal.fire({
-                        title: 'Please confirm',
-                        text: message,
-                        icon: 'warning',
-                        showCancelButton: true,
-                        confirmButtonColor: '#6366f1',
-                        cancelButtonColor: '#94a3b8',
-                        confirmButtonText: 'Yes, continue',
-                        cancelButtonText: 'Cancel'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            form.submit();
-                        }
-                    });
-                } else if (confirm(message)) {
-                    form.submit();
-                }
-            });
-        });
-    });
+        if (empty) empty.style.display = visible ? 'none' : 'block';
+    }
+    if (search) search.addEventListener('input', applyFilters);
+    if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+})();
 </script>
 {% endblock %}

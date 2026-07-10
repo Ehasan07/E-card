@@ -12,7 +12,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
-from django.db.models import Count, Prefetch
+from django.db.models import Count, Prefetch, Q
 from django.http import Http404
 from .forms import (
     UserForm,
@@ -677,11 +677,16 @@ def admin_login_view(request):
 def admin_dashboard(request):
     users = (
         User.objects.select_related('profile')
-        .annotate(card_count=Count('card'))
+        .annotate(
+            card_count=Count('card'),
+            personal_count=Count('card', filter=Q(card__card_type=Card.TYPE_PERSONAL)),
+            business_count=Count('card', filter=Q(card__card_type=Card.TYPE_BUSINESS)),
+        )
         .order_by('-date_joined')
     )
     cards = Card.objects.select_related('user', 'user__profile').order_by('-created_at')
-    feedback_entries = list(Feedback.objects.all())
+    feedback_entries = list(Feedback.objects.all()[:8])
+    feedback_total = Feedback.objects.count()
 
     user_records = []
     for user in users:
@@ -702,20 +707,54 @@ def admin_dashboard(request):
             'status_label': 'Active' if user.is_active else 'Inactive',
             'card_limit': card_limit,
             'card_count': user.card_count,
+            'personal_count': user.personal_count,
+            'business_count': user.business_count,
             'card_limit_form': card_limit_form,
             'primary_card_slug': primary_card_slug,
         })
 
     pending_requests = UpgradeRequest.objects.filter(status=UpgradeRequest.STATUS_PENDING)
 
+    # ---- Platform metrics (Sprint 3-era CardInteraction rollup) ----
+    now = timezone.now()
+    week_ago = now - timedelta(days=7)
+    total_views = CardInteraction.objects.filter(kind=CardInteraction.KIND_VIEW).count()
+    total_leads = LeadCapture.objects.count()
+    new_leads = LeadCapture.objects.filter(status=LeadCapture.STATUS_NEW).count()
+    users_this_week = User.objects.filter(date_joined__gte=week_ago).count()
+    cards_this_week = Card.objects.filter(created_at__gte=week_ago).count()
+    personal_cards = cards.filter(card_type=Card.TYPE_PERSONAL).count()
+    business_cards = cards.filter(card_type=Card.TYPE_BUSINESS).count()
+
+    # ---- Top performing cards (by views) ----
+    top_cards_qs = (
+        cards.annotate(view_count=Count('interactions', filter=Q(interactions__kind=CardInteraction.KIND_VIEW)))
+        .order_by('-view_count')[:6]
+    )
+
+    # ---- Recent activity feed ----
+    recent_activity = (
+        CardInteraction.objects.select_related('card', 'card__user')
+        .order_by('-created_at')[:12]
+    )
+
     context = {
         'total_users': len(user_records),
         'total_cards': cards.count(),
+        'personal_cards': personal_cards,
+        'business_cards': business_cards,
+        'total_views': total_views,
+        'total_leads': total_leads,
+        'new_leads': new_leads,
+        'users_this_week': users_this_week,
+        'cards_this_week': cards_this_week,
         'all_cards': cards,
         'all_users': user_records,
         'pending_request_count': pending_requests.count(),
         'feedback_entries': feedback_entries,
-        'feedback_count': len(feedback_entries),
+        'feedback_count': feedback_total,
+        'top_cards': top_cards_qs,
+        'recent_activity': recent_activity,
     }
     return render(request, 'cards/admin_dashboard.html', context)
 
