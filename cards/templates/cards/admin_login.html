@@ -1,235 +1,163 @@
 {% extends 'cards/base.html' %}
+{% load i18n %}
 
-{% block title %}Admin Login{% endblock %}
+{% block title %}Backstage — MY-Card{% endblock %}
+{% block page_icon %}shield-check{% endblock %}
+{% block page_label %}Backstage{% endblock %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="relative w-full max-w-4xl admin-animate">
-        <div class="absolute inset-0 -z-10">
-            <div class="floating-orb orb-delay-0 absolute -top-24 -left-20 w-80 h-80 bg-slate-300/30 rounded-full blur-3xl"></div>
-            <div class="floating-orb orb-delay-1 absolute bottom-0 right-0 w-72 h-72 bg-indigo-300/30 rounded-full blur-3xl"></div>
-        </div>
+<div class="mc-auth mc-auth--admin">
+    <div class="mc-auth__bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--magenta mc-hue-drift" style="width:560px;height:560px;top:-160px;right:-140px;opacity:0.35;"></div>
+        <div class="mc-aurora mc-aurora--cyan"                 style="width:460px;height:460px;bottom:-160px;left:-140px;opacity:0.25;"></div>
+    </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 bg-white/80 border border-white/80 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl">
-            <div class="hidden md:flex flex-col justify-between p-10 text-white" style="background: linear-gradient(135deg, #0f172a 0%, #312e81 45%, #6b21a8 100%);">
-                <div>
-                    <span class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.4em] font-semibold bg-white/10 px-4 py-1 rounded-full">
-                        <i data-lucide="shield" class="w-4 h-4"></i>
-                        Admin access
-                    </span>
-                    <h2 class="text-3xl font-bold mt-5">Control center</h2>
-                    <p class="mt-3 text-white/85 leading-relaxed">Manage users, cards, and platform health from one secure dashboard.</p>
-                </div>
-                <div class="space-y-4">
-                    <div class="admin-feature">
-                        <i data-lucide="users" class="w-5 h-5"></i>
-                        Monitor user growth
-                    </div>
-                    <div class="admin-feature">
-                        <i data-lucide="activity" class="w-5 h-5"></i>
-                        Track card activity live
-                    </div>
-                    <div class="admin-feature">
-                        <i data-lucide="lock" class="w-5 h-5"></i>
-                        Secure privileged access
-                    </div>
-                </div>
+    <div class="mc-auth__shell mc-fade-up mc-glow-border">
+        <aside class="mc-auth__promo mc-auth__promo--admin">
+            <div class="mc-auth__promo-head">
+                <a href="{% url 'index' %}" class="mc-nav__logo">
+                    <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+                    <span>MY-Card <span class="mc-caption" style="opacity:0.7;letter-spacing:0.24em;">CONTROL</span></span>
+                </a>
+                <span class="mc-badge admin-badge" style="align-self:flex-start;">
+                    <span class="mc-badge__dot"></span>
+                    RESTRICTED
+                </span>
+                <h2 class="mc-auth__promo-title">Control tower</h2>
+                <p class="mc-auth__promo-lede">Manage users, cards, upgrade requests and platform health from one secure surface.</p>
             </div>
 
-            <div class="p-8 md:p-10">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-900">Admin login</h1>
-                        <p class="text-sm text-slate-500">Authorized personnel only.</p>
+            <div class="mc-auth__feats">
+                <div class="mc-auth__feat"><i data-lucide="users"></i>Monitor user growth</div>
+                <div class="mc-auth__feat"><i data-lucide="activity"></i>Track card activity live</div>
+                <div class="mc-auth__feat"><i data-lucide="shield-alert"></i>Privileged access — all actions logged</div>
+            </div>
+        </aside>
+
+        <section class="mc-auth__form-wrap">
+            <header>
+                <h1 class="mc-auth__title">
+                    <i data-lucide="shield-check" style="width:1.4rem;height:1.4rem;color:var(--admin-accent);vertical-align:-4px;margin-right:6px;"></i>
+                    Backstage sign-in
+                </h1>
+                <p class="mc-auth__subtitle">Authorized personnel only.</p>
+            </header>
+
+            <form method="post" class="mc-auth__form" id="admin-login-form">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="mc-auth__errors">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
                     </div>
-                    <div class="hidden sm:flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 text-slate-600">
-                        <i data-lucide="key" class="w-6 h-6"></i>
-                    </div>
-                </div>
+                {% endif %}
 
-                <form method="post" class="space-y-5" id="admin-login-form">
-                    {% csrf_token %}
-                    {% if form.non_field_errors %}
-                        <div class="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl p-3">
-                            {% for error in form.non_field_errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    {% endif %}
-
-                    {% for field in form.visible_fields %}
-                        <label class="admin-login-field">
-                            <span>
-                                {% if field.name == 'username' %}
-                                    <i data-lucide="user-cog" class="w-4 h-4"></i>
-                                {% else %}
-                                    <i data-lucide="lock" class="w-4 h-4"></i>
-                                {% endif %}
-                                {{ field.label }}
-                            </span>
-                            {% if field.field.widget.input_type == 'password' %}
-                                <div class="password-wrapper">
-                                    {{ field }}
-                                    <button type="button" class="password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
-                                        <span class="icon-hidden">🔒</span>
-                                        <span class="icon-visible">👁</span>
-                                    </button>
-                                </div>
-                            {% else %}
-                                {{ field }}
-                            {% endif %}
-                            {% if field.errors %}
-                                <small class="text-red-500 text-xs">{{ field.errors|striptags }}</small>
-                            {% endif %}
-                        </label>
-                    {% endfor %}
-
-                    <button type="submit" class="w-full relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden group">
-                        <span class="absolute inset-0 bg-gradient-to-r from-slate-700 via-indigo-600 to-purple-600 group-hover:opacity-90 transition"></span>
-                        <span class="absolute -inset-0.5 bg-gradient-to-r from-indigo-200 to-purple-200 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
-                        <span class="relative flex items-center gap-3">
-                            <i data-lucide="shield-check" class="w-5 h-5"></i>
-                            Log in as admin
+                {% for field in form.visible_fields %}
+                    <label class="mc-label">
+                        <span>
+                            {% if field.name == 'username' %}<i data-lucide="user-cog"></i>{% else %}<i data-lucide="key-square"></i>{% endif %}
+                            {{ field.label }}
                         </span>
-                    </button>
-                </form>
+                        {% if field.field.widget.input_type == 'password' %}
+                            <div class="mc-password-wrap">
+                                {{ field }}
+                                <button type="button" class="mc-password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
+                                    <i data-lucide="eye"     data-mc-eye="on"></i>
+                                    <i data-lucide="eye-off" data-mc-eye="off"></i>
+                                </button>
+                            </div>
+                        {% else %}
+                            {{ field }}
+                        {% endif %}
+                        {% if field.errors %}
+                            <span class="mc-field-error">{{ field.errors|striptags }}</span>
+                        {% endif %}
+                    </label>
+                {% endfor %}
 
-                <div class="mt-8 text-sm text-slate-500">
-                    <p class="flex items-center gap-2">
-                        <i data-lucide="key-round" class="w-4 h-4 text-indigo-500"></i>
-                        Forgot credentials?
-                        <a href="{% url 'forgot_password' %}" class="text-indigo-600 font-semibold hover:underline">Request a Reset</a>
-                    </p>
-                    <p class="flex items-center gap-2 mt-2">
-                        <i data-lucide="arrow-left" class="w-4 h-4 text-indigo-500"></i>
-                        <a href="{% url 'index' %}" class="text-indigo-600 font-semibold hover:underline">Back to home</a>
-                    </p>
-                </div>
+                <button type="submit" class="mc-btn admin-btn mc-btn--lg mc-btn--block">
+                    <i data-lucide="shield-check"></i>
+                    Enter backstage
+                </button>
+
+                <p class="admin-warn">
+                    <i data-lucide="shield-alert"></i>
+                    All logins are recorded. Unauthorized access is prohibited.
+                </p>
+            </form>
+
+            <div class="mc-auth__footer">
+                <p><i data-lucide="key-round" style="display:inline-block;width:0.9rem;height:0.9rem;vertical-align:-2px;margin-right:4px;color:var(--admin-accent);"></i> Forgot credentials? <a href="{% url 'forgot_password' %}" style="color:var(--admin-accent);">Request reset</a></p>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 
 <style>
-    .admin-animate {
-        animation: fadeInUp 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    /* Admin-specific accent — violet/magenta signal for authority */
+    .mc-auth--admin {
+        --admin-accent: #B78BFF;
+        --admin-accent-glow: rgba(183, 139, 255, 0.35);
+        --admin-accent-halo: rgba(183, 139, 255, 0.12);
     }
-    .floating-orb {
-        animation: orbDrift 20s ease-in-out infinite;
+    .mc-auth--admin .mc-auth__shell {
+        box-shadow: var(--mc-shadow-3), 0 0 0 1px var(--admin-accent-halo);
     }
-    .floating-orb.orb-delay-1 { animation-delay: 4s; }
-    .admin-feature {
-        animation: slideFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        opacity: 0;
+    .mc-auth__promo--admin::before {
+        background:
+            radial-gradient(circle at 20% 30%, var(--admin-accent-halo) 0%, transparent 55%),
+            radial-gradient(circle at 80% 90%, rgba(56,225,255,0.18) 0%, transparent 60%);
     }
-    .admin-feature:nth-child(1) { animation-delay: 0.2s; }
-    .admin-feature:nth-child(2) { animation-delay: 0.35s; }
-    .admin-feature:nth-child(3) { animation-delay: 0.5s; }
-
-    #admin-login-form input {
-        width: 100%;
-        border-radius: 1rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid rgba(100,116,139,0.25);
-        background: rgba(255,255,255,0.9);
-        transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+    .mc-nav__logo-mark--admin {
+        background: linear-gradient(135deg, var(--admin-accent), var(--mc-magenta));
+        box-shadow: 0 0 20px var(--admin-accent-glow);
     }
-    #admin-login-form input:focus {
-        outline: none;
-        border-color: rgba(79,70,229,0.5);
-        box-shadow: 0 0 0 4px rgba(79,70,229,0.18);
+    .admin-badge {
+        color: var(--admin-accent);
+        border-color: rgba(183,139,255,0.4);
+        background: var(--admin-accent-halo);
+    }
+    .admin-btn {
+        background: linear-gradient(135deg, var(--admin-accent), var(--mc-magenta));
+        color: var(--mc-text-inv);
+        box-shadow: 0 8px 30px -12px var(--admin-accent-glow);
+        border: none;
+    }
+    .admin-btn:hover {
+        box-shadow: 0 14px 44px -12px var(--admin-accent-glow), 0 0 0 6px var(--admin-accent-halo);
         transform: translateY(-2px);
     }
-    .admin-login-field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #475569;
-    }
-    .admin-login-field span {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        font-size: 0.7rem;
-    }
-    .password-wrapper {
-        position: relative;
-    }
-    .password-wrapper input[type="password"],
-    .password-wrapper input[type="text"] {
-        padding-right: 3rem;
-    }
-    .password-toggle {
-        position: absolute;
-        top: 50%;
-        right: 0.85rem;
-        transform: translateY(-50%);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        color: #94a3b8;
-    }
-    .password-toggle .icon-visible { display: none; }
-    .password-toggle[data-visible="true"] .icon-visible { display: inline; }
-    .password-toggle[data-visible="true"] .icon-hidden { display: none; }
-
-    .admin-feature {
+    .admin-warn {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border-radius: 1rem;
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.35);
-        backdrop-filter: blur(6px);
-        font-weight: 600;
-        letter-spacing: 0.03em;
+        gap: var(--mc-s-2);
+        padding: var(--mc-s-3);
+        background: var(--admin-accent-halo);
+        border: 1px solid rgba(183,139,255,0.28);
+        border-radius: var(--mc-r-md);
+        font-size: var(--mc-fs-caption);
+        color: var(--mc-text-md);
+        margin: 0;
     }
-    @media (max-width: 768px) {
-        .admin-feature { padding: 0.65rem 0.9rem; }
-    }
+    .admin-warn i { color: var(--admin-accent); width: 1rem; height: 1rem; flex-shrink: 0; }
 
-    button[type="submit"] {
-        transition: transform 0.3s ease;
-    }
-    button[type="submit"]:hover {
-        transform: translateY(-3px) scale(1.01);
-    }
-
-    @keyframes fadeInUp {
-        0% { opacity: 0; transform: translateY(24px) scale(0.97); }
-        60% { opacity: 1; }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes orbDrift {
-        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.5; }
-        50% { transform: translate3d(16px,-14px,0) scale(1.07); opacity: 0.8; }
-    }
-    @keyframes slideFade {
-        0% { opacity: 0; transform: translateY(18px); }
-        100% { opacity: 1; transform: translateY(0); }
+    .mc-auth__form input:focus {
+        border-color: var(--admin-accent) !important;
+        box-shadow: 0 0 0 4px var(--admin-accent-halo) !important;
     }
 </style>
+
 <script>
     (function() {
-        document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
-            const wrapper = toggle.closest('.password-wrapper');
-            if (!wrapper) { return; }
-            const input = wrapper.querySelector('input[type="password"], input[type="text"]');
-            if (!input) { return; }
-
-            toggle.addEventListener('click', () => {
-                const isVisible = input.type === 'text';
-                input.type = isVisible ? 'password' : 'text';
-                toggle.dataset.visible = isVisible ? 'false' : 'true';
+        document.querySelectorAll('[data-password-toggle]').forEach(t => {
+            const wrap = t.closest('.mc-password-wrap');
+            if (!wrap) return;
+            const input = wrap.querySelector('input');
+            if (!input) return;
+            t.addEventListener('click', () => {
+                const visible = input.type === 'text';
+                input.type = visible ? 'password' : 'text';
+                t.dataset.visible = visible ? 'false' : 'true';
             });
         });
     })();

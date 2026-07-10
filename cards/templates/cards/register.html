@@ -2,6 +2,8 @@
 {% load static i18n %}
 
 {% block title %}Create account — MY-Card{% endblock %}
+{% block page_icon %}user-plus{% endblock %}
+{% block page_label %}Sign up{% endblock %}
 
 {% block content %}
 <div class="mc-auth">
@@ -127,7 +129,6 @@
 
             <div class="mc-auth__footer">
                 <p><i data-lucide="log-in" style="display:inline-block;width:0.9rem;height:0.9rem;vertical-align:-2px;margin-right:4px;color:var(--mc-accent);"></i> {% trans "Already have an account?" %} <a href="{% url 'login' %}">{% trans "Log in" %}</a></p>
-                <p><i data-lucide="shield" style="display:inline-block;width:0.9rem;height:0.9rem;vertical-align:-2px;margin-right:4px;color:var(--mc-accent);"></i> {% trans "Admin?" %} <a href="{% url 'admin_login' %}">{% trans "Admin login" %}</a></p>
                 <p><a href="{% url 'index' %}">← {% trans "Back to home" %}</a></p>
             </div>
         </section>

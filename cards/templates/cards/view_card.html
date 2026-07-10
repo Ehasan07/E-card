@@ -2,6 +2,8 @@
 {% load static %}
 
 {% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }} — MY-Card{% endblock %}
+{% block page_icon %}scan-line{% endblock %}
+{% block page_label %}Card{% endblock %}
 
 {% block extra_head %}
 <meta name="description" content="{{ card.card_data.firstName }} {{ card.card_data.lastName }}{% if card.card_data.jobTitle %} · {{ card.card_data.jobTitle }}{% endif %}{% if card.card_data.company %} @ {{ card.card_data.company }}{% endif %}">

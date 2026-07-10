@@ -39,6 +39,21 @@
         </div>
     {% endif %}
 
+    {# ---------- Global back button + page identity marker (top-left) ---------- #}
+    {% if request.path != '/' and request.path != '/en/' and request.path != '/bn/' %}
+    <div class="mc-page-bar" data-mc-page-bar>
+        <button type="button" class="mc-back-btn" data-mc-back aria-label="Back to previous page">
+            <i data-lucide="arrow-left"></i>
+        </button>
+        {% block page_icon_wrap %}
+            {% with page_icon=block.super %}{% endwith %}
+        {% endblock %}
+        <div class="mc-page-mark" title="{% block page_label %}{% endblock %}">
+            <i data-lucide="{% block page_icon %}circle-dot{% endblock %}"></i>
+        </div>
+    </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
 
     {# ---------- Global language toggle (bottom-right pill) ---------- #}
@@ -82,6 +97,49 @@
         @media (max-width: 640px) {
             .mc-lang-pill { bottom: 0.5rem; left: 0.5rem; }
         }
+
+        /* ---- Page bar: back button + page identity marker ---- */
+        .mc-page-bar {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 95;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 3px;
+            background: color-mix(in oklab, var(--mc-bg-1) 90%, transparent);
+            border: 1px solid var(--mc-border-hi);
+            border-radius: var(--mc-r-full);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--mc-shadow-2);
+        }
+        .mc-back-btn, .mc-page-mark {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            color: var(--mc-text-md);
+            cursor: pointer;
+            transition: all var(--mc-dur-fast) var(--mc-ease);
+            border: none;
+        }
+        .mc-back-btn:hover {
+            background: var(--mc-accent);
+            color: var(--mc-text-inv);
+        }
+        .mc-back-btn i, .mc-page-mark i { width: 1rem; height: 1rem; }
+        .mc-page-mark {
+            background: var(--mc-accent-halo);
+            color: var(--mc-accent);
+            cursor: default;
+        }
+        @media (max-width: 640px) {
+            .mc-page-bar { top: 0.5rem; left: 0.5rem; }
+            .mc-back-btn, .mc-page-mark { width: 32px; height: 32px; }
+        }
     </style>
 
     <script src="{% static 'cards/js/theme.js' %}?v=1"></script>
@@ -117,6 +175,49 @@
                 else if (tags.indexOf('error') !== -1) icon = 'error';
                 else if (tags.indexOf('warning') !== -1) icon = 'warning';
                 toast.fire({ icon: icon, title: text });
+            });
+        })();
+    </script>
+
+    {# ---------- Global back button + hidden admin trigger ---------- #}
+    <script>
+        (function() {
+            // Back button — history.back() with fallback to sensible parent
+            document.querySelectorAll('[data-mc-back]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    if (document.referrer && document.referrer !== window.location.href) {
+                        history.back();
+                    } else {
+                        // Fallback: guess a sensible parent by path
+                        var p = window.location.pathname;
+                        if (p.indexOf('/my-admin/') === 0)      window.location.href = '/my-admin/dashboard/';
+                        else if (p.indexOf('/card/') === 0)     window.location.href = '/dashboard/';
+                        else if (p.indexOf('/create') === 0)    window.location.href = '/dashboard/';
+                        else if (p.indexOf('/edit') === 0)      window.location.href = '/dashboard/';
+                        else                                     window.location.href = '/';
+                    }
+                });
+            });
+
+            // Hidden admin entry: 5 rapid clicks on any .mc-nav__logo-mark within 2.5s
+            // Also keyboard shortcut: Shift+Alt+A
+            var clicks = [];
+            document.querySelectorAll('.mc-nav__logo-mark').forEach(function(mark) {
+                mark.addEventListener('click', function(e) {
+                    var now = Date.now();
+                    clicks = clicks.filter(function(t) { return now - t < 2500; });
+                    clicks.push(now);
+                    if (clicks.length >= 5) {
+                        clicks = [];
+                        window.location.href = "{% url 'admin_login' %}";
+                    }
+                });
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.altKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+                    e.preventDefault();
+                    window.location.href = "{% url 'admin_login' %}";
+                }
             });
         })();
     </script>

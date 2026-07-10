@@ -2,6 +2,8 @@
 {% load static i18n %}
 
 {% block title %}{% if card %}{% trans "Edit card" %}{% else %}{% trans "Create card" %}{% endif %} — MY-Card{% endblock %}
+{% block page_icon %}{% if builder_variant.card_type == 'business' %}briefcase{% else %}palette{% endif %}{% endblock %}
+{% block page_label %}{% if card %}Edit{% else %}Builder{% endif %}{% endblock %}
 
 {% block content %}
 <nav class="mc-nav">
