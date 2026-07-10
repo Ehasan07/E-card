@@ -1,5 +1,5 @@
 {% extends 'cards/base.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}MY-Card — Your digital business card, reimagined{% endblock %}
 
@@ -18,19 +18,19 @@
             MY-Card
         </a>
         <ul class="mc-nav__links">
-            <li><a href="#features" class="mc-nav-link">Features</a></li>
-            <li><a href="#showcase" class="mc-nav-link">Showcase</a></li>
-            <li><a href="#pricing" class="mc-nav-link">Pricing</a></li>
-            <li><a href="#faq" class="mc-nav-link">FAQ</a></li>
-            <li><a href="{% url 'documentation' %}" class="mc-nav-link">Docs</a></li>
+            <li><a href="#features" class="mc-nav-link">{% trans "Features" %}</a></li>
+            <li><a href="#showcase" class="mc-nav-link">{% trans "Showcase" %}</a></li>
+            <li><a href="#pricing" class="mc-nav-link">{% trans "Pricing" %}</a></li>
+            <li><a href="#faq" class="mc-nav-link">{% trans "FAQ" %}</a></li>
+            <li><a href="{% url 'documentation' %}" class="mc-nav-link">{% trans "Docs" %}</a></li>
         </ul>
         <div class="mc-nav__actions">
             <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
                 <i data-lucide="moon" data-mc-theme-icon="moon"></i>
                 <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
             </button>
-            <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">Log in</a>
-            <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--sm">Start free</a>
+            <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
+            <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
         </div>
     </div>
 </nav>
@@ -46,29 +46,29 @@
         <div class="lp-hero__copy">
             <span class="mc-badge mc-badge--accent mc-fade-up">
                 <span class="mc-badge__dot"></span>
-                Digital business card, reimagined
+                {% trans "Digital business card, reimagined" %}
             </span>
             <h1 class="mc-display mc-fade-up mc-fade-up--d1">
-                One card.<br>
-                <span class="mc-display--accent">Every channel.</span>
+                {% trans "One card." %}<br>
+                <span class="mc-display--accent">{% trans "Every channel." %}</span>
             </h1>
             <p class="lp-hero__lede mc-fade-up mc-fade-up--d2">
-                Ship a stunning digital identity in minutes. Track how people engage, capture leads on the spot, and save straight to Apple &amp; Google Wallet.
+                {% trans "Ship a stunning digital identity in minutes. Track how people engage, capture leads on the spot, and save straight to Apple & Google Wallet." %}
             </p>
             <div class="lp-hero__cta mc-fade-up mc-fade-up--d3">
                 <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
                     <i data-lucide="rocket"></i>
-                    Create your card — free
+                    {% trans "Create your card — free" %}
                 </a>
                 <a href="#showcase" class="mc-btn mc-btn--ghost mc-btn--lg">
                     <i data-lucide="play"></i>
-                    See a live sample
+                    {% trans "See a live sample" %}
                 </a>
             </div>
             <ul class="lp-hero__proof mc-fade-up mc-fade-up--d4">
-                <li><i data-lucide="check-circle-2"></i> No credit card</li>
-                <li><i data-lucide="check-circle-2"></i> QR + link ready</li>
-                <li><i data-lucide="check-circle-2"></i> bKash &amp; Stripe supported</li>
+                <li><i data-lucide="check-circle-2"></i> {% trans "No credit card" %}</li>
+                <li><i data-lucide="check-circle-2"></i> {% trans "QR + link ready" %}</li>
+                <li><i data-lucide="check-circle-2"></i> {% trans "bKash & Stripe supported" %}</li>
             </ul>
         </div>
 
@@ -115,52 +115,52 @@
 <section id="features" class="lp-section">
     <div class="mc-container">
         <header class="lp-section__head">
-            <span class="mc-badge">Features</span>
-            <h2>Everything you'd expect. And a lot more.</h2>
-            <p class="mc-text-muted">Purpose-built for people who network for a living — freelancers, sales, founders, event squads.</p>
+            <span class="mc-badge">{% trans "Features" %}</span>
+            <h2>{% trans "Everything you'd expect. And a lot more." %}</h2>
+            <p class="mc-text-muted">{% trans "Purpose-built for people who network for a living — freelancers, sales, founders, event squads." %}</p>
         </header>
 
         <div class="mc-bento">
             <div class="mc-card mc-card--glow mc-bento__cell--hero lp-feat">
                 <div class="lp-feat__icon"><i data-lucide="scan-line"></i></div>
-                <h3>Instant sharing anywhere</h3>
-                <p class="mc-text-muted">QR, direct link, WhatsApp deep-link, Apple &amp; Google Wallet passes. Recipients never need an app.</p>
+                <h3>{% trans "Instant sharing anywhere" %}</h3>
+                <p class="mc-text-muted">{% trans "QR, direct link, WhatsApp deep-link, Apple & Google Wallet passes. Recipients never need an app." %}</p>
                 <div class="lp-feat__badges">
                     <span class="mc-badge">QR</span>
                     <span class="mc-badge">NFC-ready</span>
                     <span class="mc-badge">.vcf</span>
-                    <span class="mc-badge">Wallet pass</span>
+                    <span class="mc-badge">{% trans "Wallet pass" %}</span>
                 </div>
             </div>
 
             <div class="mc-card mc-bento__cell--wide lp-feat">
                 <div class="lp-feat__icon"><i data-lucide="line-chart"></i></div>
-                <h3>Live analytics</h3>
-                <p class="mc-text-muted">See who's viewing, from where, and what they tap.</p>
+                <h3>{% trans "Live analytics" %}</h3>
+                <p class="mc-text-muted">{% trans "See who's viewing, from where, and what they tap." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell--wide lp-feat">
                 <div class="lp-feat__icon"><i data-lucide="user-check"></i></div>
-                <h3>Lead capture</h3>
-                <p class="mc-text-muted">Built-in contact form — every view can become a lead.</p>
+                <h3>{% trans "Lead capture" %}</h3>
+                <p class="mc-text-muted">{% trans "Built-in contact form — every view can become a lead." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell lp-feat">
                 <div class="lp-feat__icon"><i data-lucide="palette"></i></div>
-                <h3>Themes for every vibe</h3>
-                <p class="mc-text-muted">5+ curated designs. Aurora Dark, Cyber Neon, Executive Slate.</p>
+                <h3>{% trans "Themes for every vibe" %}</h3>
+                <p class="mc-text-muted">{% trans "5+ curated designs. Aurora Dark, Cyber Neon, Executive Slate." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell lp-feat">
                 <div class="lp-feat__icon"><i data-lucide="languages"></i></div>
-                <h3>Bangla &amp; English</h3>
-                <p class="mc-text-muted">Local-first UI. Works globally.</p>
+                <h3>{% trans "Bangla & English" %}</h3>
+                <p class="mc-text-muted">{% trans "Local-first UI. Works globally." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell lp-feat">
                 <div class="lp-feat__icon"><i data-lucide="sparkles"></i></div>
-                <h3>AI-powered bio</h3>
-                <p class="mc-text-muted">One tap to generate a bio that actually sounds like you.</p>
+                <h3>{% trans "AI-powered bio" %}</h3>
+                <p class="mc-text-muted">{% trans "One tap to generate a bio that actually sounds like you." %}</p>
             </div>
         </div>
     </div>
@@ -170,24 +170,24 @@
 <section class="lp-section lp-section--muted">
     <div class="mc-container">
         <header class="lp-section__head">
-            <span class="mc-badge">How it works</span>
-            <h2>Live in 3 minutes.</h2>
+            <span class="mc-badge">{% trans "How it works" %}</span>
+            <h2>{% trans "Live in 3 minutes." %}</h2>
         </header>
         <div class="lp-steps">
             <div class="mc-card lp-step">
                 <span class="lp-step__num mc-mono">01</span>
-                <h3>Sign up in 30 seconds</h3>
-                <p class="mc-text-muted">Just a phone number and email — no credit card, no fluff.</p>
+                <h3>{% trans "Sign up in 30 seconds" %}</h3>
+                <p class="mc-text-muted">{% trans "Just a phone number and email — no credit card, no fluff." %}</p>
             </div>
             <div class="mc-card lp-step">
                 <span class="lp-step__num mc-mono">02</span>
-                <h3>Design your card</h3>
-                <p class="mc-text-muted">Pick a theme, drop your photo, add socials. See the preview live as you type.</p>
+                <h3>{% trans "Design your card" %}</h3>
+                <p class="mc-text-muted">{% trans "Pick a theme, drop your photo, add socials. See the preview live as you type." %}</p>
             </div>
             <div class="mc-card lp-step">
                 <span class="lp-step__num mc-mono">03</span>
-                <h3>Share &amp; track</h3>
-                <p class="mc-text-muted">Send the link, print the QR, tap the NFC card. Watch analytics roll in.</p>
+                <h3>{% trans "Share & track" %}</h3>
+                <p class="mc-text-muted">{% trans "Send the link, print the QR, tap the NFC card. Watch analytics roll in." %}</p>
             </div>
         </div>
     </div>
@@ -197,9 +197,9 @@
 <section id="showcase" class="lp-section">
     <div class="mc-container">
         <header class="lp-section__head">
-            <span class="mc-badge">Showcase</span>
-            <h2>Cards that turn heads.</h2>
-            <p class="mc-text-muted">Every card is fully responsive, dark/light aware, and animated for a memorable first impression.</p>
+            <span class="mc-badge">{% trans "Showcase" %}</span>
+            <h2>{% trans "Cards that turn heads." %}</h2>
+            <p class="mc-text-muted">{% trans "Every card is fully responsive, dark/light aware, and animated for a memorable first impression." %}</p>
         </header>
         <div class="lp-showcase">
             <div class="lp-showcase__card lp-showcase__card--aurora">
@@ -228,59 +228,59 @@
 <section id="pricing" class="lp-section lp-section--muted">
     <div class="mc-container">
         <header class="lp-section__head">
-            <span class="mc-badge">Pricing</span>
-            <h2>Simple pricing. No watermark on Pro.</h2>
-            <p class="mc-text-muted">Priced in taka (BD) with automatic USD via Stripe for the rest of the world.</p>
+            <span class="mc-badge">{% trans "Pricing" %}</span>
+            <h2>{% trans "Simple pricing. No watermark on Pro." %}</h2>
+            <p class="mc-text-muted">{% trans "Priced in taka (BD) with automatic USD via Stripe for the rest of the world." %}</p>
         </header>
 
         <div class="lp-pricing">
             <div class="mc-card lp-plan">
                 <header>
-                    <span class="mc-caption">Free</span>
-                    <div class="lp-plan__price"><span class="mc-mono">৳0</span><small>/forever</small></div>
+                    <span class="mc-caption">{% trans "Free" %}</span>
+                    <div class="lp-plan__price"><span class="mc-mono">৳0</span><small>/{% trans "forever" %}</small></div>
                 </header>
                 <ul class="lp-plan__list">
-                    <li><i data-lucide="check"></i> 1 personal card</li>
-                    <li><i data-lucide="check"></i> QR + shareable link</li>
-                    <li><i data-lucide="check"></i> Wallet pass + vCard</li>
-                    <li><i data-lucide="check"></i> 7-day analytics</li>
-                    <li><i data-lucide="check"></i> 5 leads / month</li>
+                    <li><i data-lucide="check"></i> {% trans "1 personal card" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "QR + shareable link" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Wallet pass + vCard" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "7-day analytics" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "5 leads / month" %}</li>
                 </ul>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">Start free</a>
+                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">{% trans "Start free" %}</a>
             </div>
 
             <div class="mc-card mc-card--glow lp-plan lp-plan--featured">
-                <span class="mc-badge mc-badge--accent lp-plan__badge">Most popular</span>
+                <span class="mc-badge mc-badge--accent lp-plan__badge">{% trans "Most popular" %}</span>
                 <header>
-                    <span class="mc-caption mc-text-accent">Pro</span>
-                    <div class="lp-plan__price"><span class="mc-mono">৳499</span><small>/month</small></div>
-                    <p class="mc-text-muted">≈ $4.99 · billed monthly</p>
+                    <span class="mc-caption mc-text-accent">{% trans "Pro" %}</span>
+                    <div class="lp-plan__price"><span class="mc-mono">৳499</span><small>/{% trans "month" %}</small></div>
+                    <p class="mc-text-muted">≈ $4.99 · {% trans "billed monthly" %}</p>
                 </header>
                 <ul class="lp-plan__list">
-                    <li><i data-lucide="check"></i> Up to 5 cards</li>
-                    <li><i data-lucide="check"></i> Full 90-day analytics</li>
-                    <li><i data-lucide="check"></i> Unlimited leads</li>
-                    <li><i data-lucide="check"></i> All themes + AI bio</li>
-                    <li><i data-lucide="check"></i> Zero watermark</li>
-                    <li><i data-lucide="check"></i> Priority support</li>
+                    <li><i data-lucide="check"></i> {% trans "Up to 5 cards" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Full 90-day analytics" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Unlimited leads" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "All themes + AI bio" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Zero watermark" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Priority support" %}</li>
                 </ul>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--block">Upgrade to Pro</a>
+                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--block">{% trans "Upgrade to Pro" %}</a>
             </div>
 
             <div class="mc-card lp-plan">
                 <header>
-                    <span class="mc-caption">Team</span>
-                    <div class="lp-plan__price"><span class="mc-mono">৳1,999</span><small>/month</small></div>
-                    <p class="mc-text-muted">≈ $19.99 · 5 seats</p>
+                    <span class="mc-caption">{% trans "Team" %}</span>
+                    <div class="lp-plan__price"><span class="mc-mono">৳1,999</span><small>/{% trans "month" %}</small></div>
+                    <p class="mc-text-muted">≈ $19.99 · {% trans "5 seats" %}</p>
                 </header>
                 <ul class="lp-plan__list">
-                    <li><i data-lucide="check"></i> 25 cards, 5 seats</li>
-                    <li><i data-lucide="check"></i> Team branding lock</li>
-                    <li><i data-lucide="check"></i> CRM webhook</li>
-                    <li><i data-lucide="check"></i> Analytics export</li>
-                    <li><i data-lucide="check"></i> SSO (on request)</li>
+                    <li><i data-lucide="check"></i> {% trans "25 cards, 5 seats" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Team branding lock" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "CRM webhook" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "Analytics export" %}</li>
+                    <li><i data-lucide="check"></i> {% trans "SSO (on request)" %}</li>
                 </ul>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">Talk to sales</a>
+                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">{% trans "Talk to sales" %}</a>
             </div>
         </div>
     </div>
@@ -290,29 +290,29 @@
 <section id="faq" class="lp-section">
     <div class="mc-container lp-faq-container">
         <header class="lp-section__head lp-section__head--left">
-            <span class="mc-badge">FAQ</span>
-            <h2>Common questions</h2>
+            <span class="mc-badge">{% trans "FAQ" %}</span>
+            <h2>{% trans "Common questions" %}</h2>
         </header>
         <div class="lp-faq">
             <details class="mc-card lp-faq__item">
-                <summary>Do I need a physical NFC card?</summary>
-                <p class="mc-text-muted">No. Every card works instantly with a QR code and shareable link. NFC is optional for extra convenience.</p>
+                <summary>{% trans "Do I need a physical NFC card?" %}</summary>
+                <p class="mc-text-muted">{% trans "No. Every card works instantly with a QR code and shareable link. NFC is optional for extra convenience." %}</p>
             </details>
             <details class="mc-card lp-faq__item">
-                <summary>Does it work without internet?</summary>
-                <p class="mc-text-muted">The initial share needs internet, but recipients can save your contact and wallet pass for offline access.</p>
+                <summary>{% trans "Does it work without internet?" %}</summary>
+                <p class="mc-text-muted">{% trans "The initial share needs internet, but recipients can save your contact and wallet pass for offline access." %}</p>
             </details>
             <details class="mc-card lp-faq__item">
-                <summary>Can I use bKash to upgrade?</summary>
-                <p class="mc-text-muted">Yes — bKash merchant checkout is supported for Bangladeshi users. International users pay via Stripe.</p>
+                <summary>{% trans "Can I use bKash to upgrade?" %}</summary>
+                <p class="mc-text-muted">{% trans "Yes — bKash merchant checkout is supported for Bangladeshi users. International users pay via Stripe." %}</p>
             </details>
             <details class="mc-card lp-faq__item">
-                <summary>Is my data safe?</summary>
-                <p class="mc-text-muted">You own your card and can delete it any time. We never sell your data or share leads with third parties.</p>
+                <summary>{% trans "Is my data safe?" %}</summary>
+                <p class="mc-text-muted">{% trans "You own your card and can delete it any time. We never sell your data or share leads with third parties." %}</p>
             </details>
             <details class="mc-card lp-faq__item">
-                <summary>Can teams use MY-Card?</summary>
-                <p class="mc-text-muted">Yes. The Team plan supports multi-seat access, enforced branding, and CRM webhooks for HubSpot/Salesforce.</p>
+                <summary>{% trans "Can teams use MY-Card?" %}</summary>
+                <p class="mc-text-muted">{% trans "Yes. The Team plan supports multi-seat access, enforced branding, and CRM webhooks for HubSpot/Salesforce." %}</p>
             </details>
         </div>
     </div>
@@ -323,13 +323,13 @@
     <div class="mc-container">
         <div class="mc-card mc-card--glow lp-cta-inner">
             <div>
-                <span class="mc-badge mc-badge--accent">Ready when you are</span>
-                <h2>Your next handshake starts with a tap.</h2>
-                <p class="mc-text-muted">Ship a professional identity in minutes — free forever, no credit card.</p>
+                <span class="mc-badge mc-badge--accent">{% trans "Ready when you are" %}</span>
+                <h2>{% trans "Your next handshake starts with a tap." %}</h2>
+                <p class="mc-text-muted">{% trans "Ship a professional identity in minutes — free forever, no credit card." %}</p>
             </div>
             <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
                 <i data-lucide="rocket"></i>
-                Start building
+                {% trans "Start building" %}
             </a>
         </div>
     </div>
@@ -339,23 +339,23 @@
 <section id="feedback" class="lp-section">
     <div class="mc-container lp-faq-container">
         <header class="lp-section__head lp-section__head--left">
-            <span class="mc-badge"><i data-lucide="message-square"></i> Feedback</span>
-            <h2>Tell us how MY-Card can improve.</h2>
-            <p class="mc-text-muted">Drop a note for the team — feature ideas, bugs, or wins. We read every message.</p>
+            <span class="mc-badge"><i data-lucide="message-square"></i> {% trans "Feedback" %}</span>
+            <h2>{% trans "Tell us how MY-Card can improve." %}</h2>
+            <p class="mc-text-muted">{% trans "Drop a note for the team — feature ideas, bugs, or wins. We read every message." %}</p>
         </header>
 
         <form method="post" action="{% url 'submit_feedback' %}" class="mc-card lp-feedback">
             {% csrf_token %}
             <div class="lp-feedback__grid">
                 <label class="mc-label">
-                    <span>Name</span>
+                    <span>{% trans "Name" %}</span>
                     {{ feedback_form.name }}
                     {% if feedback_form.name.errors %}
                         <span class="mc-field-error">{{ feedback_form.name.errors|join:', ' }}</span>
                     {% endif %}
                 </label>
                 <label class="mc-label">
-                    <span>Email <small class="mc-text-dim">(optional)</small></span>
+                    <span>{% trans "Email" %} <small class="mc-text-dim">{% trans "(optional)" %}</small></span>
                     {{ feedback_form.email }}
                     {% if feedback_form.email.errors %}
                         <span class="mc-field-error">{{ feedback_form.email.errors|join:', ' }}</span>
@@ -363,7 +363,7 @@
                 </label>
             </div>
             <label class="mc-label">
-                <span>Message</span>
+                <span>{% trans "Message" %}</span>
                 {{ feedback_form.message }}
                 {% if feedback_form.message.errors %}
                     <span class="mc-field-error">{{ feedback_form.message.errors|join:', ' }}</span>
@@ -371,7 +371,7 @@
             </label>
             <button type="submit" class="mc-btn mc-btn--primary">
                 <i data-lucide="send"></i>
-                Send message
+                {% trans "Send message" %}
             </button>
         </form>
     </div>
@@ -387,35 +387,35 @@
                     MY-Card
                 </a>
                 <p class="mc-text-muted" style="margin-top:var(--mc-s-3);max-width:340px;">
-                    A modern digital business card built for professionals in Bangladesh &amp; beyond.
+                    {% trans "A modern digital business card built for professionals in Bangladesh & beyond." %}
                 </p>
             </div>
             <div>
-                <div class="mc-footer__col-title">Product</div>
+                <div class="mc-footer__col-title">{% trans "Product" %}</div>
                 <ul class="mc-footer__links">
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#pricing">Pricing</a></li>
-                    <li><a href="#showcase">Showcase</a></li>
-                    <li><a href="{% url 'documentation' %}">Docs</a></li>
+                    <li><a href="#features">{% trans "Features" %}</a></li>
+                    <li><a href="#pricing">{% trans "Pricing" %}</a></li>
+                    <li><a href="#showcase">{% trans "Showcase" %}</a></li>
+                    <li><a href="{% url 'documentation' %}">{% trans "Docs" %}</a></li>
                 </ul>
             </div>
             <div>
-                <div class="mc-footer__col-title">Company</div>
+                <div class="mc-footer__col-title">{% trans "Company" %}</div>
                 <ul class="mc-footer__links">
-                    <li><a href="#faq">FAQ</a></li>
-                    <li><a href="#feedback">Contact</a></li>
+                    <li><a href="#faq">{% trans "FAQ" %}</a></li>
+                    <li><a href="#feedback">{% trans "Contact" %}</a></li>
                 </ul>
             </div>
             <div>
-                <div class="mc-footer__col-title">Account</div>
+                <div class="mc-footer__col-title">{% trans "Account" %}</div>
                 <ul class="mc-footer__links">
-                    <li><a href="{% url 'login' %}">Log in</a></li>
-                    <li><a href="{% url 'register' %}">Start free</a></li>
+                    <li><a href="{% url 'login' %}">{% trans "Log in" %}</a></li>
+                    <li><a href="{% url 'register' %}">{% trans "Start free" %}</a></li>
                 </ul>
             </div>
         </div>
         <div class="mc-footer__bottom">
-            <span>&copy; {% now "Y" %} MY-Card. Made with focus in Dhaka.</span>
+            <span>&copy; {% now "Y" %} MY-Card. {% trans "Made with focus in Dhaka." %}</span>
             <span>v2.0 — Neon</span>
         </div>
     </div>
