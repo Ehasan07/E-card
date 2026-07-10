@@ -18,39 +18,43 @@
                         <p class="text-gray-600 max-w-xl">All your interactive calling cards in one place. Edit, preview, and share in seconds.</p>
                     </div>
                 </div>
-                <div class="flex flex-wrap gap-3">
-                    <a href="{% url 'index' %}" class="back-home-btn">
-                        <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
-                        Back to home
-                    </a>
-                    <a href="{% url 'logout' %}" class="logout-btn">
-                        <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
-                        Logout
-                    </a>
-                    <a href="{% url 'user_messages' %}" class="message-box-btn">
-                        <span class="icon"><i data-lucide="inbox" class="w-4 h-4"></i></span>
-                        Message box
-                        {% if responded_messages_count %}
-                            <span class="message-pill" title="Responses from admin">{{ responded_messages_count }}</span>
-                        {% elif pending_upgrade_count %}
-                            <span class="message-pill message-pill--pending" title="Pending requests">{{ pending_upgrade_count }}</span>
-                        {% endif %}
-                    </a>
-                    <div class="flex flex-wrap gap-3">
-                        <a href="{% url 'create_card' %}" class="cta-pill cta-pill--personal">
-                            <span class="cta-pill__ring"></span>
-                            <span class="cta-pill__label">
-                                <i data-lucide="user" class="w-4 h-4"></i>
-                                Personal card
-                            </span>
-                        </a>
-                        <a href="{% url 'create_business_card' %}" class="cta-pill cta-pill--business">
-                            <span class="cta-pill__ring"></span>
-                            <span class="cta-pill__label">
-                                <i data-lucide="briefcase" class="w-4 h-4"></i>
-                                Business card
-                            </span>
-                        </a>
+                <div class="dashboard-actions">
+                    <div class="action-card">
+                        <div class="action-row action-row--primary">
+                            <a href="{% url 'user_messages' %}" class="message-box-btn">
+                                <span class="icon"><i data-lucide="inbox" class="w-4 h-4"></i></span>
+                                Message box
+                                {% if responded_messages_count %}
+                                    <span class="message-pill" title="Responses from admin">{{ responded_messages_count }}</span>
+                                {% elif pending_upgrade_count %}
+                                    <span class="message-pill message-pill--pending" title="Pending requests">{{ pending_upgrade_count }}</span>
+                                {% endif %}
+                            </a>
+                            <a href="{% url 'index' %}" class="back-home-btn">
+                                <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
+                                Back to home
+                            </a>
+                            <a href="{% url 'logout' %}" class="logout-btn">
+                                <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
+                                Logout
+                            </a>
+                        </div>
+                        <div class="action-row action-row--cta">
+                            <a href="{% url 'create_card' %}" class="cta-pill cta-pill--personal">
+                                <span class="cta-pill__ring"></span>
+                                <span class="cta-pill__label">
+                                    <i data-lucide="user" class="w-4 h-4"></i>
+                                    Personal card
+                                </span>
+                            </a>
+                            <a href="{% url 'create_business_card' %}" class="cta-pill cta-pill--business">
+                                <span class="cta-pill__ring"></span>
+                                <span class="cta-pill__label">
+                                    <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                    Business card
+                                </span>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -74,7 +78,13 @@
                         </div>
                         <div>
                             <p class="stat-label">Last updated</p>
-                            <p class="stat-value">{% if cards %}{{ cards.0.created_at|timesince }} ago{% else %}Just now{% endif %}</p>
+                            <p class="stat-value">{% if latest_update %}{{ latest_update|timesince }} ago{% else %}No updates yet{% endif %}</p>
+                            {% if latest_update_log %}
+                                <button type="button" class="stat-link" data-change-toggle="latest-change-log" aria-expanded="false">
+                                    <i data-lucide="history" class="w-4 h-4"></i>
+                                    <span data-toggle-text>View changes</span>
+                                </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -90,6 +100,34 @@
                     </div>
                 </div>
             </div>
+
+            {% if latest_update_log %}
+                <div id="latest-change-log" class="change-panel hidden">
+                    <article class="change-entry">
+                        <header class="change-entry__header">
+                            <span class="change-entry__title">Most recent update</span>
+                            <span class="change-entry__time">{{ latest_update_log.created_at|timesince }} ago</span>
+                        </header>
+                        {% if latest_update_log.summary %}
+                            <p class="change-entry__summary">{{ latest_update_log.summary }}</p>
+                        {% endif %}
+                        <ul class="change-entry__diffs">
+                            {% for change in latest_update_log.changes %}
+                                <li class="change-diff">
+                                    <span class="change-diff__label">{{ change.label }}</span>
+                                    <div class="change-diff__values">
+                                        <span class="change-diff__value change-diff__value--before">{{ change.before|default:'—' }}</span>
+                                        <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                        <span class="change-diff__value change-diff__value--after">{{ change.after|default:'—' }}</span>
+                                    </div>
+                                </li>
+                            {% empty %}
+                                <li class="change-empty">No tracked field changes were detected.</li>
+                            {% endfor %}
+                        </ul>
+                    </article>
+                </div>
+            {% endif %}
 
             <div class="limit-banner {% if at_card_limit %}limit-banner--warning{% else %}limit-banner--info{% endif %} mb-10">
                 <div class="limit-icon">
@@ -136,11 +174,17 @@
                                         </span>
                                     </div>
                                     <div class="preview-banner" style="background: {{ card.card_data.background_style|default:'linear-gradient(135deg,#ff9a9e,#fad0c4)' }};"></div>
-                                    <div class="flex items-center gap-3 text-sm text-gray-500">
+                                    <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                                         <span class="inline-flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-gray-200">
                                             <i data-lucide="calendar" class="w-4 h-4"></i>
-                                            Updated {{ card.created_at|date:"M d, Y" }}
+                                            Updated {{ card.updated_at|timesince }} ago
                                         </span>
+                                        {% if card.recent_logs and card.recent_logs|length %}
+                                            <button type="button" class="change-pill" data-change-toggle="card-change-{{ card.id }}" aria-expanded="false">
+                                                <i data-lucide="history" class="w-4 h-4"></i>
+                                                <span data-toggle-text>View changes</span>
+                                            </button>
+                                        {% endif %}
                                         {% if card.card_data.website %}
                                             <span class="inline-flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-gray-200">
                                                 <i data-lucide="globe" class="w-4 h-4"></i>
@@ -148,6 +192,38 @@
                                             </span>
                                         {% endif %}
                                     </div>
+                                    {% if card.recent_logs and card.recent_logs|length %}
+                                        <div id="card-change-{{ card.id }}" class="change-panel hidden">
+                                            {% for log in card.recent_logs|slice:":3" %}
+                                                <article class="change-entry">
+                                                    <header class="change-entry__header">
+                                                        <span class="change-entry__title">Updated {{ log.created_at|timesince }} ago</span>
+                                                        <span class="change-entry__time">{{ log.created_at|date:"M d, Y · H:i" }}</span>
+                                                    </header>
+                                                    {% if log.summary %}
+                                                        <p class="change-entry__summary">{{ log.summary }}</p>
+                                                    {% endif %}
+                                                    <ul class="change-entry__diffs">
+                                                        {% for change in log.changes %}
+                                                            <li class="change-diff">
+                                                                <span class="change-diff__label">{{ change.label }}</span>
+                                                                <div class="change-diff__values">
+                                                                    <span class="change-diff__value change-diff__value--before">{{ change.before|default:'—' }}</span>
+                                                                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                                                                    <span class="change-diff__value change-diff__value--after">{{ change.after|default:'—' }}</span>
+                                                                </div>
+                                                            </li>
+                                                        {% empty %}
+                                                            <li class="change-empty">No tracked field changes were detected.</li>
+                                                        {% endfor %}
+                                                    </ul>
+                                                </article>
+                                            {% endfor %}
+                                            {% if card.recent_logs|length > 3 %}
+                                                <p class="change-more">Showing latest 3 updates.</p>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
                                     <div class="flex flex-wrap gap-3 pt-2">
                                         <a href="{% url 'view_card' card.slug %}" class="card-action {% if not card.is_active %}soft-disabled{% endif %}">
                                             <i data-lucide="eye" class="w-4 h-4"></i>
@@ -200,6 +276,33 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toggles = document.querySelectorAll('[data-change-toggle]');
+        toggles.forEach(button => {
+            const targetId = button.getAttribute('data-change-toggle');
+            if (!targetId) { return; }
+            const panel = document.getElementById(targetId);
+            if (!panel) { return; }
+
+            button.addEventListener('click', () => {
+                const currentlyExpanded = button.getAttribute('aria-expanded') === 'true';
+                const nextExpanded = !currentlyExpanded;
+                button.setAttribute('aria-expanded', String(nextExpanded));
+                if (nextExpanded) {
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+                const labelTarget = button.querySelector('[data-toggle-text]');
+                if (labelTarget) {
+                    labelTarget.textContent = nextExpanded ? 'Hide changes' : 'View changes';
+                }
+            });
+        });
+    });
+</script>
 
 <style>
     .dashboard-pulse { animation: dashPulse 8s ease-in-out infinite; }
@@ -514,6 +617,89 @@
     .type-pill--business {
         background: rgba(236,72,153,0.12);
         color: #be185d;
+    }
+    .dashboard-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    @media (min-width: 1024px) {
+        .dashboard-actions { justify-content: flex-end; }
+    }
+    .action-card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+        max-width: 420px;
+        padding: 1.4rem;
+        border-radius: 1.75rem;
+        background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(236, 254, 255, 0.88));
+        border: 1px solid rgba(226, 232, 240, 0.65);
+        box-shadow: 0 28px 70px -40px rgba(15, 23, 42, 0.5);
+        overflow: hidden;
+    }
+    @media (max-width: 1023px) {
+        .action-card { max-width: none; }
+    }
+    .action-card::before {
+        content: '';
+        position: absolute;
+        inset: -60% 20% auto -20%;
+        height: 220px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(236,72,153,0.35), transparent 60%);
+        opacity: 0.35;
+        pointer-events: none;
+    }
+    .action-card::after {
+        content: '';
+        position: absolute;
+        inset: auto -30% -70% 10%;
+        height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(59,130,246,0.32), transparent 65%);
+        opacity: 0.4;
+        pointer-events: none;
+    }
+    .action-row {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        z-index: 1;
+    }
+    .action-row .cta-pill {
+        flex: 1 1 48%;
+    }
+    @media (min-width: 1024px) {
+        .action-row .cta-pill { flex: 0 0 auto; }
+    }
+    .action-row--primary {
+        justify-content: center;
+    }
+    @media (min-width: 768px) {
+        .action-row--primary { justify-content: flex-end; }
+    }
+    .action-row--primary > a {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+    @media (min-width: 768px) {
+        .action-row--primary > a {
+            flex: 0 0 auto;
+            justify-content: initial;
+        }
+    }
+    .action-row--cta {
+        padding-top: 0.2rem;
+        border-top: 1px dashed rgba(148, 163, 184, 0.4);
+        justify-content: center;
+    }
+    @media (min-width: 1024px) {
+        .action-row--cta { justify-content: space-between; }
     }
     .back-home-btn {
         position: relative;

@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from django.http import Http404
 from .forms import (
     UserForm,
@@ -30,6 +30,7 @@ from .models import (
     SubscriptionPlan,
     Subscription,
     Feedback,
+    CardChangeLog,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
@@ -87,6 +88,89 @@ CARD_VARIANT_CONFIG = {
         'empty_cta': 'Start business card',
     },
 }
+
+
+def _build_card_field_labels():
+    excluded = {'avatar', 'logo', 'whatsapp_country', 'whatsapp_number', 'phone_country', 'phone_number'}
+    labels: dict[str, str] = {}
+    for form_cls in (CardForm, BusinessCardForm):
+        for name, field in form_cls.base_fields.items():
+            if name in excluded:
+                continue
+            label = field.label or name.replace('_', ' ').title()
+            labels[name] = label
+
+    # Manual overrides for fields that have special casing or hidden widgets
+    overrides = {
+        'firstName': 'First name',
+        'lastName': 'Last name',
+        'jobTitle': 'Job title',
+        'logo_name': 'Logo / company name',
+        'phone': 'Phone number',
+        'whatsapp': 'WhatsApp link',
+        'background_style': 'Background style',
+    }
+    labels.update(overrides)
+    return labels
+
+
+CARD_FIELD_LABELS = _build_card_field_labels()
+CARD_TRACKED_CARD_KEYS = set(CARD_FIELD_LABELS.keys())
+
+
+def _normalize_change_value(value):
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        cleaned = value.strip()
+        return cleaned[:180] + '…' if len(cleaned) > 181 else cleaned
+    return str(value)
+
+
+def _build_card_change_entries(old_data: dict, new_data: dict):
+    if not isinstance(old_data, dict):
+        old_data = {}
+    if not isinstance(new_data, dict):
+        new_data = {}
+
+    entries = []
+    for key in CARD_TRACKED_CARD_KEYS:
+        before = _normalize_change_value(old_data.get(key))
+        after = _normalize_change_value(new_data.get(key))
+        if before == after:
+            continue
+        if not before and not after:
+            continue
+        entries.append({
+            'field': key,
+            'label': CARD_FIELD_LABELS.get(key, key.replace('_', ' ').title()),
+            'before': before,
+            'after': after,
+        })
+    return entries
+
+
+def _summarize_change_entries(entries):
+    if not entries:
+        return ''
+    labels = [entry['label'] for entry in entries]
+    if len(labels) == 1:
+        return f"Updated {labels[0]}"
+    if len(labels) == 2:
+        return f"Updated {labels[0]} and {labels[1]}"
+    return f"Updated {', '.join(labels[:-1])}, and {labels[-1]}"
+
+
+def _record_card_change(card: Card, user: User, entries: list[dict]):
+    if not entries:
+        return
+    summary = _summarize_change_entries(entries)
+    CardChangeLog.objects.create(
+        card=card,
+        user=user if user.is_authenticated else None,
+        summary=summary,
+        changes=entries,
+    )
 
 
 def _normalize_whatsapp_link(value: str) -> str:
@@ -197,8 +281,22 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    cards_qs = Card.objects.filter(user=request.user).order_by('-created_at')
+    change_log_qs = CardChangeLog.objects.order_by('-created_at')
+    cards_qs = (
+        Card.objects.filter(user=request.user)
+        .order_by('-updated_at', '-created_at')
+        .prefetch_related(Prefetch('change_logs', queryset=change_log_qs, to_attr='recent_logs'))
+    )
     cards = list(cards_qs)
+    for card in cards:
+        if not hasattr(card, 'recent_logs'):
+            card.recent_logs = []
+
+    latest_update_card = cards[0] if cards else None
+    latest_update = latest_update_card.updated_at if latest_update_card else None
+    latest_update_log = None
+    if latest_update_card and getattr(latest_update_card, 'recent_logs', None):
+        latest_update_log = latest_update_card.recent_logs[0]
 
     profile = getattr(request.user, 'profile', None)
     card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
@@ -210,6 +308,8 @@ def dashboard(request):
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
         'at_card_limit': remaining_cards == 0,
+        'latest_update': latest_update,
+        'latest_update_log': latest_update_log,
     }
     return render(request, 'cards/dashboard.html', context)
 
@@ -355,8 +455,32 @@ def edit_card(request, slug):
     if request.method == 'POST':
         form = form_class(request.POST, request.FILES, instance=card)
         if form.is_valid():
+            previous_card_data = _card_initial_data(card)
+            previous_avatar = card.avatar.name if card.avatar else ''
+            previous_logo = card.logo.name if card.logo else ''
+
             _apply_card_form_updates(card, form)
-            form.save() # This re-triggers the model's save method, updating QR code etc.
+            saved_card = form.save()  # This re-triggers the model's save method, updating QR code etc.
+
+            current_card_data = saved_card.card_data if isinstance(saved_card.card_data, dict) else {}
+            change_entries = _build_card_change_entries(previous_card_data, current_card_data)
+
+            if 'avatar' in form.changed_data:
+                change_entries.append({
+                    'field': 'avatar',
+                    'label': 'Avatar image',
+                    'before': previous_avatar or 'None',
+                    'after': saved_card.avatar.name if saved_card.avatar else 'Removed',
+                })
+            if 'logo' in form.changed_data:
+                change_entries.append({
+                    'field': 'logo',
+                    'label': 'Logo image',
+                    'before': previous_logo or 'None',
+                    'after': saved_card.logo.name if saved_card.logo else 'Removed',
+                })
+
+            _record_card_change(saved_card, request.user, change_entries)
 
             return redirect(card.get_absolute_url())
     else:
@@ -384,8 +508,32 @@ def admin_edit_card(request, slug):
     if request.method == 'POST':
         form = form_class(request.POST, request.FILES, instance=card)
         if form.is_valid():
+            previous_card_data = _card_initial_data(card)
+            previous_avatar = card.avatar.name if card.avatar else ''
+            previous_logo = card.logo.name if card.logo else ''
+
             _apply_card_form_updates(card, form)
-            form.save()
+            saved_card = form.save()
+
+            current_card_data = saved_card.card_data if isinstance(saved_card.card_data, dict) else {}
+            change_entries = _build_card_change_entries(previous_card_data, current_card_data)
+
+            if 'avatar' in form.changed_data:
+                change_entries.append({
+                    'field': 'avatar',
+                    'label': 'Avatar image',
+                    'before': previous_avatar or 'None',
+                    'after': saved_card.avatar.name if saved_card.avatar else 'Removed',
+                })
+            if 'logo' in form.changed_data:
+                change_entries.append({
+                    'field': 'logo',
+                    'label': 'Logo image',
+                    'before': previous_logo or 'None',
+                    'after': saved_card.logo.name if saved_card.logo else 'Removed',
+                })
+
+            _record_card_change(saved_card, request.user, change_entries)
             return redirect('admin_dashboard')
     else:
         initial_data = _card_initial_data(card)
@@ -933,14 +1081,34 @@ def forgot_password(request):
     if request.method == 'POST':
         form = ForgotPasswordForm(request.POST)
         if form.is_valid():
-            email_or_phone = form.cleaned_data['email_or_phone']
+            email_or_phone = form.cleaned_data['email_or_phone'].strip()
             from django.db.models import Q
-            user = User.objects.filter(Q(email__iexact=email_or_phone) | Q(profile__phone_number=email_or_phone)).distinct().first()
+
+            query = Q(email__iexact=email_or_phone)
+            digits = re.sub(r'\D', '', email_or_phone.lstrip('+'))
+            if digits:
+                variants = {digits}
+                stripped = digits.lstrip('0')
+                if stripped:
+                    variants.add(stripped)
+                    variants.add('0' + stripped)
+                for code, _label in COUNTRY_CHOICES:
+                    if digits.startswith(code) and len(digits) > len(code):
+                        rest = digits[len(code):]
+                        variants.add(rest)
+                        rest_stripped = rest.lstrip('0')
+                        if rest_stripped:
+                            variants.add(rest_stripped)
+                            variants.add('0' + rest_stripped)
+                            variants.add(code + rest_stripped)
+                query |= Q(profile__phone_number__in=variants)
+
+            user = User.objects.filter(query).distinct().first()
 
             if user:
-                request.session['password_reset_user_id'] = user.id
                 if request.user.is_authenticated:
                     logout(request)
+                request.session['password_reset_user_id'] = user.id
                 return redirect('reset_password')
             else:
                 form.add_error(None, "If this email or phone number exists in our system, you will be able to reset your password.")

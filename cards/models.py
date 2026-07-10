@@ -47,6 +47,7 @@ class Card(models.Model):
     text_color = models.CharField(max_length=20, default='#FFFFFF')
     card_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_PERSONAL)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def get_absolute_url(self):
         from django.urls import reverse
@@ -199,6 +200,7 @@ class UpgradeRequest(models.Model):
     class Meta:
         ordering = ['-created_at']
 
+
     def mark(self, status: str, admin_user: User | None = None, notes: str | None = None):
         if status not in dict(self.STATUS_CHOICES):
             raise ValueError('Unsupported status value')
@@ -212,6 +214,22 @@ class UpgradeRequest(models.Model):
 
     def __str__(self):
         return f"UpgradeRequest({self.user}, {self.get_status_display()})"
+
+
+class CardChangeLog(models.Model):
+    card = models.ForeignKey('Card', on_delete=models.CASCADE, related_name='change_logs')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='card_change_logs')
+    summary = models.CharField(max_length=255, blank=True)
+    changes = models.JSONField(default=list, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        if self.summary:
+            return f"{self.card} · {self.summary}"
+        return f"{self.card} · {self.created_at:%Y-%m-%d %H:%M}"
 
 
 class Feedback(models.Model):

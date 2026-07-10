@@ -27,8 +27,9 @@ urlpatterns = [
     path('accounts/profile/', RedirectView.as_view(url='/dashboard/', permanent=True)),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('i18n/', include('django.conf.urls.i18n')),
     path('', include('cards.urls')),
-    
+
 ]
 
 if settings.DEBUG:

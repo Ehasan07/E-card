@@ -1,0 +1,164 @@
+/* ==========================================================================
+   MY-Card — Motion Library
+   6 consolidated primitives that replace the ~14 scattered keyframes in
+   individual templates. Use utility classes to opt-in.
+   ========================================================================== */
+
+/* ---- 1. fade-up — entry animation ---- */
+@keyframes mc-fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.mc-fade-up {
+  animation: mc-fade-up var(--mc-dur-slow) var(--mc-ease) both;
+}
+.mc-fade-up--d1 { animation-delay: 0.08s; }
+.mc-fade-up--d2 { animation-delay: 0.16s; }
+.mc-fade-up--d3 { animation-delay: 0.24s; }
+.mc-fade-up--d4 { animation-delay: 0.32s; }
+.mc-fade-up--d5 { animation-delay: 0.40s; }
+
+/* ---- 2. neon-pulse — CTA breathing glow ---- */
+@keyframes mc-neon-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--mc-accent-halo); }
+  50%      { box-shadow: 0 0 0 12px transparent; }
+}
+.mc-neon-pulse {
+  animation: mc-neon-pulse 2.4s ease-in-out infinite;
+}
+
+/* ---- 3. hue-drift — background aurora ---- */
+@keyframes mc-hue-drift {
+  0%   { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50%  { transform: translate3d(4%, -6%, 0) rotate(4deg); }
+  100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+}
+.mc-hue-drift {
+  animation: mc-hue-drift 22s ease-in-out infinite;
+}
+
+/* Aurora blob — decorative background element */
+.mc-aurora {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+
+.mc-aurora--mint    { background: radial-gradient(circle, var(--mc-accent) 0%, transparent 60%); }
+.mc-aurora--cyan    { background: radial-gradient(circle, var(--mc-cyan) 0%, transparent 60%); }
+.mc-aurora--magenta { background: radial-gradient(circle, var(--mc-magenta) 0%, transparent 60%); }
+
+/* ---- 4. kinetic-slide — text reveal on word/line ---- */
+@keyframes mc-kinetic-slide {
+  0%   { opacity: 0; transform: translateY(0.65em) rotateX(-25deg); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+.mc-kinetic {
+  perspective: 800px;
+  display: inline-block;
+}
+.mc-kinetic__word,
+.mc-kinetic__line {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: mc-kinetic-slide 0.8s var(--mc-ease) both;
+}
+.mc-kinetic__word { margin-right: 0.25em; }
+.mc-kinetic__word:nth-child(1) { animation-delay: 0.05s; }
+.mc-kinetic__word:nth-child(2) { animation-delay: 0.15s; }
+.mc-kinetic__word:nth-child(3) { animation-delay: 0.25s; }
+.mc-kinetic__word:nth-child(4) { animation-delay: 0.35s; }
+.mc-kinetic__word:nth-child(5) { animation-delay: 0.45s; }
+.mc-kinetic__word:nth-child(6) { animation-delay: 0.55s; }
+.mc-kinetic__word:nth-child(7) { animation-delay: 0.65s; }
+.mc-kinetic__word:nth-child(8) { animation-delay: 0.75s; }
+
+/* ---- 5. parallax-tilt — 3D card hover (driven by JS tilt.js) ---- */
+.mc-tilt {
+  position: relative;
+  transform-style: preserve-3d;
+  transform: perspective(1200px) rotateX(var(--mc-rx, 0deg)) rotateY(var(--mc-ry, 0deg));
+  transition: transform var(--mc-dur-med) var(--mc-ease-out);
+  will-change: transform;
+}
+.mc-tilt__shine {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      circle at var(--mc-mx, 50%) var(--mc-my, 50%),
+      rgba(255, 255, 255, 0.18) 0%,
+      transparent 45%
+    );
+  opacity: var(--mc-shine, 0);
+  transition: opacity var(--mc-dur-med) var(--mc-ease-out);
+  mix-blend-mode: overlay;
+}
+
+/* ---- 6. dot-grid-shift — hero backdrop ---- */
+@keyframes mc-dot-drift {
+  0%   { background-position: 0 0; }
+  100% { background-position: 40px 40px; }
+}
+.mc-dot-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+  animation: mc-dot-drift 30s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+/* ---- Utility: scroll-triggered reveal ---- */
+.mc-reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity var(--mc-dur-slow) var(--mc-ease),
+    transform var(--mc-dur-slow) var(--mc-ease);
+}
+.mc-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- Utility: rotating conic gradient border (rare, for hero cards) ---- */
+@keyframes mc-spin {
+  to { transform: rotate(360deg); }
+}
+.mc-glow-border {
+  position: relative;
+  border-radius: var(--mc-r-xl);
+  overflow: hidden;
+  isolation: isolate;
+}
+.mc-glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(from 0deg,
+    transparent 0deg,
+    var(--mc-accent) 45deg,
+    transparent 90deg,
+    transparent 270deg,
+    var(--mc-cyan) 315deg,
+    transparent 360deg);
+  animation: mc-spin 8s linear infinite;
+  z-index: -1;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}

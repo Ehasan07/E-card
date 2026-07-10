@@ -234,6 +234,18 @@
                                 {{ form.telegram }}
                             </div>
                             <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">WeChat</label>
+                                {{ form.wechat }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Upwork</label>
+                                {{ form.upwork }}
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1">Fiverr</label>
+                                {{ form.fiverr }}
+                            </div>
+                            <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1">Threads</label>
                                 {{ form.threads }}
                             </div>
@@ -401,6 +413,9 @@
                                 <span class="simple-social hidden" data-social-preview="parrale"><i data-lucide="waves" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="pinterest"><i data-lucide="pin" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="telegram"><i data-lucide="send" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="wechat"><i data-lucide="message-circle-more" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="upwork"><i data-lucide="briefcase" class="w-4 h-4"></i></span>
+                                <span class="simple-social hidden" data-social-preview="fiverr"><i data-lucide="sparkles" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="threads"><i data-lucide="at-sign" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="behance"><i data-lucide="palette" class="w-4 h-4"></i></span>
                                 <span class="simple-social hidden" data-social-preview="dribbble"><i data-lucide="basketball" class="w-4 h-4"></i></span>
@@ -694,6 +709,9 @@
     .simple-social[data-social-preview="parrale"] { background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #1f2937; }
     .simple-social[data-social-preview="pinterest"] { background: #E60023; }
     .simple-social[data-social-preview="telegram"] { background: #229ED9; }
+    .simple-social[data-social-preview="wechat"] { background: #09b83e; }
+    .simple-social[data-social-preview="upwork"] { background: #14a800; }
+    .simple-social[data-social-preview="fiverr"] { background: #1dbf73; }
     .simple-social[data-social-preview="threads"] { background: #101010; }
     .simple-social[data-social-preview="behance"] { background: #0057ff; }
     .simple-social[data-social-preview="dribbble"] { background: linear-gradient(135deg,#ec4899,#f472b6); }
@@ -710,7 +728,7 @@
         if (!form) { return; }
 
         const fallbackBackground = '#000000';
-        const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','messenger','discord','parrale','pinterest','telegram','threads','behance','dribbble'];
+        const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','messenger','discord','parrale','pinterest','telegram','wechat','upwork','fiverr','threads','behance','dribbble'];
         const inputs = {};
         fieldIds.forEach(name => {
             const el = document.getElementById(`id_${name}`);

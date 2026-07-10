@@ -1,122 +1,126 @@
 <!DOCTYPE html>
 {% load static %}
-<html lang="en">
+<html lang="{{ LANGUAGE_CODE|default:'en' }}" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}MY-Card Creator{% endblock %}</title>
-    <link rel="icon" href="{% static 'cards/Favicon.png' %}?v=2" type="image/png">
-    <link rel="shortcut icon" href="{% static 'cards/Favicon.png' %}?v=2" type="image/png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyzog9E+N0R8E+sOJleeQwZ0B" crossorigin="anonymous">
-            <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="theme-color" content="#05060B">
+    <title>{% block title %}MY-Card — Digital Business Card{% endblock %}</title>
+
+    <link rel="icon" href="{% static 'cards/Favicon.png' %}?v=3" type="image/png">
+    <link rel="shortcut icon" href="{% static 'cards/Favicon.png' %}?v=3" type="image/png">
+
+    {# Fonts: Inter (body) + Space Grotesk (display) + JetBrains Mono (mono) #}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+
+    {# Design system — load BEFORE any inline styles so vars are available #}
+    <link rel="stylesheet" href="{% static 'cards/css/tokens.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'cards/css/components.css' %}?v=1">
+    <link rel="stylesheet" href="{% static 'cards/css/motion.css' %}?v=1">
+
+    {# Utility framework — kept for legacy templates (dashboard, admin), namespaced .mc-* wins #}
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    {# Bootstrap still needed for admin_dashboard.html tooltip API — will be removed in Sprint 3 #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyzog9E+N0R8E+sOJleeQwZ0B" crossorigin="anonymous">
+
     <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%);
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Poppins', sans-serif;
-        }
-        .glassmorphism {
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .accent-gradient {
-            background: linear-gradient(to right, #ff8177 0%, #ff867a 0%, #ff8c7f 21%, #f99185 52%, #cf556c 78%, #b12a5b 100%);
-        }
-        .toast-stack {
-            position: fixed;
-            top: 1.5rem;
-            right: 1.5rem;
-            display: grid;
-            gap: 0.75rem;
-            z-index: 1000;
-        }
-        .toast-card {
-            min-width: 260px;
-            max-width: 340px;
-            padding: 0.85rem 1rem;
-            border-radius: 1rem;
-            backdrop-filter: blur(12px);
-            box-shadow: 0 18px 45px -20px rgba(15,23,42,0.35);
-            display: flex;
-            align-items: start;
-            gap: 0.75rem;
-            color: #0f172a;
-            background: rgba(255,255,255,0.85);
-            border: 1px solid rgba(226,232,240,0.75);
-            animation: toastSlide 0.4s ease both;
-        }
-        .toast-card--success { border-color: rgba(16,185,129,0.35); background: rgba(236,253,245,0.92); }
-        .toast-card--error { border-color: rgba(248,113,113,0.45); background: rgba(254,226,226,0.92); }
-        .toast-card--warning { border-color: rgba(251,191,36,0.45); background: rgba(254,243,199,0.92); }
-        .toast-card--info { border-color: rgba(129,140,248,0.35); background: rgba(224,231,255,0.92); }
-        .toast-icon {
-            width: 2rem;
-            height: 2rem;
-            border-radius: 0.75rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(148,163,184,0.15);
-        }
-        @keyframes toastSlide {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="text-gray-800">
+<body>
     {% if messages %}
-        <div class="toast-stack" style="display:none;" aria-hidden="true">
+        <div class="mc-toast-stack" aria-live="polite" style="display:none;">
             {% for message in messages %}
-                <div class="toast-card" data-message="{{ message|escapejs }}" data-tags="{{ message.tags|default:'info' }}"></div>
+                <div data-message="{{ message|escapejs }}" data-tags="{{ message.tags|default:'info' }}"></div>
             {% endfor %}
         </div>
     {% endif %}
-    <main>
-        {% block content %}
-        {% endblock %}
-    </main>
-    <script>
-        lucide.createIcons();
-    </script>
+
+    {% block content %}{% endblock %}
+
+    {# ---------- Global language toggle (bottom-right pill) ---------- #}
+    {% load i18n %}
+    {% get_current_language as CURRENT_LANG %}
+    <form action="{% url 'set_language' %}" method="post" class="mc-lang-pill" aria-label="Language switcher">
+        {% csrf_token %}
+        <input name="next" type="hidden" value="{{ request.get_full_path }}">
+        <button type="submit" name="language" value="en" class="mc-lang-pill__btn {% if CURRENT_LANG == 'en' %}is-active{% endif %}" aria-pressed="{% if CURRENT_LANG == 'en' %}true{% else %}false{% endif %}">EN</button>
+        <button type="submit" name="language" value="bn" class="mc-lang-pill__btn {% if CURRENT_LANG == 'bn' %}is-active{% endif %}" aria-pressed="{% if CURRENT_LANG == 'bn' %}true{% else %}false{% endif %}">বাং</button>
+    </form>
+    <style>
+        .mc-lang-pill {
+            position: fixed;
+            bottom: 1rem;
+            left: 1rem;
+            display: inline-flex;
+            padding: 3px;
+            background: color-mix(in oklab, var(--mc-bg-1) 90%, transparent);
+            border: 1px solid var(--mc-border-hi);
+            border-radius: var(--mc-r-full);
+            backdrop-filter: blur(14px);
+            box-shadow: var(--mc-shadow-2);
+            z-index: 90;
+            font-size: var(--mc-fs-caption);
+        }
+        .mc-lang-pill__btn {
+            padding: 0.35rem 0.85rem;
+            border-radius: var(--mc-r-full);
+            color: var(--mc-text-md);
+            font-weight: 600;
+            font-family: var(--mc-font-body);
+            cursor: pointer;
+            transition: all var(--mc-dur-fast) var(--mc-ease);
+        }
+        .mc-lang-pill__btn.is-active {
+            background: var(--mc-accent);
+            color: var(--mc-text-inv);
+        }
+        .mc-lang-pill__btn:hover:not(.is-active) { color: var(--mc-text-hi); }
+        @media (max-width: 640px) {
+            .mc-lang-pill { bottom: 0.5rem; left: 0.5rem; }
+        }
+    </style>
+
+    <script src="{% static 'cards/js/theme.js' %}?v=1"></script>
+    <script src="{% static 'cards/js/tilt.js' %}?v=1"></script>
+    <script>lucide.createIcons();</script>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+
+    {# Server messages -> SweetAlert toast, now themed via MY-Card tokens #}
     <script>
         (function() {
-            const stack = document.querySelectorAll('.toast-stack .toast-card');
-            if (!stack.length || !window.Swal) {
-                return;
-            }
-            const toast = Swal.mixin({
+            var stack = document.querySelectorAll('.mc-toast-stack > div[data-message]');
+            if (!stack.length || !window.Swal) return;
+            var toast = Swal.mixin({
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 4200,
+                timer: 4500,
                 timerProgressBar: true,
+                background: 'var(--mc-bg-2)',
+                color: 'var(--mc-text-hi)',
+                iconColor: 'var(--mc-accent)',
+                customClass: { popup: 'mc-toast' },
                 showClass: { popup: 'swal2-noanimation', backdrop: 'swal2-noanimation' },
                 hideClass: { popup: '', backdrop: '' }
             });
-            stack.forEach(card => {
-                const text = card.dataset.message || '';
-                const tags = card.dataset.tags || '';
-                let icon = 'info';
-                if (tags.includes('success')) icon = 'success';
-                else if (tags.includes('error')) icon = 'error';
-                else if (tags.includes('warning')) icon = 'warning';
-                else if (tags.includes('info')) icon = 'info';
-                toast.fire({
-                    icon,
-                    title: text
-                });
+            stack.forEach(function(el) {
+                var text = el.dataset.message || '';
+                var tags = el.dataset.tags || '';
+                var icon = 'info';
+                if (tags.indexOf('success') !== -1) icon = 'success';
+                else if (tags.indexOf('error') !== -1) icon = 'error';
+                else if (tags.indexOf('warning') !== -1) icon = 'warning';
+                toast.fire({ icon: icon, title: text });
             });
         })();
     </script>
+
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

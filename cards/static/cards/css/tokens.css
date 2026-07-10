@@ -1,0 +1,258 @@
+/* ==========================================================================
+   MY-Card — Design Tokens (Dark Futuristic Glow)
+   Single source of truth for color, type, spacing, motion, and radius.
+   Loaded first in base.html so every other stylesheet can consume vars.
+   ========================================================================== */
+
+:root {
+  color-scheme: dark light;
+
+  /* ---- Base surfaces (Dark canvas) ---- */
+  --mc-bg-0: #05060B;
+  --mc-bg-1: #0B0D14;
+  --mc-bg-2: #12141C;
+  --mc-bg-3: #1B1E2A;
+  --mc-bg-4: #262A38;
+
+  /* ---- Text ---- */
+  --mc-text-hi:  #F2F4F8;
+  --mc-text-md:  #A6ADBB;
+  --mc-text-lo:  #6B7280;
+  --mc-text-inv: #05060B;
+
+  /* ---- Neon accent (brand hue) ---- */
+  --mc-accent:        #7CFFB2;
+  --mc-accent-strong: #00E38A;
+  --mc-accent-soft:   #C8FFDD;
+  --mc-accent-glow:   rgba(124, 255, 178, 0.35);
+  --mc-accent-halo:   rgba(124, 255, 178, 0.12);
+
+  /* ---- Secondary neon (rare, use sparingly) ---- */
+  --mc-cyan:    #38E1FF;
+  --mc-magenta: #F471FF;
+
+  /* ---- Semantic ---- */
+  --mc-success: #22C55E;
+  --mc-warn:    #F59E0B;
+  --mc-error:   #F87171;
+  --mc-info:    #60A5FA;
+
+  /* ---- Borders / strokes ---- */
+  --mc-border:      rgba(255, 255, 255, 0.06);
+  --mc-border-hi:   rgba(255, 255, 255, 0.12);
+  --mc-border-glow: rgba(124, 255, 178, 0.35);
+
+  /* ---- Radius scale ---- */
+  --mc-r-sm:   8px;
+  --mc-r-md:  14px;
+  --mc-r-lg:  20px;
+  --mc-r-xl:  28px;
+  --mc-r-2xl: 36px;
+  --mc-r-full: 999px;
+
+  /* ---- Shadow scale ---- */
+  --mc-shadow-1:    0 2px 8px rgba(0, 0, 0, 0.35);
+  --mc-shadow-2:    0 12px 32px rgba(0, 0, 0, 0.45);
+  --mc-shadow-3:    0 24px 60px rgba(0, 0, 0, 0.55);
+  --mc-shadow-glow: 0 0 40px rgba(124, 255, 178, 0.25);
+  --mc-shadow-halo: 0 0 80px rgba(124, 255, 178, 0.18);
+
+  /* ---- Spacing (4px base) ---- */
+  --mc-s-1:  4px;
+  --mc-s-2:  8px;
+  --mc-s-3: 12px;
+  --mc-s-4: 16px;
+  --mc-s-5: 24px;
+  --mc-s-6: 32px;
+  --mc-s-7: 48px;
+  --mc-s-8: 64px;
+  --mc-s-9: 96px;
+
+  /* ---- Typography ---- */
+  --mc-font-display: 'Space Grotesk', 'Poppins', system-ui, sans-serif;
+  --mc-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  --mc-font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+
+  --mc-fs-display-xl: clamp(3rem, 6vw, 5.5rem);
+  --mc-fs-display-l:  clamp(2.2rem, 4vw, 3.6rem);
+  --mc-fs-h1:         clamp(1.75rem, 3vw, 2.5rem);
+  --mc-fs-h2:         1.375rem;
+  --mc-fs-h3:         1.125rem;
+  --mc-fs-body:       1rem;
+  --mc-fs-body-sm:    0.875rem;
+  --mc-fs-caption:    0.75rem;
+  --mc-fs-mono:       0.95rem;
+
+  --mc-lh-tight:  1.15;
+  --mc-lh-normal: 1.55;
+  --mc-lh-loose:  1.75;
+
+  /* ---- Motion ---- */
+  --mc-ease:       cubic-bezier(0.22, 1, 0.36, 1);
+  --mc-ease-out:   cubic-bezier(0.16, 1, 0.3, 1);
+  --mc-ease-back:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --mc-dur-fast: 180ms;
+  --mc-dur-med:  320ms;
+  --mc-dur-slow: 600ms;
+
+  /* ---- Layout ---- */
+  --mc-container:      1200px;
+  --mc-container-wide: 1400px;
+  --mc-gutter:         clamp(1rem, 4vw, 3rem);
+
+  /* ---- Z-index ---- */
+  --mc-z-nav:     100;
+  --mc-z-drawer:  200;
+  --mc-z-modal:   300;
+  --mc-z-toast:   400;
+}
+
+/* ---- Light theme override (opt-in via <html data-theme="light">) ---- */
+html[data-theme="light"] {
+  --mc-bg-0: #F7F8FA;
+  --mc-bg-1: #FFFFFF;
+  --mc-bg-2: #F1F3F7;
+  --mc-bg-3: #E6E9F0;
+  --mc-bg-4: #D9DDE5;
+
+  --mc-text-hi:  #0B0D14;
+  --mc-text-md:  #4A5060;
+  --mc-text-lo:  #8A90A0;
+  --mc-text-inv: #FFFFFF;
+
+  --mc-accent:        #00A867;
+  --mc-accent-strong: #007A4B;
+  --mc-accent-soft:   #D9F8E6;
+  --mc-accent-glow:   rgba(0, 168, 103, 0.25);
+  --mc-accent-halo:   rgba(0, 168, 103, 0.08);
+
+  --mc-border:      rgba(11, 13, 20, 0.06);
+  --mc-border-hi:   rgba(11, 13, 20, 0.12);
+  --mc-border-glow: rgba(0, 168, 103, 0.35);
+
+  --mc-shadow-1:    0 2px 8px rgba(11, 13, 20, 0.06);
+  --mc-shadow-2:    0 12px 32px rgba(11, 13, 20, 0.10);
+  --mc-shadow-3:    0 24px 60px rgba(11, 13, 20, 0.14);
+  --mc-shadow-glow: 0 0 40px rgba(0, 168, 103, 0.18);
+}
+
+/* ---- Reduced motion — kill all animations/transitions ---- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---- Global reset / normalize ---- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  background: var(--mc-bg-0);
+  color: var(--mc-text-hi);
+  font-family: var(--mc-font-body);
+  font-size: var(--mc-fs-body);
+  line-height: var(--mc-lh-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--mc-font-display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: var(--mc-lh-tight);
+  color: var(--mc-text-hi);
+  margin: 0 0 var(--mc-s-4);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--mc-dur-fast) var(--mc-ease);
+}
+
+a:hover {
+  color: var(--mc-accent);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: 0;
+  background: none;
+  color: inherit;
+}
+
+img, svg { display: block; max-width: 100%; }
+
+::selection {
+  background: var(--mc-accent);
+  color: var(--mc-text-inv);
+}
+
+/* ---- Reusable utility classes ---- */
+.mc-container {
+  width: 100%;
+  max-width: var(--mc-container);
+  margin: 0 auto;
+  padding-left: var(--mc-gutter);
+  padding-right: var(--mc-gutter);
+}
+
+.mc-container--wide { max-width: var(--mc-container-wide); }
+
+.mc-mono { font-family: var(--mc-font-mono); font-size: var(--mc-fs-mono); }
+
+.mc-caption {
+  font-size: var(--mc-fs-caption);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--mc-text-md);
+}
+
+.mc-text-muted { color: var(--mc-text-md); }
+.mc-text-dim   { color: var(--mc-text-lo); }
+.mc-text-accent { color: var(--mc-accent); }
+
+/* Kinetic display heading — gradient shine */
+.mc-display {
+  font-family: var(--mc-font-display);
+  font-size: var(--mc-fs-display-xl);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+  background: linear-gradient(180deg, var(--mc-text-hi) 0%, var(--mc-text-md) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.mc-display--accent {
+  background: linear-gradient(120deg, var(--mc-accent) 0%, var(--mc-cyan) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Focus ring for keyboard nav */
+:focus-visible {
+  outline: 2px solid var(--mc-accent);
+  outline-offset: 3px;
+  border-radius: var(--mc-r-sm);
+}

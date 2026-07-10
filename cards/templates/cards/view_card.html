@@ -1,1204 +1,817 @@
 {% extends 'cards/base.html' %}
 {% load static %}
 
-{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }}'s MY-Card{% endblock %}
+{% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }} — MY-Card{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="{{ card.card_data.firstName }} {{ card.card_data.lastName }}{% if card.card_data.jobTitle %} · {{ card.card_data.jobTitle }}{% endif %}{% if card.card_data.company %} @ {{ card.card_data.company }}{% endif %}">
+<meta property="og:title" content="{{ card.card_data.firstName }} {{ card.card_data.lastName }} — MY-Card">
+<meta property="og:type" content="profile">
+{% if card.avatar %}<meta property="og:image" content="{{ card.avatar.url }}">{% endif %}
+{% endblock %}
 
 {% block content %}
-<div class="vcard-page relative min-h-screen bg-slate-950 text-slate-100 px-4 py-16 overflow-hidden">
-    <div class="page-orb orb-one"></div>
-    <div class="page-orb orb-two"></div>
-    <div class="page-orb orb-three"></div>
+<div class="vc-page">
+    {# ---------- Aurora backdrop ---------- #}
+    <div class="vc-canvas" aria-hidden="true">
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift"  style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+        <div class="mc-aurora mc-aurora--cyan mc-hue-drift"  style="width:600px;height:600px;bottom:-220px;right:-200px;opacity:0.35;animation-delay:5s;"></div>
+        <div class="mc-aurora mc-aurora--magenta"            style="width:340px;height:340px;top:30%;left:55%;opacity:0.22;filter:blur(120px);"></div>
+        <div class="mc-dot-grid"></div>
+    </div>
 
-    <div class="max-w-5xl mx-auto relative z-10">
-        {% if is_admin_viewer %}
-            <div class="admin-return-banner" data-reveal style="--reveal-delay: 0s;">
-                <a href="{% url 'admin_dashboard' %}" class="admin-return-link">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Back to dashboard
-                </a>
+    <div class="mc-container vc-container">
+
+        {# ---------- Top bar: admin return + theme toggle ---------- #}
+        <header class="vc-top">
+            <div class="vc-top__left">
+                {% if is_admin_viewer %}
+                    <a href="{% url 'admin_dashboard' %}" class="mc-btn mc-btn--ghost mc-btn--sm">
+                        <i data-lucide="arrow-left"></i>
+                        Back to admin
+                    </a>
+                {% endif %}
             </div>
+            <div class="vc-top__right">
+                <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                    <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                    <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+                </button>
+            </div>
+        </header>
+
+        {# ---------- Hero ---------- #}
+        <section class="vc-hero mc-fade-up">
+            <div class="mc-tilt vc-hero__card" data-mc-tilt data-mc-tilt-max="7"
+                 {% if card.card_data.background_style %}style="--vc-hero-bg: {{ card.card_data.background_style }};"{% endif %}>
+                <div class="mc-tilt__shine"></div>
+
+                <div class="vc-avatar">
+                    {% if card.avatar %}
+                        <img src="{{ card.avatar.url }}" alt="{{ card.card_data.firstName }} avatar">
+                    {% else %}
+                        <span class="vc-avatar__initials">{{ card.card_data.firstName|default:''|slice:':1' }}{{ card.card_data.lastName|default:''|slice:':1' }}</span>
+                    {% endif %}
+                </div>
+
+                <h1 class="vc-name mc-kinetic">
+                    <span class="mc-kinetic__word">{{ card.card_data.firstName|default:'' }}</span>
+                    <span class="mc-kinetic__word">{{ card.card_data.lastName|default:'' }}</span>
+                </h1>
+
+                {% if card.card_data.jobTitle or card.card_data.company %}
+                    <p class="vc-title mc-fade-up mc-fade-up--d3">
+                        {{ card.card_data.jobTitle|default:'' }}{% if card.card_data.jobTitle and card.card_data.company %} · {% endif %}{% if card.card_data.company %}<span class="mc-text-accent">{{ card.card_data.company }}</span>{% endif %}
+                    </p>
+                {% endif %}
+
+                {% if card.logo or card.card_data.logo_name %}
+                    <div class="vc-brand mc-fade-up mc-fade-up--d4">
+                        <div class="vc-brand__mark">
+                            {% if card.logo %}
+                                <img src="{{ card.logo.url }}" alt="{{ card.card_data.logo_name|default:'Brand' }}">
+                            {% elif card.card_data.logo_name %}
+                                <span>{{ card.card_data.logo_name|slice:':2'|upper }}</span>
+                            {% endif %}
+                        </div>
+                        {% if card.card_data.logo_name %}
+                            <span class="vc-brand__text">{{ card.card_data.logo_name }}</span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                <div class="vc-hero__stats mc-fade-up mc-fade-up--d5">
+                    <div class="vc-hero__stat">
+                        <span class="mc-caption">Views</span>
+                        <span class="vc-hero__stat-val mc-mono">{{ profile_views }}</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {# ---------- Primary contact rail ---------- #}
+        <section class="vc-section mc-fade-up mc-fade-up--d2">
+            <header class="vc-section__head">
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    Get in touch
+                </span>
+                <h2 class="vc-section__title">Reach {{ card.card_data.firstName|default:'me' }} directly</h2>
+            </header>
+
+            <div class="vc-contact-grid">
+                {% if card.card_data.email %}
+                    <a href="mailto:{{ card.card_data.email }}" class="mc-card mc-card--interactive vc-contact">
+                        <div class="vc-contact__icon"><i data-lucide="mail"></i></div>
+                        <div class="vc-contact__body">
+                            <span class="mc-caption">Email</span>
+                            <span class="vc-contact__value">{{ card.card_data.email }}</span>
+                        </div>
+                        <button class="mc-icon-btn vc-contact__copy" data-copy="{{ card.card_data.email }}" data-copy-label="Email copied!" aria-label="Copy email">
+                            <i data-lucide="copy"></i>
+                        </button>
+                    </a>
+                {% endif %}
+
+                {% if phone_display %}
+                    <div class="mc-card vc-contact vc-contact--phone">
+                        <div class="vc-contact__icon"><i data-lucide="phone"></i></div>
+                        <div class="vc-contact__body">
+                            <span class="mc-caption">Phone</span>
+                            <span class="vc-contact__value mc-mono">{{ phone_display }}</span>
+                            <div class="vc-contact__quick">
+                                <a href="tel:{{ phone_tel }}" class="mc-btn mc-btn--ghost mc-btn--sm">
+                                    <i data-lucide="phone-call"></i> Call
+                                </a>
+                                <a href="sms:{{ phone_tel }}" class="mc-btn mc-btn--ghost mc-btn--sm">
+                                    <i data-lucide="message-square"></i> SMS
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if card.card_data.website %}
+                    <a href="{{ card.card_data.website }}" target="_blank" rel="noopener" class="mc-card mc-card--interactive vc-contact">
+                        <div class="vc-contact__icon"><i data-lucide="globe"></i></div>
+                        <div class="vc-contact__body">
+                            <span class="mc-caption">Website</span>
+                            <span class="vc-contact__value">{{ card.card_data.website }}</span>
+                        </div>
+                        <button class="mc-icon-btn vc-contact__copy" data-copy="{{ card.card_data.website }}" data-copy-label="Website copied!" aria-label="Copy website" onclick="event.preventDefault();event.stopPropagation();">
+                            <i data-lucide="copy"></i>
+                        </button>
+                    </a>
+                {% endif %}
+
+                {% if card.card_data.address %}
+                    <div class="mc-card vc-contact">
+                        <div class="vc-contact__icon"><i data-lucide="map-pin"></i></div>
+                        <div class="vc-contact__body">
+                            <span class="mc-caption">Address</span>
+                            <span class="vc-contact__value">{{ card.card_data.address }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if card.card_data.birthday %}
+                    <div class="mc-card vc-contact">
+                        <div class="vc-contact__icon"><i data-lucide="cake"></i></div>
+                        <div class="vc-contact__body">
+                            <span class="mc-caption">Birthday</span>
+                            <span class="vc-contact__value mc-mono">{{ card.card_data.birthday }}</span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if business_highlight %}
+                    <div class="mc-card mc-card--glow vc-contact vc-contact--highlight">
+                        <div class="vc-contact__icon"><i data-lucide="{{ business_highlight.icon }}"></i></div>
+                        <div class="vc-contact__body">
+                            <span class="mc-caption mc-text-accent">{{ business_highlight.label }}</span>
+                            {% if business_highlight.type == 'photo' %}
+                                <div class="vc-contact__media">
+                                    <img src="{{ business_highlight.media_url }}" alt="{{ business_highlight.media_alt }}">
+                                </div>
+                            {% elif business_highlight.link %}
+                                <a href="{{ business_highlight.link }}"{% if business_highlight.type == 'website' %} target="_blank" rel="noopener"{% endif %} class="vc-contact__value">{{ business_highlight.value }}</a>
+                            {% else %}
+                                <span class="vc-contact__value">{{ business_highlight.value }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        {# ---------- About / notes ---------- #}
+        {% if card.card_data.notes %}
+            <section class="vc-section mc-fade-up mc-fade-up--d3">
+                <header class="vc-section__head">
+                    <span class="mc-badge">
+                        <i data-lucide="sparkles"></i>
+                        About
+                    </span>
+                    <h2 class="vc-section__title">A little more about {{ card.card_data.firstName|default:'me' }}</h2>
+                </header>
+                <div class="mc-card vc-notes">
+                    <p>{{ card.card_data.notes|linebreaksbr }}</p>
+                </div>
+            </section>
         {% endif %}
-        <div class="vcard-canvas" data-scroll-container>
-            <section class="hero-stack" data-reveal style="--reveal-delay: 0.04s;">
-                <div class="hero-shell">
-                    <div class="hero-grid">
-                        <article class="hero-holo" style="--holo-gradient: {{ card.card_data.background_style|default:'linear-gradient(140deg,#312e81 0%,#9333ea 35%,#ec4899 100%)' }};">
-                            <span class="hero-holo__shine"></span>
-                            <span class="hero-holo__glow"></span>
-                            <header class="hero-head">
-                                <div class="hero-avatar">
-                                    {% if card.avatar %}
-                                        <img src="{{ card.avatar.url }}" alt="{{ card.card_data.firstName }} {{ card.card_data.lastName }} avatar">
-                                    {% else %}
-                                        <span>{{ card.card_data.firstName|default:''|slice:':1' }}{{ card.card_data.lastName|default:''|slice:':1' }}</span>
-                                    {% endif %}
-                                </div>
-                                <div class="hero-meta">
-                                    <h1>{{ card.card_data.firstName }} {{ card.card_data.lastName }}</h1>
-                                    <p>
-                                        {{ card.card_data.jobTitle|default:'Creative Professional' }}
-                                        {% if card.card_data.company %}
-                                            <span> · {{ card.card_data.company }}</span>
-                                        {% endif %}
-                                    </p>
-                                    {% if card.logo or card.card_data.logo_name %}
-                                        <div class="hero-brand">
-                                            <div class="hero-brand__badge">
-                                                {% if card.logo %}
-                                                    <img src="{{ card.logo.url }}" alt="{{ card.card_data.logo_name|default:'Brand logo' }}">
-                                                {% elif card.card_data.logo_name %}
-                                                    <span>{{ card.card_data.logo_name|slice:':2'|upper }}</span>
-                                                {% else %}
-                                                    <i data-lucide="building-2"></i>
-                                                {% endif %}
-                                            </div>
-                                            {% if card.card_data.logo_name %}
-                                                <span class="hero-brand__text">{{ card.card_data.logo_name }}</span>
-                                            {% endif %}
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            </header>
-                            <div class="hero-details">
-                                <div class="hero-detail">
-                                    <span class="hero-detail__label">Email</span>
-                                    {% if card.card_data.email %}
-                                        <a href="mailto:{{ card.card_data.email }}" class="hero-detail__value hero-detail__link">{{ card.card_data.email }}</a>
-                                    {% else %}
-                                        <span class="hero-detail__value hero-detail__value--muted">Not provided</span>
-                                    {% endif %}
-                                </div>
-                                <div class="hero-detail">
-                                    <span class="hero-detail__label">Phone</span>
-                                    {% if phone_display %}
-                                        <a href="tel:{{ phone_tel }}" class="hero-detail__value hero-detail__link">{{ phone_display }}</a>
-                                    {% else %}
-                                        <span class="hero-detail__value hero-detail__value--muted">Not provided</span>
-                                    {% endif %}
-                                </div>
-                                <div class="hero-detail">
-                                    <span class="hero-detail__label">Website</span>
-                                    {% if card.card_data.website %}
-                                        <a href="{{ card.card_data.website }}" class="hero-detail__value hero-detail__link" target="_blank" rel="noopener">{{ card.card_data.website }}</a>
-                                    {% else %}
-                                        <span class="hero-detail__value hero-detail__value--muted">Not provided</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </article>
 
-                        <aside class="hero-side">
-                            <div class="hero-side__qr" data-reveal style="--reveal-delay: 0.12s;">
-                                <span class="hero-side__title"><i data-lucide="scan"></i>Share instantly</span>
-                                <div class="hero-side__qr-frame">
-                                    {% if card.qr_code %}
-                                        <img src="{{ card.qr_code.url }}" alt="QR Code" id="qrCodeImg" class="hero-side__qr-image">
-                                    {% else %}
-                                        <div class="hero-side__qr-placeholder">
-                                            <i data-lucide="qr-code"></i>
-                                            <p>QR code not generated yet.</p>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="hero-side__actions">
-                                    <button id="saveContactBtn" type="button" data-first-name="{{ card.card_data.firstName|default:''|escape }}" data-last-name="{{ card.card_data.lastName|default:''|escape }}" data-company="{{ card.card_data.company|default:''|escape }}" data-phone="{{ phone_tel|default:''|escape }}" data-email="{{ card.card_data.email|default:''|escape }}" class="hero-side__cta hero-side__cta--save">
-                                        <i data-lucide="user-plus"></i>
-                                        Save to Contact
-                                    </button>
-                                    <button id="downloadQrCode" type="button" class="hero-side__cta hero-side__cta--download {% if not card.qr_code %}opacity-60 pointer-events-none{% endif %}">
-                                        <i data-lucide="arrow-down-to-line"></i>
-                                        Download QR
-                                    </button>
-                                    {% if show_guest_cta %}
-                                        <a href="{% url 'index' %}" class="hero-side__cta hero-side__cta--guest">
-                                            <i data-lucide="sparkles"></i>
-                                            Create a card for yourself
-                                        </a>
-                                    {% endif %}
-                                </div>
-                                <div class="hero-side__stat">
-                                    <span class="hero-side__stat-label">Profile views</span>
-                                    <span class="hero-side__stat-value">{{ profile_views }}</span>
-                                </div>
-                            </div>
-                        </aside>
-                    </div>
+        {# ---------- Social dock ---------- #}
+        {% if card.card_data.facebook or whatsapp_link or card.card_data.instagram or card.card_data.twitter or card.card_data.linkedin or card.card_data.youtube or card.card_data.github or card.card_data.tiktok or card.card_data.snapchat or card.card_data.likee or card.card_data.messenger or card.card_data.discord or card.card_data.parrale or card.card_data.pinterest or card.card_data.telegram or card.card_data.wechat or card.card_data.upwork or card.card_data.fiverr or card.card_data.threads or card.card_data.behance or card.card_data.dribbble %}
+            <section class="vc-section mc-fade-up mc-fade-up--d4">
+                <header class="vc-section__head">
+                    <span class="mc-badge">
+                        <i data-lucide="share-2"></i>
+                        Social
+                    </span>
+                    <h2 class="vc-section__title">Connect on any network</h2>
+                </header>
+                <div class="vc-socials">
+                    {% if card.card_data.facebook %}<a href="{{ card.card_data.facebook }}" target="_blank" rel="noopener" class="vc-social" data-net="facebook" title="Facebook"><i data-lucide="facebook"></i><span>Facebook</span></a>{% endif %}
+                    {% if whatsapp_link %}<a href="{{ whatsapp_link }}" target="_blank" rel="noopener" class="vc-social" data-net="whatsapp" title="WhatsApp"><i data-lucide="message-circle"></i><span>WhatsApp</span></a>{% endif %}
+                    {% if card.card_data.instagram %}<a href="{{ card.card_data.instagram }}" target="_blank" rel="noopener" class="vc-social" data-net="instagram" title="Instagram"><i data-lucide="instagram"></i><span>Instagram</span></a>{% endif %}
+                    {% if card.card_data.linkedin %}<a href="{{ card.card_data.linkedin }}" target="_blank" rel="noopener" class="vc-social" data-net="linkedin" title="LinkedIn"><i data-lucide="linkedin"></i><span>LinkedIn</span></a>{% endif %}
+                    {% if card.card_data.twitter %}<a href="{{ card.card_data.twitter }}" target="_blank" rel="noopener" class="vc-social" data-net="twitter" title="Twitter"><i data-lucide="twitter"></i><span>Twitter</span></a>{% endif %}
+                    {% if card.card_data.youtube %}<a href="{{ card.card_data.youtube }}" target="_blank" rel="noopener" class="vc-social" data-net="youtube" title="YouTube"><i data-lucide="youtube"></i><span>YouTube</span></a>{% endif %}
+                    {% if card.card_data.github %}<a href="{{ card.card_data.github }}" target="_blank" rel="noopener" class="vc-social" data-net="github" title="GitHub"><i data-lucide="github"></i><span>GitHub</span></a>{% endif %}
+                    {% if card.card_data.tiktok %}<a href="{{ card.card_data.tiktok }}" target="_blank" rel="noopener" class="vc-social" data-net="tiktok" title="TikTok"><i data-lucide="music-2"></i><span>TikTok</span></a>{% endif %}
+                    {% if card.card_data.snapchat %}<a href="{{ card.card_data.snapchat }}" target="_blank" rel="noopener" class="vc-social" data-net="snapchat" title="Snapchat"><i data-lucide="ghost"></i><span>Snapchat</span></a>{% endif %}
+                    {% if card.card_data.messenger %}<a href="{{ card.card_data.messenger }}" target="_blank" rel="noopener" class="vc-social" data-net="messenger" title="Messenger"><i data-lucide="message-square"></i><span>Messenger</span></a>{% endif %}
+                    {% if card.card_data.telegram %}<a href="{{ card.card_data.telegram }}" target="_blank" rel="noopener" class="vc-social" data-net="telegram" title="Telegram"><i data-lucide="send"></i><span>Telegram</span></a>{% endif %}
+                    {% if card.card_data.discord %}<a href="{{ card.card_data.discord }}" target="_blank" rel="noopener" class="vc-social" data-net="discord" title="Discord"><i data-lucide="gamepad-2"></i><span>Discord</span></a>{% endif %}
+                    {% if card.card_data.wechat %}<a href="{{ card.card_data.wechat }}" target="_blank" rel="noopener" class="vc-social" data-net="wechat" title="WeChat"><i data-lucide="message-circle-more"></i><span>WeChat</span></a>{% endif %}
+                    {% if card.card_data.pinterest %}<a href="{{ card.card_data.pinterest }}" target="_blank" rel="noopener" class="vc-social" data-net="pinterest" title="Pinterest"><i data-lucide="pin"></i><span>Pinterest</span></a>{% endif %}
+                    {% if card.card_data.threads %}<a href="{{ card.card_data.threads }}" target="_blank" rel="noopener" class="vc-social" data-net="threads" title="Threads"><i data-lucide="at-sign"></i><span>Threads</span></a>{% endif %}
+                    {% if card.card_data.likee %}<a href="{{ card.card_data.likee }}" target="_blank" rel="noopener" class="vc-social" data-net="likee" title="Likee"><i data-lucide="heart"></i><span>Likee</span></a>{% endif %}
+                    {% if card.card_data.upwork %}<a href="{{ card.card_data.upwork }}" target="_blank" rel="noopener" class="vc-social" data-net="upwork" title="Upwork"><i data-lucide="briefcase"></i><span>Upwork</span></a>{% endif %}
+                    {% if card.card_data.fiverr %}<a href="{{ card.card_data.fiverr }}" target="_blank" rel="noopener" class="vc-social" data-net="fiverr" title="Fiverr"><i data-lucide="sparkles"></i><span>Fiverr</span></a>{% endif %}
+                    {% if card.card_data.behance %}<a href="{{ card.card_data.behance }}" target="_blank" rel="noopener" class="vc-social" data-net="behance" title="Behance"><i data-lucide="palette"></i><span>Behance</span></a>{% endif %}
+                    {% if card.card_data.dribbble %}<a href="{{ card.card_data.dribbble }}" target="_blank" rel="noopener" class="vc-social" data-net="dribbble" title="Dribbble"><i data-lucide="basketball"></i><span>Dribbble</span></a>{% endif %}
+                    {% if card.card_data.parrale %}<a href="{{ card.card_data.parrale }}" target="_blank" rel="noopener" class="vc-social" data-net="parrale" title="Parrale"><i data-lucide="waves"></i><span>Parrale</span></a>{% endif %}
                 </div>
             </section>
+        {% endif %}
 
-            <section class="capsule-section" data-reveal style="--reveal-delay: 0.22s;">
-                <header class="section-head">
-                    <span class="section-flag">
-                        <i data-lucide="handshake"></i>
-                        Primary connections
-                    </span>
-                    <h2>Coordinates to reach {{ card.card_data.firstName|default:'this contact' }}</h2>
-                </header>
-                <div class="capsule-grid">
-                    {% if card.card_data.email %}
-                        <article class="capsule-card">
-                            <div class="capsule-card__icon"><i data-lucide="mail"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">Email</span>
-                                <div class="capsule-card__value-row">
-                                    <a href="mailto:{{ card.card_data.email }}" class="capsule-card__value capsule-card__value--link">{{ card.card_data.email }}</a>
-                                    <button type="button" class="capsule-card__copy" aria-label="Copy email" data-copy="{{ card.card_data.email }}" data-copy-label="Email copied!">
-                                        <i data-lucide="copy"></i>
-                                    </button>
-                                </div>
+        {# ---------- QR + share ---------- #}
+        <section class="vc-section mc-fade-up mc-fade-up--d5">
+            <header class="vc-section__head">
+                <span class="mc-badge">
+                    <i data-lucide="qr-code"></i>
+                    Share
+                </span>
+                <h2 class="vc-section__title">Scan or share this card</h2>
+            </header>
+
+            <div class="vc-share-grid">
+                <div class="mc-card mc-card--elevated vc-qr-card">
+                    <div class="vc-qr-frame">
+                        {% if card.qr_code %}
+                            <img src="{{ card.qr_code.url }}" alt="QR code" id="qrCodeImg">
+                        {% else %}
+                            <div class="vc-qr-placeholder">
+                                <i data-lucide="qr-code"></i>
+                                <p class="mc-text-muted">QR code will appear here</p>
                             </div>
-                        </article>
-                    {% endif %}
-
-                    {% if phone_display %}
-                        <article class="capsule-card capsule-card--phone">
-                            <div class="capsule-card__icon"><i data-lucide="phone"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">Mobile</span>
-                                <div class="capsule-card__value-row">
-                                    <span class="capsule-card__value">{{ phone_display }}</span>
-                                </div>
-                                <div class="capsule-card__quick-actions">
-                                    <a href="tel:{{ phone_tel }}" class="capsule-card__quick" title="Call">
-                                        <span>Call Now</span>
-                                        <i data-lucide="phone-call"></i>
-                                    </a>
-                                    <a href="sms:{{ phone_tel }}" class="capsule-card__quick" title="Send Message">
-                                        <span>Send Message</span>
-                                        <i data-lucide="message-square"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </article>
-                    {% endif %}
-
-                    {% if card.card_data.website %}
-                        <article class="capsule-card">
-                            <div class="capsule-card__icon"><i data-lucide="globe"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">Website</span>
-                                <div class="capsule-card__value-row">
-                                    <a href="{{ card.card_data.website }}" target="_blank" rel="noopener" class="capsule-card__value capsule-card__value--link">{{ card.card_data.website }}</a>
-                                    <button type="button" class="capsule-card__copy" aria-label="Copy website" data-copy="{{ card.card_data.website }}" data-copy-label="Website copied!">
-                                        <i data-lucide="copy"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </article>
-                    {% endif %}
-
-                    {% if card.card_data.company or card.card_data.jobTitle %}
-                        <article class="capsule-card">
-                            <div class="capsule-card__icon"><i data-lucide="briefcase"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">Role</span>
-                                <div class="capsule-card__value-row">
-                                    <span class="capsule-card__value">{{ card.card_data.jobTitle|default:'Professional' }}{% if card.card_data.company %} · {{ card.card_data.company }}{% endif %}</span>
-                                </div>
-                            </div>
-                        </article>
-                    {% endif %}
-
-                    {% if business_highlight %}
-                        <article class="capsule-card capsule-card--highlight">
-                            <div class="capsule-card__icon"><i data-lucide="{{ business_highlight.icon }}"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">{{ business_highlight.label }}</span>
-                                {% if business_highlight.type == 'photo' %}
-                                    <div class="capsule-card__media">
-                                        <img src="{{ business_highlight.media_url }}" alt="{{ business_highlight.media_alt }}">
-                                    </div>
-                                {% else %}
-                                    <div class="capsule-card__value-row">
-                                        {% if business_highlight.link %}
-                                            <a href="{{ business_highlight.link }}" class="capsule-card__value capsule-card__value--link"{% if business_highlight.type == 'website' %} target="_blank" rel="noopener"{% endif %}>{{ business_highlight.value }}</a>
-                                        {% else %}
-                                            <span class="capsule-card__value">{{ business_highlight.value }}</span>
-                                        {% endif %}
-                                        {% if business_highlight.link and business_highlight.type != 'photo' %}
-                                            <button type="button" class="capsule-card__copy" aria-label="Copy highlight" data-copy="{{ business_highlight.copy_value|default:business_highlight.link|default:business_highlight.value }}" data-copy-label="Copied!">
-                                                <i data-lucide="copy"></i>
-                                            </button>
-                                        {% endif %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                        </article>
-                    {% endif %}
-
-                    {% if card.card_data.birthday %}
-                        <article class="capsule-card">
-                            <div class="capsule-card__icon"><i data-lucide="cake"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">Birthday</span>
-                                <div class="capsule-card__value-row">
-                                    <span class="capsule-card__value">{{ card.card_data.birthday }}</span>
-                                </div>
-                            </div>
-                        </article>
-                    {% endif %}
-
-                    {% if card.card_data.notes %}
-                        <article class="capsule-card capsule-card--note">
-                            <div class="capsule-card__icon"><i data-lucide="sticky-note"></i></div>
-                            <div class="capsule-card__content">
-                                <span class="capsule-card__label">Notes</span>
-                                <div class="capsule-card__value-row">
-                                    <span class="capsule-card__value capsule-card__value--multiline">{{ card.card_data.notes|linebreaksbr }}</span>
-                                </div>
-                            </div>
-                        </article>
-                    {% endif %}
-                </div>
-            </section>
-
-            {% if card.card_data.facebook or whatsapp_link or card.card_data.instagram or card.card_data.twitter or card.card_data.linkedin or card.card_data.youtube or card.card_data.github or card.card_data.tiktok or card.card_data.snapchat or card.card_data.likee or card.card_data.pinterest or card.card_data.telegram or card.card_data.threads or card.card_data.behance or card.card_data.dribbble %}
-                <section class="social-section" data-reveal style="--reveal-delay: 0.3s;">
-                    <header class="section-head section-head--compact">
-                        <span class="section-flag">
-                            <i data-lucide="share-2"></i>
-                            Broadcast channels
-                        </span>
-                        <h2>Stay synced on every network</h2>
-                        <p>Tap a beacon below to continue the conversation where it feels right.</p>
-                    </header>
-                    <div class="social-dock">
-                        {% if card.card_data.facebook %}
-                            <a href="{{ card.card_data.facebook }}" target="_blank" class="social-tile social-facebook" title="Facebook">
-                                <i data-lucide="facebook"></i>
-                                <span>Facebook</span>
-                            </a>
-                        {% endif %}
-                        {% if whatsapp_link %}
-                            <a href="{{ whatsapp_link }}" target="_blank" class="social-tile social-whatsapp" title="WhatsApp">
-                                <i data-lucide="message-circle"></i>
-                                <span>WhatsApp</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.instagram %}
-                            <a href="{{ card.card_data.instagram }}" target="_blank" class="social-tile social-instagram" title="Instagram">
-                                <i data-lucide="instagram"></i>
-                                <span>Instagram</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.twitter %}
-                            <a href="{{ card.card_data.twitter }}" target="_blank" class="social-tile social-twitter" title="Twitter">
-                                <i data-lucide="twitter"></i>
-                                <span>Twitter</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.linkedin %}
-                            <a href="{{ card.card_data.linkedin }}" target="_blank" class="social-tile social-linkedin" title="LinkedIn">
-                                <i data-lucide="linkedin"></i>
-                                <span>LinkedIn</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.youtube %}
-                            <a href="{{ card.card_data.youtube }}" target="_blank" class="social-tile social-youtube" title="YouTube">
-                                <i data-lucide="youtube"></i>
-                                <span>YouTube</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.github %}
-                            <a href="{{ card.card_data.github }}" target="_blank" class="social-tile social-github" title="GitHub">
-                                <i data-lucide="github"></i>
-                                <span>GitHub</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.tiktok %}
-                            <a href="{{ card.card_data.tiktok }}" target="_blank" class="social-tile social-tiktok" title="TikTok">
-                                <i data-lucide="music-2"></i>
-                                <span>TikTok</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.snapchat %}
-                            <a href="{{ card.card_data.snapchat }}" target="_blank" class="social-tile social-snapchat" title="Snapchat">
-                                <i data-lucide="ghost"></i>
-                                <span>Snapchat</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.likee %}
-                            <a href="{{ card.card_data.likee }}" target="_blank" class="social-tile social-likee" title="Likee">
-                                <i data-lucide="heart"></i>
-                                <span>Likee</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.messenger %}
-                            <a href="{{ card.card_data.messenger }}" target="_blank" class="social-tile social-messenger" title="Messenger">
-                                <i data-lucide="message-square"></i>
-                                <span>Messenger</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.discord %}
-                            <a href="{{ card.card_data.discord }}" target="_blank" class="social-tile social-discord" title="Discord">
-                                <i data-lucide="gamepad-2"></i>
-                                <span>Discord</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.parrale %}
-                            <a href="{{ card.card_data.parrale }}" target="_blank" class="social-tile social-parrale" title="Parrale">
-                                <i data-lucide="waves"></i>
-                                <span>Parrale</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.pinterest %}
-                            <a href="{{ card.card_data.pinterest }}" target="_blank" class="social-tile social-pinterest" title="Pinterest">
-                                <i data-lucide="pin"></i>
-                                <span>Pinterest</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.telegram %}
-                            <a href="{{ card.card_data.telegram }}" target="_blank" class="social-tile social-telegram" title="Telegram">
-                                <i data-lucide="send"></i>
-                                <span>Telegram</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.threads %}
-                            <a href="{{ card.card_data.threads }}" target="_blank" class="social-tile social-threads" title="Threads">
-                                <i data-lucide="at-sign"></i>
-                                <span>Threads</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.behance %}
-                            <a href="{{ card.card_data.behance }}" target="_blank" class="social-tile social-behance" title="Behance">
-                                <i data-lucide="palette"></i>
-                                <span>Behance</span>
-                            </a>
-                        {% endif %}
-                        {% if card.card_data.dribbble %}
-                            <a href="{{ card.card_data.dribbble }}" target="_blank" class="social-tile social-dribbble" title="Dribbble">
-                                <i data-lucide="basketball"></i>
-                                <span>Dribbble</span>
-                            </a>
                         {% endif %}
                     </div>
-                </section>
-            {% endif %}
-
-<section class="actions-section" data-reveal style="--reveal-delay: 0.46s;">
-                <header class="section-head section-head--compact">
-                    <span class="section-flag">
-                        <i data-lucide="bolt"></i>
-                        Quick actions
-                    </span>
-                    <h2>Share or store this contact instantly</h2>
-                </header>
-                <div class="action-deck">
-                    <button id="copyEmailBtn" type="button" class="action-chip from-fuchsia-500 to-rose-500 {% if not card.card_data.email %}opacity-60 pointer-events-none{% endif %}">
-                        <i data-lucide="mail"></i>
-                        Copy email
+                    <button id="downloadQrCode" type="button" class="mc-btn mc-btn--ghost mc-btn--block {% if not card.qr_code %}opacity-60 pointer-events-none{% endif %}">
+                        <i data-lucide="arrow-down-to-line"></i>
+                        Download QR
                     </button>
-                    <button id="copyLink" type="button" class="action-chip from-sky-500 to-cyan-500">
+                </div>
+
+                <div class="vc-share-actions">
+                    <button id="copyLink" type="button" class="mc-btn mc-btn--ghost mc-btn--block">
                         <i data-lucide="link"></i>
-                        Copy link
+                        Copy card link
                     </button>
+                    {% if card.card_data.email %}
+                        <button id="copyEmailBtn" type="button" class="mc-btn mc-btn--ghost mc-btn--block" data-copy="{{ card.card_data.email }}" data-copy-label="Email copied!">
+                            <i data-lucide="mail"></i>
+                            Copy email
+                        </button>
+                    {% endif %}
+                    <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" class="mc-btn mc-btn--ghost mc-btn--block">
+                        <i data-lucide="message-circle"></i>
+                        Share via WhatsApp
+                    </a>
                     {% if is_owner %}
-                        <a href="{% url 'edit_card' card.slug %}" class="action-chip from-amber-400 to-orange-400 text-slate-900">
+                        <a href="{% url 'edit_card' card.slug %}" class="mc-btn mc-btn--outline mc-btn--block">
                             <i data-lucide="square-pen"></i>
-                            Edit card
+                            Edit this card
                         </a>
-                        <a href="{% url 'dashboard' %}" class="action-chip from-emerald-500 to-teal-500">
+                        <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--block">
                             <i data-lucide="layout-dashboard"></i>
-                            Dashboard
+                            Go to dashboard
+                        </a>
+                    {% endif %}
+                    {% if show_guest_cta %}
+                        <a href="{% url 'index' %}" class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse">
+                            <i data-lucide="sparkles"></i>
+                            Create my own MY-Card
                         </a>
                     {% endif %}
                 </div>
-            </section>
-        </div>
+            </div>
+        </section>
+
+        <footer class="vc-footer">
+            <span class="mc-caption">Powered by</span>
+            <a href="{% url 'index' %}" class="vc-footer__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
+            </a>
+        </footer>
+    </div>
+
+    {# ---------- Sticky action bar (mobile-first) ---------- #}
+    <div class="vc-action-bar" role="toolbar" aria-label="Quick actions">
+        <button id="saveContactBtn" type="button" class="mc-btn mc-btn--primary vc-action-bar__primary"
+                data-first-name="{{ card.card_data.firstName|default:''|escape }}"
+                data-last-name="{{ card.card_data.lastName|default:''|escape }}"
+                data-company="{{ card.card_data.company|default:''|escape }}"
+                data-job-title="{{ card.card_data.jobTitle|default:''|escape }}"
+                data-phone="{{ phone_tel|default:''|escape }}"
+                data-email="{{ card.card_data.email|default:''|escape }}"
+                data-website="{{ card.card_data.website|default:''|escape }}">
+            <i data-lucide="user-plus"></i>
+            <span>Save Contact</span>
+        </button>
+        <button id="shareBtn" type="button" class="mc-btn mc-btn--ghost">
+            <i data-lucide="share-2"></i>
+            <span>Share</span>
+        </button>
     </div>
 </div>
 
 <style>
-    .vcard-page::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: radial-gradient(circle at top left, rgba(236,72,153,0.25), transparent 55%),
-                    radial-gradient(circle at bottom right, rgba(59,130,246,0.2), transparent 50%);
-        pointer-events: none;
-    }
-    .page-orb {
-        position: absolute;
-        border-radius: 9999px;
-        filter: blur(0px);
-        opacity: 0.4;
-        animation: pageFloat 16s ease-in-out infinite;
-    }
-    .page-orb.orb-one {
-        top: -180px;
-        left: -140px;
-        width: 360px;
-        height: 360px;
-        background: radial-gradient(circle at center, rgba(236,72,153,0.4), transparent 70%);
-    }
-    .page-orb.orb-two {
-        bottom: -220px;
-        right: -160px;
-        width: 420px;
-        height: 420px;
-        background: radial-gradient(circle at center, rgba(59,130,246,0.35), transparent 75%);
-        animation-delay: 4s;
-    }
-    .page-orb.orb-three {
-        top: 35%;
-        left: 50%;
-        width: 240px;
-        height: 240px;
-        transform: translateX(-50%);
-        background: radial-gradient(circle at center, rgba(129,140,248,0.28), transparent 70%);
-        animation-delay: 8s;
-    }
-    @keyframes pageFloat {
-        0%, 100% { transform: translate3d(0,0,0); opacity: 0.4; }
-        50% { transform: translate3d(0,-12px,0); opacity: 0.65; }
-    }
+/* ============  View-card specific layout  ============ */
+.vc-page {
+    position: relative;
+    min-height: 100vh;
+    background: var(--mc-bg-0);
+    padding-bottom: 6rem; /* room for sticky action bar */
+    overflow: hidden;
+}
 
-    .admin-return-banner {
-        display: inline-flex;
-        margin-bottom: 1.5rem;
-        padding: 0.75rem 1.3rem;
-        border-radius: 999px;
-        background: rgba(15,23,42,0.6);
-        border: 1px solid rgba(148,163,184,0.35);
-        backdrop-filter: blur(12px);
-        box-shadow: 0 20px 45px -30px rgba(15,23,42,0.6);
-    }
-    .admin-return-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.55rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        text-decoration: none;
-        color: #a5b4fc;
-    }
-    .admin-return-link:hover {
-        color: #c7d2fe;
-    }
-    .vcard-canvas {
-        display: flex;
-        flex-direction: column;
-        gap: clamp(2.5rem, 6vw, 4.5rem);
-        padding-block: clamp(1.5rem, 3vw, 2.75rem) clamp(3rem, 6vw, 5rem);
-    }
-    [data-reveal] {
-        opacity: 0;
-        transform: translateY(64px) scale(0.98);
-        transition:
-            opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s),
-            transform 0.85s cubic-bezier(0.22, 1, 0.36, 1) var(--reveal-delay, 0s);
-    }
-    [data-reveal].is-visible {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.vc-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+}
 
-    .hero-shell {
-        position: relative;
-        border-radius: 2.2rem;
-        background: rgba(15,23,42,0.55);
-        border: 1px solid rgba(148,163,184,0.22);
-        padding: clamp(1.8rem, 3vw, 2.4rem);
-        box-shadow: 0 35px 80px -40px rgba(15,23,42,0.7);
-        backdrop-filter: blur(14px);
-    }
-    .hero-grid {
-        display: grid;
-        gap: clamp(1.6rem, 3vw, 2.4rem);
-        grid-template-columns: minmax(0, 1fr);
-    }
-    .hero-holo {
-        position: relative;
-        border-radius: 1.75rem;
-        padding: clamp(1.8rem, 4vw, 2.6rem);
-        background: var(--holo-gradient);
-        color: #f8fafc;
-        overflow: hidden;
-        box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12), 0 40px 80px -42px rgba(30,41,59,0.7);
-        isolation: isolate;
-    }
-    .hero-holo__shine {
-        position: absolute;
-        inset: -40% auto auto -40%;
-        width: 80%;
-        height: 80%;
-        background: radial-gradient(circle at center, rgba(255,255,255,0.35), transparent 65%);
-        opacity: 0.45;
-        mix-blend-mode: screen;
-        animation: holoShine 12s ease-in-out infinite;
-        pointer-events: none;
-    }
-    .hero-holo__glow {
-        position: absolute;
-        inset: auto -30% -40% auto;
-        width: 60%;
-        height: 60%;
-        background: radial-gradient(circle at center, rgba(255,255,255,0.35), transparent 70%);
-        opacity: 0.32;
-        mix-blend-mode: screen;
-        animation: holoGlow 14s ease-in-out infinite;
-        pointer-events: none;
-    }
-    @keyframes holoShine {
-        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.45; }
-        50% { transform: translate3d(12%, -4%, 0) scale(1.08); opacity: 0.7; }
-    }
-    @keyframes holoGlow {
-        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.32; }
-        50% { transform: translate3d(-8%, 6%, 0) scale(1.1); opacity: 0.5; }
-    }
-    .hero-head {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        gap: clamp(1.4rem, 3vw, 1.9rem);
-        position: relative;
-        z-index: 2;
-    }
-    .hero-avatar {
-        position: relative;
-        width: clamp(110px, 10vw, 140px);
-        height: clamp(110px, 10vw, 140px);
-        border-radius: 9999px;
-        display: grid;
-        place-items: center;
-        background: rgba(15,23,42,0.25);
-        border: 4px solid rgba(255,255,255,0.35);
-        box-shadow: 0 28px 65px -36px rgba(15,23,42,0.7);
-        color: rgba(15,23,42,0.85);
-        font-weight: 700;
-        font-size: clamp(1.6rem, 2.8vw, 2rem);
-        letter-spacing: 0.05em;
-        overflow: hidden;
-    }
-    .hero-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .hero-meta h1 {
-        font-size: clamp(1.85rem, 3.6vw, 2.3rem);
-        font-weight: 700;
-        letter-spacing: 0.01em;
-    }
-    .hero-meta p {
-        margin-top: 0.4rem;
-        color: rgba(241,245,249,0.82);
-        font-size: clamp(0.95rem, 1.8vw, 1.08rem);
-    }
-    .hero-details {
-        margin-top: clamp(1.8rem, 2.4vw, 2.3rem);
-        display: grid;
-        gap: 0.95rem;
-        position: relative;
-        z-index: 2;
-    }
-    .hero-detail {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 0.9rem 1.2rem;
-        border-radius: 1.15rem;
-        background: rgba(15,23,42,0.22);
-        border: 1px solid rgba(255,255,255,0.24);
-        box-shadow: 0 18px 45px -28px rgba(15,23,42,0.6);
-    }
-    .hero-detail__label {
-        font-size: 0.72rem;
-        letter-spacing: 0.32em;
-        text-transform: uppercase;
-        color: rgba(241,245,249,0.7);
-    }
-    .hero-detail__value {
-        margin-top: 0.45rem;
-        font-size: 0.96rem;
-        font-weight: 600;
-        color: #ffffff;
-        word-break: break-word;
-    }
-    .hero-detail__value--muted {
-        opacity: 0.65;
-        font-weight: 500;
-    }
-    .hero-detail__link {
-        color: inherit;
-        text-decoration: none;
-    }
-    .hero-brand {
-        margin-top: clamp(1rem, 2vw, 1.35rem);
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.6rem 1rem;
-        border-radius: 9999px;
-        background: rgba(15,23,42,0.22);
-        border: 1px solid rgba(255,255,255,0.24);
-        box-shadow: 0 18px 45px -28px rgba(15,23,42,0.6);
-    }
-    .hero-brand__badge {
-        width: 44px;
-        height: 44px;
-        border-radius: 9999px;
-        overflow: hidden;
-        display: grid;
-        place-items: center;
-        background: rgba(255,255,255,0.24);
-        border: 1px solid rgba(255,255,255,0.35);
-        color: rgba(15,23,42,0.85);
-        font-weight: 700;
-        letter-spacing: 0.05em;
-    }
-    .hero-brand__badge img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .hero-brand__badge i {
-        width: 20px;
-        height: 20px;
-    }
-    .hero-brand__badge span {
-        font-size: 0.85rem;
-    }
-    .hero-brand__text {
-        font-size: 0.92rem;
-        font-weight: 600;
-        color: #f8fafc;
-        letter-spacing: 0.01em;
-    }
+.vc-container {
+    position: relative;
+    z-index: 1;
+    padding-top: var(--mc-s-5);
+}
 
-    .hero-side {
-        display: flex;
-        align-items: stretch;
-    }
-    .hero-side__qr {
-        background: rgba(15,23,42,0.6);
-        border: 1px solid rgba(148,163,184,0.28);
-        border-radius: 1.6rem;
-        padding: clamp(1.4rem, 2.5vw, 1.8rem);
-        box-shadow: 0 22px 55px -32px rgba(15,23,42,0.65);
-        display: flex;
-        flex-direction: column;
-        gap: 1.35rem;
-        align-items: center;
-        text-align: center;
-    }
-    .hero-side__title {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.85rem;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        color: rgba(148,163,184,0.85);
-    }
-    .hero-side__qr-frame {
-        width: 100%;
-        display: grid;
-        place-items: center;
-        padding: 1.2rem;
-        border-radius: 1.35rem;
-        background: rgba(15,23,42,0.32);
-        border: 1px solid rgba(148,163,184,0.3);
-    }
-    .hero-side__qr-image {
-        width: clamp(160px, 26vw, 220px);
-        height: clamp(160px, 26vw, 220px);
-        object-fit: contain;
-    }
-    .hero-side__qr-placeholder {
-        display: grid;
-        place-items: center;
-        gap: 0.6rem;
-        color: rgba(203,213,225,0.85);
-    }
-    .hero-side__qr-placeholder i {
-        width: 48px;
-        height: 48px;
-        opacity: 0.75;
-    }
-    .hero-side__actions {
-        display: grid;
-        gap: 0.75rem;
-        width: 100%;
-    }
-    .hero-side__cta {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.55rem;
-        width: 100%;
-        padding: 0.78rem 1rem;
-        border-radius: 1rem;
-        font-size: 0.9rem;
-        font-weight: 600;
-        color: #f8fafc;
-        border: none;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        text-align: center;
-    }
-    .hero-side__cta i {
-        width: 18px;
-        height: 18px;
-    }
-    .hero-side__cta--save {
-        background: linear-gradient(135deg, rgba(79,70,229,0.9), rgba(14,165,233,0.85));
-    }
-    .hero-side__cta--download {
-        background: linear-gradient(135deg, rgba(244,63,94,0.9), rgba(239,68,68,0.85));
-    }
-    .hero-side__cta--guest {
-        background: linear-gradient(135deg, rgba(16,185,129,0.88), rgba(34,197,94,0.82));
-        text-decoration: none;
-    }
-    .hero-side__cta:not(.pointer-events-none):hover {
-        transform: translateY(-2px);
-        box-shadow: 0 24px 50px -32px rgba(14,165,233,0.55);
-    }
-    .hero-side__stat {
-        margin-top: 0.35rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.9rem 1.2rem;
-        border-radius: 1rem;
-        background: rgba(15,23,42,0.28);
-        border: 1px solid rgba(148,163,184,0.35);
-        box-shadow: 0 20px 48px -34px rgba(15,23,42,0.6);
-    }
-    .hero-side__stat-label {
-        text-transform: uppercase;
-        letter-spacing: 0.32em;
-        font-size: 0.7rem;
-        color: rgba(226,232,240,0.76);
-    }
-    .hero-side__stat-value {
-        font-size: 1.22rem;
-        font-weight: 700;
-        color: #ffffff;
-        letter-spacing: 0.03em;
-    }
+/* Top bar */
+.vc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--mc-s-5);
+    gap: var(--mc-s-3);
+}
+.vc-top__left, .vc-top__right { display: flex; gap: var(--mc-s-2); }
 
-    .section-head {
-        display: grid;
-        gap: 0.65rem;
-        text-align: left;
-        max-width: 640px;
-    }
-    .section-head h2 {
-        font-size: clamp(1.35rem, 3vw, 1.75rem);
-        font-weight: 600;
-    }
-    .section-head p {
-        font-size: 0.95rem;
-        color: rgba(203,213,225,0.85);
-    }
-    .section-head--compact h2 {
-        font-size: clamp(1.2rem, 2.6vw, 1.55rem);
-    }
-    .section-flag {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.45rem;
-        padding: 0.45rem 0.95rem;
-        border-radius: 9999px;
-        border: 1px solid rgba(148,163,184,0.3);
-        background: rgba(15,23,42,0.45);
-        font-size: 0.75rem;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: rgba(148,163,184,0.9);
-    }
+/* ============  Hero  ============ */
+.vc-hero {
+    display: flex;
+    justify-content: center;
+    margin-bottom: var(--mc-s-7);
+}
+.vc-hero__card {
+    --vc-hero-bg: linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%);
+    width: 100%;
+    max-width: 640px;
+    background: var(--vc-hero-bg);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-2xl);
+    padding: clamp(2rem, 5vw, 3rem) clamp(1.5rem, 4vw, 2.5rem);
+    box-shadow: var(--mc-shadow-3);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+.vc-hero__card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, var(--mc-accent-halo), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+.vc-hero__card > * { position: relative; z-index: 1; }
 
-    .capsule-grid {
-        margin-top: 2rem;
-        display: grid;
-        gap: clamp(1.2rem, 2vw, 1.8rem);
-        grid-template-columns: 1fr;
-    }
-    .capsule-card {
-        position: relative;
-        display: flex;
-        gap: 1.3rem;
-        align-items: flex-start;
-        padding: 1.55rem 1.8rem;
-        border-radius: 1.8rem;
-        background: rgba(15,23,42,0.7);
-        border: 1px solid rgba(148,163,184,0.3);
-        min-height: 160px;
-        box-shadow: 0 32px 65px -42px rgba(15,23,42,0.75);
-        transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    }
-    .capsule-card:hover {
-        transform: translateY(-6px) scale(1.01);
-        border-color: rgba(129,140,248,0.5);
-        box-shadow: 0 42px 95px -40px rgba(79,70,229,0.55);
-    }
-    .capsule-card__icon {
-        flex: 0 0 56px;
-        height: 56px;
-        border-radius: 1.35rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, rgba(129,140,248,0.28), rgba(59,130,246,0.2));
-        color: #bfdbfe;
-        font-size: 1.2rem;
-        box-shadow: inset 0 0 0 1px rgba(148,197,255,0.22);
-    }
-    .capsule-card__content {
-        flex: 1 1 auto;
-        min-width: 0;
-        display: flex;
-        flex-direction: column;
-        gap: 0.95rem;
-    }
-    .capsule-card__label {
-        font-size: 0.68rem;
-        text-transform: uppercase;
-        letter-spacing: 0.24em;
-        font-weight: 600;
-        color: rgba(148,163,184,0.82);
-    }
-    .capsule-card__value-row {
-        display: flex;
-        align-items: center;
-        gap: 0.85rem;
-        min-width: 0;
-    }
-    .capsule-card__value {
-        flex: 1 1 auto;
-        font-size: 1.05rem;
-        font-weight: 700;
-        color: #e2e8f0;
-        line-height: 1.45;
-        overflow-wrap: anywhere;
-    }
-    .capsule-card__value--link {
-        color: #93c5fd;
-        text-decoration: none;
-    }
-    .capsule-card__value--link:hover {
-        color: #c7d2fe;
-        text-decoration: underline;
-    }
-    .capsule-card--phone .capsule-card__value {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    .capsule-card__value--multiline {
-        white-space: normal;
-        line-height: 1.7;
-    }
-    .capsule-card--highlight {
-        background: rgba(16,185,129,0.12);
-        border-color: rgba(16,185,129,0.45);
-        box-shadow: 0 28px 60px -38px rgba(16,185,129,0.5);
-    }
-    .capsule-card--highlight .capsule-card__label {
-        color: #34d399;
-    }
-    .capsule-card__media {
-        margin-top: 0.85rem;
-        border-radius: 1rem;
-        overflow: hidden;
-        border: 1px solid rgba(16,185,129,0.24);
-        box-shadow: inset 0 0 0 1px rgba(16,185,129,0.18);
-    }
-    .capsule-card__media img {
-        display: block;
-        width: 100%;
-        height: auto;
-    }
-    .capsule-card__copy {
-        flex: 0 0 auto;
-        width: 44px;
-        height: 44px;
-        border-radius: 999px;
-        border: 1px solid rgba(148,163,184,0.32);
-        background: rgba(30,41,59,0.65);
-        color: rgba(148,197,255,0.95);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
-        cursor: pointer;
-    }
-    .capsule-card__copy i {
-        width: 18px;
-        height: 18px;
-    }
-    .capsule-card__copy:hover,
-    .capsule-card__copy:focus-visible {
-        transform: translateY(-2px);
-        border-color: rgba(99,102,241,0.55);
-        background: rgba(79,70,229,0.28);
-        color: #e0e7ff;
-        outline: none;
-    }
-    .capsule-card__quick-actions {
-        display: flex;
-        gap: 0.75rem;
-        margin-top: auto;
-        flex-wrap: wrap;
-    }
-    .capsule-card__quick {
-        flex: 1 1 0;
-        min-width: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 0.6rem;
-        padding: 0.65rem 0.9rem;
-        border-radius: 1rem;
-        border: 1px solid rgba(99,102,241,0.32);
-        background: rgba(79,70,229,0.18);
-        color: #c7d2fe;
-        font-size: 0.85rem;
-        font-weight: 600;
-        text-decoration: none;
-        transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
-    }
-    .capsule-card__quick i {
-        width: 18px;
-        height: 18px;
-    }
-    .capsule-card__quick:hover,
-    .capsule-card__quick:focus-visible {
-        background: rgba(99,102,241,0.35);
-        border-color: rgba(129,140,248,0.55);
-        color: #eef2ff;
-        outline: none;
-    }
-    .capsule-card--note .capsule-card__content {
-        gap: 0.8rem;
-    }
+.vc-avatar {
+    width: clamp(120px, 20vw, 160px);
+    height: clamp(120px, 20vw, 160px);
+    border-radius: 50%;
+    margin: 0 auto var(--mc-s-5);
+    background: var(--mc-bg-3);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    border: 3px solid var(--mc-accent);
+    box-shadow: 0 0 0 6px var(--mc-accent-halo), var(--mc-shadow-2);
+}
+.vc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.vc-avatar__initials {
+    font-family: var(--mc-font-display);
+    font-size: clamp(2.4rem, 5vw, 3.2rem);
+    font-weight: 700;
+    color: var(--mc-text-hi);
+    text-transform: uppercase;
+}
 
-    .social-section {
-        display: grid;
-        gap: 1.8rem;
-    }
-    .social-dock {
-        display: grid;
-        gap: 1rem;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    }
-    .social-tile {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.9rem 1.4rem;
-        border-radius: 1.2rem;
-        font-weight: 600;
-        color: #fff;
-        box-shadow: 0 25px 55px -32px rgba(15,23,42,0.7);
-        position: relative;
-        overflow: hidden;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .social-tile i {
-        width: 20px;
-        height: 20px;
-    }
-    .social-tile span {
-        position: relative;
-        z-index: 2;
-    }
-    .social-tile::after {
-        content: '';
-        position: absolute;
-        inset: auto -20% -50% auto;
-        width: 60%;
-        height: 160%;
-        background: rgba(255,255,255,0.18);
-        transform: rotate(25deg);
-    }
-    .social-tile:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 35px 70px -38px rgba(15,23,42,0.75);
-    }
-    .social-facebook { background: #1877F2; }
-    .social-whatsapp { background: #25D366; }
-    .social-instagram { background: linear-gradient(135deg,#F58529,#DD2A7B,#8134AF,#515BD4); }
-    .social-twitter { background: #1DA1F2; }
-    .social-linkedin { background: #0A66C2; }
+.vc-name {
+    font-family: var(--mc-font-display);
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    margin: 0 0 var(--mc-s-2);
+    line-height: 1.05;
+}
 
-    .social-youtube { background: #FF0000; }
-    .social-github { background: #181717; }
-    .social-tiktok { background: linear-gradient(135deg,#010101 0%,#ff0050 50%,#00f2ea 100%); }
-    .social-snapchat { background: #FFFC00; color: #1f2937; }
-    .social-likee { background: linear-gradient(135deg,#FF0050 0%,#FF7A59 40%,#FFB347 70%,#FFE29F 100%); }
-    .social-messenger { background: linear-gradient(135deg,#00c6ff,#0078ff,#7b11f9); }
-    .social-discord { background: #5865F2; }
-    .social-parrale { background: linear-gradient(135deg,#ff9a9e,#fad0c4); }
-    .social-pinterest { background: #E60023; }
-    .social-telegram { background: #229ED9; }
-    .social-threads { background: #101010; }
-    .social-behance { background: #1769FF; }
-    .social-dribbble { background: #EA4C89; }
+.vc-title {
+    font-size: 1.05rem;
+    color: var(--mc-text-md);
+    margin: 0 0 var(--mc-s-5);
+    font-weight: 500;
+}
 
-    .action-deck {
-        margin-top: 1.6rem;
-        display: grid;
-        gap: 0.9rem;
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-    .action-chip {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.6rem;
-        padding: 0.8rem 1rem;
-        border-radius: 1rem;
-        font-size: 0.92rem;
-        font-weight: 600;
-        color: #f8fafc;
-        background: linear-gradient(135deg, rgba(59,130,246,0.85), rgba(14,165,233,0.85));
-        border: none;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-        text-align: center;
-    }
-    .action-chip:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 28px 55px -35px rgba(14,165,233,0.65);
-    }
-    .action-chip i {
-        width: 18px;
-        height: 18px;
-    }
+.vc-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: 0.5rem 1rem;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-bg-3);
+    border: 1px solid var(--mc-border-hi);
+    margin: 0 auto var(--mc-s-5);
+}
+.vc-brand__mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--mc-bg-2);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: var(--mc-accent);
+}
+.vc-brand__mark img { width: 100%; height: 100%; object-fit: cover; }
+.vc-brand__text {
+    font-size: var(--mc-fs-body-sm);
+    font-weight: 600;
+    color: var(--mc-text-hi);
+}
 
-    @media (min-width: 640px) {
-        .capsule-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    }
-    @media (min-width: 1024px) {
-        .hero-grid {
-            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-            align-items: stretch;
-        }
-        .hero-side { margin-left: 0.6rem; }
-        .capsule-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    }
-    @media (max-width: 768px) {
-        .hero-shell { padding: 1.5rem; border-radius: 1.8rem; }
-        .hero-holo { border-radius: 1.5rem; }
-        .hero-side { margin-left: 0; }
-        .hero-side__qr { border-radius: 1.4rem; }
-        .capsule-card { padding: 1.4rem 1.55rem; min-height: 148px; }
-        .capsule-card__icon { width: 52px; height: 52px; }
-        .social-dock { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
-    }
-    @media (max-width: 640px) {
-        .hero-side { flex-direction: column; }
-        .hero-side__qr { width: 100%; }
-        .capsule-grid { grid-template-columns: 1fr; }
-        .capsule-card { padding: 1.35rem 1.5rem; min-height: 140px; }
-        .capsule-card__copy { width: 40px; height: 40px; }
-        .capsule-card__quick { flex: 1 1 100%; }
-        .action-deck { grid-template-columns: 1fr; }
-    }
+.vc-hero__stats {
+    display: inline-flex;
+    gap: var(--mc-s-5);
+    justify-content: center;
+    padding-top: var(--mc-s-4);
+    border-top: 1px solid var(--mc-border);
+}
+.vc-hero__stat { display: flex; flex-direction: column; gap: 2px; align-items: center; }
+.vc-hero__stat-val { font-size: 1.4rem; font-weight: 700; color: var(--mc-text-hi); }
+
+/* ============  Sections  ============ */
+.vc-section {
+    margin: var(--mc-s-8) 0;
+}
+.vc-section__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-3);
+    margin-bottom: var(--mc-s-5);
+}
+.vc-section__head .mc-badge { align-self: flex-start; }
+.vc-section__title {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ============  Contact rail  ============ */
+.vc-contact-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-3);
+}
+@media (min-width: 720px) {
+    .vc-contact-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.vc-contact {
+    display: flex;
+    gap: var(--mc-s-4);
+    align-items: flex-start;
+    text-decoration: none;
+    color: inherit;
+}
+.vc-contact__icon {
+    flex: 0 0 44px;
+    height: 44px;
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-3);
+    color: var(--mc-accent);
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--mc-border-hi);
+}
+.vc-contact__icon i, .vc-contact__icon svg { width: 1.1rem; height: 1.1rem; }
+.vc-contact__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.vc-contact__value {
+    font-weight: 600;
+    color: var(--mc-text-hi);
+    word-break: break-word;
+}
+.vc-contact__copy {
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+}
+.vc-contact__quick {
+    display: flex;
+    gap: var(--mc-s-2);
+    margin-top: var(--mc-s-2);
+    flex-wrap: wrap;
+}
+.vc-contact__media {
+    margin-top: var(--mc-s-3);
+    border-radius: var(--mc-r-md);
+    overflow: hidden;
+    border: 1px solid var(--mc-border-hi);
+}
+.vc-contact__media img { display: block; width: 100%; height: auto; }
+
+.vc-contact--highlight { background: linear-gradient(135deg, var(--mc-accent-halo), var(--mc-bg-1)); }
+
+/* ============  Notes  ============ */
+.vc-notes {
+    line-height: var(--mc-lh-loose);
+    color: var(--mc-text-md);
+}
+.vc-notes p { margin: 0; }
+
+/* ============  Socials  ============ */
+.vc-socials {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--mc-s-3);
+}
+.vc-social {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border-hi);
+    font-size: var(--mc-fs-body-sm);
+    font-weight: 600;
+    color: var(--mc-text-hi);
+    text-decoration: none;
+    transition:
+        transform var(--mc-dur-fast) var(--mc-ease),
+        border-color var(--mc-dur-fast) var(--mc-ease),
+        box-shadow var(--mc-dur-fast) var(--mc-ease);
+    position: relative;
+    overflow: hidden;
+}
+.vc-social i { width: 1.15rem; height: 1.15rem; flex-shrink: 0; }
+.vc-social:hover {
+    transform: translateY(-3px);
+    border-color: var(--vc-social-color, var(--mc-accent));
+    box-shadow: 0 8px 24px -12px var(--vc-social-color, var(--mc-accent-glow));
+}
+.vc-social::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, var(--vc-social-color, transparent), transparent 60%);
+    opacity: 0.1;
+    pointer-events: none;
+}
+.vc-social:hover::before { opacity: 0.22; }
+
+/* Per-network accent colors */
+.vc-social[data-net="facebook"]  { --vc-social-color: #1877F2; }
+.vc-social[data-net="whatsapp"]  { --vc-social-color: #25D366; }
+.vc-social[data-net="instagram"] { --vc-social-color: #E1306C; }
+.vc-social[data-net="linkedin"]  { --vc-social-color: #0A66C2; }
+.vc-social[data-net="twitter"]   { --vc-social-color: #1DA1F2; }
+.vc-social[data-net="youtube"]   { --vc-social-color: #FF0000; }
+.vc-social[data-net="github"]    { --vc-social-color: #A6ADBB; }
+.vc-social[data-net="tiktok"]    { --vc-social-color: #00F2EA; }
+.vc-social[data-net="snapchat"]  { --vc-social-color: #FFFC00; }
+.vc-social[data-net="messenger"] { --vc-social-color: #0078FF; }
+.vc-social[data-net="telegram"]  { --vc-social-color: #229ED9; }
+.vc-social[data-net="discord"]   { --vc-social-color: #5865F2; }
+.vc-social[data-net="wechat"]    { --vc-social-color: #09B83E; }
+.vc-social[data-net="pinterest"] { --vc-social-color: #E60023; }
+.vc-social[data-net="threads"]   { --vc-social-color: #A6ADBB; }
+.vc-social[data-net="likee"]     { --vc-social-color: #FF0050; }
+.vc-social[data-net="upwork"]    { --vc-social-color: #14A800; }
+.vc-social[data-net="fiverr"]    { --vc-social-color: #1DBF73; }
+.vc-social[data-net="behance"]   { --vc-social-color: #1769FF; }
+.vc-social[data-net="dribbble"]  { --vc-social-color: #EA4C89; }
+
+/* ============  Share section  ============ */
+.vc-share-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-5);
+}
+@media (min-width: 900px) {
+    .vc-share-grid { grid-template-columns: 300px 1fr; align-items: start; }
+}
+.vc-qr-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-4);
+    align-items: center;
+}
+.vc-qr-frame {
+    width: 100%;
+    max-width: 240px;
+    aspect-ratio: 1;
+    padding: var(--mc-s-4);
+    background: #fff;
+    border-radius: var(--mc-r-lg);
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--mc-border-hi);
+}
+.vc-qr-frame img { width: 100%; height: 100%; object-fit: contain; }
+.vc-qr-placeholder { display: grid; gap: var(--mc-s-2); place-items: center; color: var(--mc-text-lo); }
+.vc-qr-placeholder i { width: 44px; height: 44px; }
+.vc-share-actions {
+    display: grid;
+    gap: var(--mc-s-3);
+    align-content: start;
+}
+
+/* ============  Footer  ============ */
+.vc-footer {
+    padding: var(--mc-s-7) 0 var(--mc-s-5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--mc-s-3);
+    color: var(--mc-text-lo);
+    border-top: 1px solid var(--mc-border);
+    margin-top: var(--mc-s-8);
+}
+.vc-footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    color: var(--mc-text-hi);
+    text-decoration: none;
+}
+.vc-footer__logo:hover { color: var(--mc-accent); }
+
+/* ============  Sticky action bar  ============ */
+.vc-action-bar {
+    position: fixed;
+    bottom: var(--mc-s-4);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: var(--mc-z-nav);
+    display: flex;
+    gap: var(--mc-s-3);
+    padding: var(--mc-s-2);
+    background: color-mix(in oklab, var(--mc-bg-1) 90%, transparent);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-full);
+    box-shadow: var(--mc-shadow-3), 0 0 0 4px var(--mc-accent-halo);
+    backdrop-filter: blur(18px);
+    max-width: calc(100vw - 2rem);
+}
+.vc-action-bar__primary { min-width: 180px; }
+@media (max-width: 480px) {
+    .vc-action-bar { width: calc(100% - 1.5rem); justify-content: stretch; }
+    .vc-action-bar .mc-btn { flex: 1; }
+    .vc-action-bar__primary { min-width: 0; }
+}
 </style>
 
 <script>
-    (function() {
-        const revealTargets = document.querySelectorAll('[data-reveal]');
-        if (revealTargets.length) {
-            const revealObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('is-visible');
-                        observer.unobserve(entry.target);
-                    }
+(function() {
+    'use strict';
+
+    /* ------- Copy helpers (email / website / other) ------- */
+    document.querySelectorAll('[data-copy]').forEach(function(el) {
+        el.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var value = el.dataset.copy || '';
+            var label = el.dataset.copyLabel || 'Copied!';
+            if (!value) return;
+            var done = function() {
+                if (window.Swal) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: label,
+                        timer: 1800,
+                        showConfirmButton: false,
+                        background: 'var(--mc-bg-2)',
+                        color: 'var(--mc-text-hi)',
+                        iconColor: 'var(--mc-accent)'
+                    });
+                } else {
+                    alert(label);
+                }
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(value).then(done).catch(function() { alert('Unable to copy.'); });
+            } else {
+                window.prompt('Copy this value', value);
+            }
+        });
+    });
+
+    /* ------- Copy link button ------- */
+    var copyLink = document.getElementById('copyLink');
+    if (copyLink) {
+        copyLink.addEventListener('click', function() {
+            var url = window.location.href.split('?')[0];
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() {
+                    if (window.Swal) {
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Link copied!',
+                            timer: 1800, showConfirmButton: false,
+                            background: 'var(--mc-bg-2)', color: 'var(--mc-text-hi)', iconColor: 'var(--mc-accent)' });
+                    } else { alert('Link copied!'); }
                 });
-            }, {
-                threshold: 0.25,
-                rootMargin: '0px 0px -10% 0px'
-            });
-            revealTargets.forEach(target => revealObserver.observe(target));
-        }
+            } else { window.prompt('Copy this link', url); }
+        });
+    }
 
-        const copyLinkBtn = document.getElementById('copyLink');
-        if (copyLinkBtn) {
-            copyLinkBtn.addEventListener('click', function() {
-                navigator.clipboard.writeText(window.location.href).then(function() {
-                    alert('V-card link copied!');
-                });
-            });
-        }
+    /* ------- Download QR button ------- */
+    var dl = document.getElementById('downloadQrCode');
+    if (dl) {
+        dl.addEventListener('click', function() {
+            var img = document.getElementById('qrCodeImg');
+            if (!img) return;
+            var a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'my-card-qrcode.png';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        });
+    }
 
-        const downloadBtn = document.getElementById('downloadQrCode');
-        if (downloadBtn && !downloadBtn.classList.contains('pointer-events-none')) {
-            downloadBtn.addEventListener('click', function() {
-                const qrCodeImg = document.getElementById('qrCodeImg');
-                if (!qrCodeImg) { return; }
-                const link = document.createElement('a');
-                link.href = qrCodeImg.src;
-                link.download = 'my-card-qrcode.png';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-        }
+    /* ------- Save Contact (vCard) ------- */
+    var saveBtn = document.getElementById('saveContactBtn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', function() {
+            var first  = this.dataset.firstName || '';
+            var last   = this.dataset.lastName  || '';
+            var company= this.dataset.company   || '';
+            var title  = this.dataset.jobTitle  || '';
+            var phone  = this.dataset.phone     || '';
+            var email  = this.dataset.email     || '';
+            var website= this.dataset.website   || '';
 
-        const copyButtons = document.querySelectorAll('.capsule-card__copy[data-copy]');
-        if (copyButtons.length) {
-            copyButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    const value = button.dataset.copy || '';
-                    if (!value) { return; }
-                    const label = button.dataset.copyLabel || 'Copied!';
-                    if (navigator.clipboard && navigator.clipboard.writeText) {
-                        navigator.clipboard.writeText(value).then(() => {
-                            alert(label);
-                        }).catch(() => {
-                            alert('Unable to copy value.');
-                        });
-                    } else {
-                        window.prompt('Copy this value', value);
-                    }
-                });
-            });
-        }
+            var lines = ['BEGIN:VCARD','VERSION:3.0'];
+            if (first || last)   lines.push('FN:' + (first + ' ' + last).trim());
+            if (first || last)   lines.push('N:' + last + ';' + first + ';;;');
+            if (company)         lines.push('ORG:' + company);
+            if (title)           lines.push('TITLE:' + title);
+            if (phone)           lines.push('TEL;TYPE=CELL:' + phone);
+            if (email)           lines.push('EMAIL;TYPE=INTERNET:' + email);
+            if (website)         lines.push('URL:' + website);
+            lines.push('END:VCARD');
 
-        const saveContactBtn = document.getElementById('saveContactBtn');
-        if (saveContactBtn) {
-            saveContactBtn.addEventListener('click', function() {
-                const first = this.dataset.firstName || '';
-                const last = this.dataset.lastName || '';
-                const company = this.dataset.company || '';
-                const phone = this.dataset.phone || '';
-                const email = this.dataset.email || '';
-                const lines = [
-                    'BEGIN:VCARD',
-                    'VERSION:3.0',
-                    (first || last) ? `FN:${first} ${last}`.trim() : '',
-                    (first || last) ? `N:${last};${first};;;` : '',
-                    company ? `ORG:${company}` : '',
-                    phone ? `TEL;TYPE=CELL:${phone}` : '',
-                    email ? `EMAIL;TYPE=INTERNET:${email}` : '',
-                    'END:VCARD'
-                ].filter(Boolean).join('\n');
+            var blob = new Blob([lines.join('\n')], { type: 'text/vcard;charset=utf-8' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = ((first || 'contact') + '-' + (last || 'card')).replace(/\s+/g,'_') + '.vcf';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            setTimeout(function(){ URL.revokeObjectURL(a.href); }, 0);
+        });
+    }
 
-                const blob = new Blob([lines], { type: 'text/vcard;charset=utf-8' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `${first || 'contact'}-${last || 'card'}.vcf`;
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                setTimeout(function() {
-                    URL.revokeObjectURL(link.href);
-                }, 0);
-            });
-        }
-    })();
+    /* ------- Native share (falls back to copy link) ------- */
+    var shareBtn = document.getElementById('shareBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function() {
+            var data = {
+                title: document.title,
+                text: 'Check out this MY-Card',
+                url: window.location.href.split('?')[0]
+            };
+            if (navigator.share) {
+                navigator.share(data).catch(function() {});
+            } else if (copyLink) {
+                copyLink.click();
+            }
+        });
+    }
+})();
 </script>
 {% endblock %}
