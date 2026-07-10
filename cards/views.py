@@ -185,7 +185,15 @@ def _normalize_whatsapp_link(value: str) -> str:
     if not value:
         return ''
     value = value.strip()
+    # Defensive: strip JavaScript "undefined" that leaked in from an older
+    # editor build before the phone-picker fix
+    value = value.replace('undefined', '')
     if value.startswith('http://') or value.startswith('https://'):
+        # Also re-extract digits from the URL so a partly-corrupted URL still resolves
+        m = re.search(r'wa\.me/(\+?\d+)', value)
+        if m:
+            digits = re.sub(r'\D', '', m.group(1))
+            return f"https://wa.me/{digits}" if digits else ''
         return value
     digits = re.sub(r'\D', '', value.lstrip('+'))
     return f"https://wa.me/{digits}" if digits else ''
@@ -194,7 +202,9 @@ def _normalize_whatsapp_link(value: str) -> str:
 def _normalize_phone_number(value: str, default_code: str = '880') -> tuple[str, str]:
     if not value:
         return '', ''
-    digits = re.sub(r'\D', '', str(value).lstrip('+'))
+    # Defensive: drop JS "undefined" leaked in by an older editor build
+    cleaned = str(value).replace('undefined', '')
+    digits = re.sub(r'\D', '', cleaned.lstrip('+'))
     if not digits:
         return '', ''
 

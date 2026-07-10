@@ -217,38 +217,13 @@
                     </section>
                     {% endif %}
 
-                    {# ---- Section 4: Background (advanced / custom) ---- #}
+                    {# background_style still bound to the form for existing cards / theme apply #}
+                    <div class="hidden">{{ form.background_style }}</div>
+
+                    {# ---- Section 4: Socials ---- #}
                     <section class="ed-section">
                         <header class="ed-section__head">
                             <span class="ed-step">4</span>
-                            <h2>{% trans "Or pick a custom background" %}</h2>
-                            <span class="mc-caption">{% trans "Tap or use the picker" %}</span>
-                        </header>
-                        <div class="ed-bg-grid" id="background-options">
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#05060B 0%,#0B0D14 40%,#124D33 100%)" style="--gradient: linear-gradient(135deg,#05060B 0%,#0B0D14 40%,#124D33 100%);"><span>Aurora Dark</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#20002c 0%,#cbb4d4 100%)" style="--gradient: linear-gradient(135deg,#20002c 0%,#cbb4d4 100%);"><span>Cyber Neon</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#1f1c2c 0%,#928dab 100%)" style="--gradient: linear-gradient(135deg,#1f1c2c 0%,#928dab 100%);"><span>Executive Slate</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%)" style="--gradient: linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%);"><span>Sunset Warm</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#000428 0%,#004e92 100%)" style="--gradient: linear-gradient(135deg,#000428 0%,#004e92 100%);"><span>Midnight Azure</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#43cea2 0%,#185a9d 100%)" style="--gradient: linear-gradient(135deg,#43cea2 0%,#185a9d 100%);"><span>Emerald Ocean</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#4568dc 0%,#b06ab3 100%)" style="--gradient: linear-gradient(135deg,#4568dc 0%,#b06ab3 100%);"><span>Royal Velvet</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#f6d365 0%,#fda085 100%)" style="--gradient: linear-gradient(135deg,#f6d365 0%,#fda085 100%);"><span>Golden Hour</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)" style="--gradient: linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%);"><span>Tropical Mist</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#fc5c7d 0%,#6a82fb 100%)" style="--gradient: linear-gradient(135deg,#fc5c7d 0%,#6a82fb 100%);"><span>Cosmic Bloom</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#b3ffab 0%,#12fff7 100%)" style="--gradient: linear-gradient(135deg,#b3ffab 0%,#12fff7 100%);"><span>Mint Aura</span></button>
-                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#ba5370 0%,#f4e2d8 100%)" style="--gradient: linear-gradient(135deg,#ba5370 0%,#f4e2d8 100%);"><span>Rosé Cloud</span></button>
-                        </div>
-                        <div class="ed-color-row">
-                            <label for="customBackgroundPicker" class="mc-caption">{% trans "Or pick a solid color" %}</label>
-                            <input type="color" id="customBackgroundPicker" value="#05060B" aria-label="Custom background color">
-                        </div>
-                        <div class="hidden">{{ form.background_style }}</div>
-                    </section>
-
-                    {# ---- Section 5: Socials ---- #}
-                    <section class="ed-section">
-                        <header class="ed-section__head">
-                            <span class="ed-step">5</span>
                             <h2>{% trans "Social connections" %}</h2>
                         </header>
                         <div class="ed-grid-2">
@@ -934,43 +909,35 @@
 
     document.querySelectorAll('[data-country-picker]').forEach(setupPicker);
 
-    /* ============  Background / theme selector  ============ */
+    /* ============  Theme selector (curated themes only)  ============ */
     var bgHidden = document.getElementById('id_background_style');
-    var bgButtons = document.querySelectorAll('.ed-bg-opt');
     var themeButtons = document.querySelectorAll('.ed-theme');
-    var colorPicker = document.getElementById('customBackgroundPicker');
     var previewCard = document.getElementById('previewCard');
 
-    function applyBackground(value) {
-        if (bgHidden) bgHidden.value = value;
-        if (previewCard) previewCard.style.setProperty('--vc-hero-bg', value);
-        bgButtons.forEach(function(b) { b.classList.toggle('is-selected', b.dataset.bgOption === value); });
-        themeButtons.forEach(function(b) { b.classList.toggle('is-selected', b.dataset.themeBg === value); });
+    function applyTheme(bgValue, slug) {
+        if (bgHidden) bgHidden.value = bgValue;
+        if (previewCard) previewCard.style.setProperty('--vc-hero-bg', bgValue);
+        themeButtons.forEach(function(b) { b.classList.toggle('is-selected', b.dataset.themeBg === bgValue); });
+        // Persist the theme slug so view_card can pick up accent/text colours
+        var slugHidden = document.getElementById('id_theme_slug');
+        if (!slugHidden) {
+            slugHidden = document.createElement('input');
+            slugHidden.type = 'hidden';
+            slugHidden.name = 'theme_slug';
+            slugHidden.id = 'id_theme_slug';
+            var form = document.getElementById('card-builder-form');
+            if (form) form.appendChild(slugHidden);
+        }
+        if (slug) slugHidden.value = slug;
     }
-    bgButtons.forEach(function(b) {
-        b.addEventListener('click', function() { applyBackground(b.dataset.bgOption); });
-    });
     themeButtons.forEach(function(b) {
         b.addEventListener('click', function() {
-            applyBackground(b.dataset.themeBg);
-            // Persist the theme slug too so view_card can pick up accent/text colours
-            var slugHidden = document.getElementById('id_theme_slug');
-            if (!slugHidden) {
-                slugHidden = document.createElement('input');
-                slugHidden.type = 'hidden';
-                slugHidden.name = 'theme_slug';
-                slugHidden.id = 'id_theme_slug';
-                document.getElementById('card-builder-form').appendChild(slugHidden);
-            }
-            slugHidden.value = b.dataset.themeSlug;
+            applyTheme(b.dataset.themeBg, b.dataset.themeSlug);
         });
     });
-    if (colorPicker) {
-        colorPicker.addEventListener('input', function(e) { applyBackground(e.target.value); });
-    }
     // Initialize from stored value
-    if (bgHidden && bgHidden.value) applyBackground(bgHidden.value);
-    else applyBackground('linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%)');
+    if (bgHidden && bgHidden.value) applyTheme(bgHidden.value, '');
+    else applyTheme('linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%)', '');
 
     /* ============  Live preview  ============ */
     function bindPreview(fieldId, previewId, rowId) {

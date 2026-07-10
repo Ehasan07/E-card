@@ -156,7 +156,10 @@
                                     {% if card.card_data.company %} · {{ card.card_data.company }}{% endif %}
                                 </p>
                                 <div class="dash-card__pills">
-                                    <span class="mc-badge">{{ card.get_card_type_display }}</span>
+                                    <span class="mc-badge {% if card.card_type == 'business' %}mc-badge--accent{% else %}mc-badge--info{% endif %}">
+                                        <i data-lucide="{% if card.card_type == 'business' %}briefcase{% else %}user{% endif %}"></i>
+                                        {{ card.get_card_type_display }}
+                                    </span>
                                     <span class="mc-badge">
                                         <i data-lucide="clock"></i>
                                         {{ card.updated_at|timesince }} {% trans "ago" %}
