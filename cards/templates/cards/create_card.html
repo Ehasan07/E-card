@@ -1,424 +1,356 @@
 {% extends 'cards/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}{% if card %}Edit {{ builder_variant.page_title|default:'MY-Card' }}{% else %}Create {{ builder_variant.page_title|default:'MY-Card' }}{% endif %}{% endblock %}
+{% block title %}{% if card %}{% trans "Edit card" %}{% else %}{% trans "Create card" %}{% endif %} — MY-Card{% endblock %}
 
 {% block content %}
-<div class="editor-canvas relative min-h-screen px-4 py-16 overflow-hidden">
-    <div class="editor-glow editor-glow--one"></div>
-    <div class="editor-glow editor-glow--two"></div>
-    <div class="editor-glow editor-glow--three"></div>
+<nav class="mc-nav">
+    <div class="mc-container mc-nav__inner">
+        <a href="{% url 'index' %}" class="mc-nav__logo">
+            <span class="mc-nav__logo-mark"></span>
+            MY-Card
+        </a>
+        <ul class="mc-nav__links">
+            <li><a href="{% url 'dashboard' %}" class="mc-nav-link">{% trans "Dashboard" %}</a></li>
+            <li><a href="#" class="mc-nav-link" aria-current="page">{% if card %}{% trans "Edit card" %}{% else %}{% trans "New card" %}{% endif %}</a></li>
+        </ul>
+        <div class="mc-nav__actions">
+            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                <i data-lucide="sun"  data-mc-theme-icon="sun" style="display:none;"></i>
+            </button>
+            <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                <i data-lucide="arrow-left"></i> {% trans "Back" %}
+            </a>
+        </div>
+    </div>
+</nav>
 
-    <div class="relative max-w-7xl mx-auto">
-        <div class="grid gap-10 items-start lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] xl:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
-            <section class="builder-panel glass-surface" id="builderPanel">
-                <div class="builder-header">
-                    <div>
-                        <p class="text-xs uppercase tracking-[0.4em] text-pink-500 font-semibold">{% if card %}Update{% else %}Create{% endif %} your card</p>
-                        <h1 class="text-3xl md:text-4xl font-bold text-slate-900">{{ builder_variant.heading|default:'Craft your interactive identity' }}</h1>
-                        <p class="text-sm text-slate-500 mt-1">{{ builder_variant.subheading|default:'Fill out the details on the left and tailor every section of your card.' }}</p>
-                        {% if cards_remaining is not None %}
-                            <div class="mt-4 inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold tracking-[0.2em] uppercase limit-pill">
-                                <i data-lucide="layers" class="w-4 h-4"></i>
-                                {{ cards_remaining }} card{{ cards_remaining|pluralize }} remaining in your allowance of {{ card_limit }}
-                            </div>
-                        {% endif %}
+<div class="ed-page">
+    <div class="ed-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:560px;height:560px;top:-160px;left:-140px;"></div>
+        <div class="mc-aurora mc-aurora--cyan" style="width:500px;height:500px;bottom:-200px;right:-140px;opacity:0.32;"></div>
+    </div>
+
+    <div class="mc-container mc-container--wide ed-container">
+        <header class="ed-hero mc-fade-up">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <i data-lucide="sparkles"></i>
+                    {{ builder_variant.badge|default:_("Builder mode") }}
+                </span>
+                <h1 class="ed-hero__title">{{ builder_variant.heading|default:_("Craft your interactive identity") }}</h1>
+                <p class="ed-hero__lede mc-text-muted">{{ builder_variant.subheading|default:_("Fill in the details on the left. The preview on the right updates as you type.") }}</p>
+                {% if cards_remaining is not None %}
+                    <div class="ed-quota">
+                        <i data-lucide="layers"></i>
+                        {% blocktrans count rem=cards_remaining %}{{ rem }} card left in your allowance of {{ card_limit }}{% plural %}{{ rem }} cards left in your allowance of {{ card_limit }}{% endblocktrans %}
                     </div>
-                    <span class="builder-badge">
-                        <span class="builder-badge__pulse"></span>
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        {{ builder_variant.badge|default:'Builder mode' }}
-                    </span>
-                </div>
+                {% endif %}
+            </div>
+        </header>
 
-                <form method="post" enctype="multipart/form-data" class="space-y-10" id="card-builder-form">
+        <div class="ed-grid mc-fade-up mc-fade-up--d1">
+            {# ===== LEFT: Form ===== #}
+            <section class="ed-form-shell">
+                <form method="post" enctype="multipart/form-data" id="card-builder-form" class="ed-form">
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                            {% for error in form.non_field_errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
+                        <div class="mc-auth__errors">
+                            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
                     {% endif %}
 
-                    <section class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">1</span>
-                            Personal details
-                        </h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                {% with field=form.firstName %}
-                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-600 mb-1">
-                                        {{ field.label }}
-                                        {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
-                                    </label>
-                                    {{ field }}
-                                {% endwith %}
-                            </div>
-                            <div>
-                                {% with field=form.lastName %}
-                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-600 mb-1">
-                                        {{ field.label }}
-                                        {% if field.field.required %}<span class="required-indicator">*</span>{% endif %}
-                                    </label>
-                                    {{ field }}
-                                {% endwith %}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Job title</label>
+                    {# ---- Section 1: Personal ---- #}
+                    <section class="ed-section">
+                        <header class="ed-section__head">
+                            <span class="ed-step">1</span>
+                            <h2>{% trans "Personal details" %}</h2>
+                        </header>
+
+                        <div class="ed-grid-2">
+                            <label class="mc-label">
+                                <span><i data-lucide="user"></i> {{ form.firstName.label }}{% if form.firstName.field.required %} *{% endif %}</span>
+                                {{ form.firstName }}
+                                {% if form.firstName.errors %}<span class="mc-field-error">{{ form.firstName.errors|striptags }}</span>{% endif %}
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="user"></i> {{ form.lastName.label }}{% if form.lastName.field.required %} *{% endif %}</span>
+                                {{ form.lastName }}
+                                {% if form.lastName.errors %}<span class="mc-field-error">{{ form.lastName.errors|striptags }}</span>{% endif %}
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="briefcase"></i> {% trans "Job title" %}</span>
                                 {{ form.jobTitle }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Company</label>
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="building-2"></i> {% trans "Company" %}</span>
                                 {{ form.company }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Email</label>
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="mail"></i> {% trans "Email" %}</span>
                                 {{ form.email }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Phone</label>
-                                <div class="flex rounded-xl shadow-sm">
-                                    <div class="relative w-28" data-country-picker="phone" data-default-code="880" data-selected-code="{{ form.phone_country.value|default:'880' }}">
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="phone"></i> {% trans "Phone" %}</span>
+                                <div class="mc-phone-picker" data-country-wrapper>
+                                    <div class="mc-country-selector" data-country-picker="phone" data-default-code="880" data-selected-code="{{ form.phone_country.value|default:'880' }}">
                                         {{ form.phone_country }}
-                                        <button type="button" class="country-trigger h-12 w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-l-xl px-3 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 hover:bg-pink-50 transition" data-country-button>
-                                            <span class="text-lg" data-country-flag>🌐</span>
-                                            <span data-country-code class="text-sm">+000</span>
-                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                                        <button type="button" class="mc-country-trigger" data-country-button aria-expanded="false">
+                                            <span class="mc-country-flag" data-country-flag>🌐</span>
+                                            <span class="mc-country-dial" data-country-code>+000</span>
+                                            <i data-lucide="chevron-down"></i>
                                         </button>
-                                        <div class="country-dropdown hidden absolute z-30 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-xl" data-country-dropdown>
-                                            <div class="border-b border-gray-100 p-2">
-                                                <input type="text" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" placeholder="Search country or code" data-country-search>
+                                        <div class="mc-country-dropdown hidden" data-country-dropdown>
+                                            <div class="mc-country-search">
+                                                <input type="text" placeholder="Search country or code" data-country-search>
                                             </div>
-                                            <ul class="max-h-60 overflow-y-auto py-1" data-country-list></ul>
-                                            <p class="hidden px-4 py-3 text-sm text-gray-500" data-country-empty>No results found</p>
+                                            <ul data-country-list></ul>
+                                            <p class="mc-country-empty hidden" data-country-empty>No results found</p>
                                         </div>
                                     </div>
                                     {{ form.phone_number }}
                                 </div>
                                 {{ form.phone }}
                                 {% if form.phone_country.errors or form.phone_number.errors %}
-                                    <p class="mt-2 text-sm text-pink-600">
-                                        {{ form.phone_country.errors|striptags }} {{ form.phone_number.errors|striptags }}
-                                    </p>
+                                    <span class="mc-field-error">{{ form.phone_country.errors|striptags }} {{ form.phone_number.errors|striptags }}</span>
                                 {% else %}
-                                    <p class="mt-2 text-xs text-gray-500">Enter digits only – the country code is added automatically.</p>
+                                    <span class="mc-field-hint">{% trans "Digits only — the country code is added automatically." %}</span>
                                 {% endif %}
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Address</label>
+                            </label>
+                            <label class="mc-label ed-full">
+                                <span><i data-lucide="map-pin"></i> {% trans "Address" %}</span>
                                 {{ form.address }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Website</label>
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="globe"></i> {% trans "Website" %}</span>
                                 {{ form.website }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Birthday</label>
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="cake"></i> {% trans "Birthday" %}</span>
                                 {{ form.birthday }}
-                            </div>
+                            </label>
                             {% if form.extra_highlight %}
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-semibold text-gray-600 mb-1">Business spotlight</label>
+                                <label class="mc-label ed-full">
+                                    <span><i data-lucide="star"></i> {% trans "Business spotlight" %}</span>
                                     {{ form.extra_highlight }}
-                                    <p class="mt-2 text-xs text-gray-500">Select which detail you want highlighted on the live business card. Leave blank to skip the extra spotlight.</p>
-                                </div>
-                                <div class="md:col-span-2" data-highlight-content-wrapper{% if not form.extra_highlight.value %} hidden{% endif %}>
-                                    <label class="block text-sm font-semibold text-gray-600 mb-1">Spotlight detail</label>
+                                    <span class="mc-field-hint">{% trans "Highlight one contact detail on your business card." %}</span>
+                                </label>
+                                <label class="mc-label ed-full" data-highlight-content-wrapper{% if not form.extra_highlight.value %} hidden{% endif %}>
+                                    <span><i data-lucide="edit-3"></i> {% trans "Spotlight detail" %}</span>
                                     {{ form.extra_highlight_content }}
-                                    <p class="mt-2 text-xs text-gray-500" data-highlight-hint>Provide the exact information that should appear. For phone numbers use digits only.</p>
-                                    <p class="mt-2 text-xs text-indigo-500 hidden" data-highlight-phone-note>
-                                        We’ll format the number for you. Enter digits only or leave blank to reuse the phone number you set above.
-                                    </p>
-                                </div>
+                                    <span class="mc-field-hint" data-highlight-hint>{% trans "Provide the exact information for the spotlight." %}</span>
+                                    <span class="mc-field-hint hidden" data-highlight-phone-note>{% trans "Digits only — we'll format it for you." %}</span>
+                                </label>
                             {% endif %}
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Notes</label>
+                            <label class="mc-label ed-full">
+                                <span><i data-lucide="sticky-note"></i> {% trans "Notes" %}</span>
                                 {{ form.notes }}
-                            </div>
+                            </label>
                         </div>
                     </section>
 
-                    <section class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">2</span>
-                            Social connections
-                        </h2>
-                        <p class="text-sm text-gray-500">Links spring to life on the card with colour-coded badges.</p>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Facebook</label>
-                                {{ form.facebook }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">WhatsApp</label>
-                                <div class="flex rounded-xl shadow-sm">
-                                    <div class="relative w-28" data-country-picker="whatsapp" data-default-code="880" data-selected-code="{{ form.whatsapp_country.value|default:'880' }}">
+                    {# ---- Section 2: Media ---- #}
+                    <section class="ed-section">
+                        <header class="ed-section__head">
+                            <span class="ed-step">2</span>
+                            <h2>{% trans "Avatar &amp; brand" %}</h2>
+                        </header>
+                        <div class="ed-grid-2">
+                            <label class="mc-label ed-full">
+                                <span><i data-lucide="image"></i> {% trans "Avatar" %}</span>
+                                {{ form.avatar }}
+                                {% if card and card.avatar %}<span class="mc-field-hint">{% trans "Current" %}: <a href="{{ card.avatar.url }}" target="_blank">{{ card.avatar.name }}</a></span>{% endif %}
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="award"></i> {% trans "Logo" %}</span>
+                                {{ form.logo }}
+                                {% if card and card.logo %}<span class="mc-field-hint">{% trans "Current" %}: <a href="{{ card.logo.url }}" target="_blank">{{ card.logo.name }}</a></span>{% endif %}
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="tag"></i> {% trans "Brand name" %}</span>
+                                {{ form.logo_name }}
+                            </label>
+                        </div>
+                    </section>
+
+                    {# ---- Section 3: Background ---- #}
+                    <section class="ed-section">
+                        <header class="ed-section__head">
+                            <span class="ed-step">3</span>
+                            <h2>{% trans "Background style" %}</h2>
+                            <span class="mc-caption">{% trans "Tap or use the picker" %}</span>
+                        </header>
+                        <div class="ed-bg-grid" id="background-options">
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#05060B 0%,#0B0D14 40%,#124D33 100%)" style="--gradient: linear-gradient(135deg,#05060B 0%,#0B0D14 40%,#124D33 100%);"><span>Aurora Dark</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#20002c 0%,#cbb4d4 100%)" style="--gradient: linear-gradient(135deg,#20002c 0%,#cbb4d4 100%);"><span>Cyber Neon</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#1f1c2c 0%,#928dab 100%)" style="--gradient: linear-gradient(135deg,#1f1c2c 0%,#928dab 100%);"><span>Executive Slate</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%)" style="--gradient: linear-gradient(135deg,#ff9a9e 0%,#fad0c4 100%);"><span>Sunset Warm</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#000428 0%,#004e92 100%)" style="--gradient: linear-gradient(135deg,#000428 0%,#004e92 100%);"><span>Midnight Azure</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#43cea2 0%,#185a9d 100%)" style="--gradient: linear-gradient(135deg,#43cea2 0%,#185a9d 100%);"><span>Emerald Ocean</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#4568dc 0%,#b06ab3 100%)" style="--gradient: linear-gradient(135deg,#4568dc 0%,#b06ab3 100%);"><span>Royal Velvet</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#f6d365 0%,#fda085 100%)" style="--gradient: linear-gradient(135deg,#f6d365 0%,#fda085 100%);"><span>Golden Hour</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%)" style="--gradient: linear-gradient(135deg,#84fab0 0%,#8fd3f4 100%);"><span>Tropical Mist</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#fc5c7d 0%,#6a82fb 100%)" style="--gradient: linear-gradient(135deg,#fc5c7d 0%,#6a82fb 100%);"><span>Cosmic Bloom</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#b3ffab 0%,#12fff7 100%)" style="--gradient: linear-gradient(135deg,#b3ffab 0%,#12fff7 100%);"><span>Mint Aura</span></button>
+                            <button type="button" class="ed-bg-opt" data-bg-option="linear-gradient(135deg,#ba5370 0%,#f4e2d8 100%)" style="--gradient: linear-gradient(135deg,#ba5370 0%,#f4e2d8 100%);"><span>Rosé Cloud</span></button>
+                        </div>
+                        <div class="ed-color-row">
+                            <label for="customBackgroundPicker" class="mc-caption">{% trans "Or pick a solid color" %}</label>
+                            <input type="color" id="customBackgroundPicker" value="#05060B" aria-label="Custom background color">
+                        </div>
+                        <div class="hidden">{{ form.background_style }}</div>
+                    </section>
+
+                    {# ---- Section 4: Socials ---- #}
+                    <section class="ed-section">
+                        <header class="ed-section__head">
+                            <span class="ed-step">4</span>
+                            <h2>{% trans "Social connections" %}</h2>
+                        </header>
+                        <div class="ed-grid-2">
+                            <label class="mc-label">
+                                <span><i data-lucide="message-circle"></i> WhatsApp</span>
+                                <div class="mc-phone-picker" data-country-wrapper>
+                                    <div class="mc-country-selector" data-country-picker="whatsapp" data-default-code="880" data-selected-code="{{ form.whatsapp_country.value|default:'880' }}">
                                         {{ form.whatsapp_country }}
-                                        <button type="button" class="country-trigger h-12 w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-l-xl px-3 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:border-pink-400 hover:bg-pink-50 transition" data-country-button>
-                                            <span class="text-lg" data-country-flag>🌐</span>
-                                            <span data-country-code class="text-sm">+000</span>
-                                            <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400"></i>
+                                        <button type="button" class="mc-country-trigger" data-country-button aria-expanded="false">
+                                            <span class="mc-country-flag" data-country-flag>🌐</span>
+                                            <span class="mc-country-dial" data-country-code>+000</span>
+                                            <i data-lucide="chevron-down"></i>
                                         </button>
-                                        <div class="country-dropdown hidden absolute z-30 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-xl" data-country-dropdown>
-                                            <div class="border-b border-gray-100 p-2">
-                                                <input type="text" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200" placeholder="Search country or code" data-country-search>
+                                        <div class="mc-country-dropdown hidden" data-country-dropdown>
+                                            <div class="mc-country-search">
+                                                <input type="text" placeholder="Search country or code" data-country-search>
                                             </div>
-                                            <ul class="max-h-60 overflow-y-auto py-1" data-country-list></ul>
-                                            <p class="hidden px-4 py-3 text-sm text-gray-500" data-country-empty>No results found</p>
+                                            <ul data-country-list></ul>
+                                            <p class="mc-country-empty hidden" data-country-empty>No results found</p>
                                         </div>
                                     </div>
                                     {{ form.whatsapp_number }}
                                 </div>
                                 {{ form.whatsapp }}
                                 {% if form.whatsapp_country.errors or form.whatsapp_number.errors %}
-                                    <p class="mt-2 text-sm text-pink-600">
-                                        {{ form.whatsapp_country.errors|striptags }} {{ form.whatsapp_number.errors|striptags }}
-                                    </p>
+                                    <span class="mc-field-error">{{ form.whatsapp_country.errors|striptags }} {{ form.whatsapp_number.errors|striptags }}</span>
                                 {% else %}
-                                    <p class="mt-2 text-xs text-gray-500">WhatsApp number only &mdash; the link is generated automatically.</p>
+                                    <span class="mc-field-hint">{% trans "WhatsApp number only — link generated automatically." %}</span>
                                 {% endif %}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">YouTube</label>
-                                {{ form.youtube }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Instagram</label>
-                                {{ form.instagram }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Twitter / X</label>
-                                {{ form.twitter }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">LinkedIn</label>
-                                {{ form.linkedin }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">GitHub</label>
-                                {{ form.github }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">TikTok</label>
-                                {{ form.tiktok }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Snapchat</label>
-                                {{ form.snapchat }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Likee</label>
-                                {{ form.likee }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Messenger</label>
-                                {{ form.messenger }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Discord</label>
-                                {{ form.discord }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Parrale</label>
-                                {{ form.parrale }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Pinterest</label>
-                                {{ form.pinterest }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Telegram</label>
-                                {{ form.telegram }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">WeChat</label>
-                                {{ form.wechat }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Upwork</label>
-                                {{ form.upwork }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Fiverr</label>
-                                {{ form.fiverr }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Threads</label>
-                                {{ form.threads }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Behance</label>
-                                {{ form.behance }}
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Dribbble</label>
-                                {{ form.dribbble }}
-                            </div>
+                            </label>
+                            <label class="mc-label"><span><i data-lucide="facebook"></i> Facebook</span>{{ form.facebook }}</label>
+                            <label class="mc-label"><span><i data-lucide="instagram"></i> Instagram</span>{{ form.instagram }}</label>
+                            <label class="mc-label"><span><i data-lucide="linkedin"></i> LinkedIn</span>{{ form.linkedin }}</label>
+                            <label class="mc-label"><span><i data-lucide="twitter"></i> Twitter / X</span>{{ form.twitter }}</label>
+                            <label class="mc-label"><span><i data-lucide="youtube"></i> YouTube</span>{{ form.youtube }}</label>
+                            <label class="mc-label"><span><i data-lucide="github"></i> GitHub</span>{{ form.github }}</label>
+                            <label class="mc-label"><span><i data-lucide="music-2"></i> TikTok</span>{{ form.tiktok }}</label>
+                            <label class="mc-label"><span><i data-lucide="ghost"></i> Snapchat</span>{{ form.snapchat }}</label>
+                            <label class="mc-label"><span><i data-lucide="message-square"></i> Messenger</span>{{ form.messenger }}</label>
+                            <label class="mc-label"><span><i data-lucide="send"></i> Telegram</span>{{ form.telegram }}</label>
+                            <label class="mc-label"><span><i data-lucide="gamepad-2"></i> Discord</span>{{ form.discord }}</label>
+                            <label class="mc-label"><span><i data-lucide="message-circle-more"></i> WeChat</span>{{ form.wechat }}</label>
+                            <label class="mc-label"><span><i data-lucide="pin"></i> Pinterest</span>{{ form.pinterest }}</label>
+                            <label class="mc-label"><span><i data-lucide="at-sign"></i> Threads</span>{{ form.threads }}</label>
+                            <label class="mc-label"><span><i data-lucide="heart"></i> Likee</span>{{ form.likee }}</label>
+                            <label class="mc-label"><span><i data-lucide="waves"></i> Parrale</span>{{ form.parrale }}</label>
+                            <label class="mc-label"><span><i data-lucide="briefcase"></i> Upwork</span>{{ form.upwork }}</label>
+                            <label class="mc-label"><span><i data-lucide="sparkles"></i> Fiverr</span>{{ form.fiverr }}</label>
+                            <label class="mc-label"><span><i data-lucide="palette"></i> Behance</span>{{ form.behance }}</label>
+                            <label class="mc-label"><span><i data-lucide="basketball"></i> Dribbble</span>{{ form.dribbble }}</label>
                         </div>
                     </section>
 
-                    <section class="space-y-6">
-                        <h2 class="text-xl font-semibold text-gray-700 flex items-center gap-2">
-                            <span class="w-8 h-8 rounded-full bg-pink-500 text-white flex items-center justify-center text-sm font-bold">3</span>
-                            Style & finishing touches
-                        </h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-600 mb-1">Avatar</label>
-                                {{ form.avatar }}
-                                {% if card and card.avatar %}
-                                    <p class="text-xs text-gray-500 mt-2">Current avatar: <a href="{{ card.avatar.url }}" target="_blank" class="underline">{{ card.avatar.name }}</a></p>
-                                {% endif %}
-                            </div>
-                            <div class="md:col-span-2">
-                                <div class="grid md:grid-cols-2 gap-6 items-start">
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-600 mb-1">Brand logo</label>
-                                        {{ form.logo }}
-                                        {% if card and card.logo %}
-                                            <p class="text-xs text-gray-500 mt-2">Current logo: <a href="{{ card.logo.url }}" target="_blank" class="underline">{{ card.logo.name }}</a></p>
-                                        {% endif %}
-                                        <p class="text-xs text-gray-400 mt-1">Upload a square image. It will display in a compact circle on the card.</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-600 mb-1">Logo / Company name</label>
-                                        {{ form.logo_name }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="md:col-span-2 space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <p class="text-sm font-semibold text-gray-600">Pick a background</p>
-                                    <span class="text-xs text-gray-400">Tap an option or use the colour picker</span>
-                                </div>
-                                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4" id="background-options">
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)" style="--gradient: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);"><span>Blush Sunrise</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)" style="--gradient: linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%);"><span>Lavender Dream</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #43cea2 0%, #185a9d 100%)" style="--gradient: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);"><span>Emerald Ocean</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #4568dc 0%, #b06ab3 100%)" style="--gradient: linear-gradient(135deg, #4568dc 0%, #b06ab3 100%);"><span>Royal Velvet</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #e46b7f 0%, #24152f 100%)" style="--gradient: linear-gradient(135deg, #e46b7f 0%, #24152f 100%);"><span>Crimson Nebula</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #1f1c2c 0%, #928dab 100%)" style="--gradient: linear-gradient(135deg, #1f1c2c 0%, #928dab 100%);"><span>Moonlit Orchid</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)" style="--gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);"><span>Abyssal Tide</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #20002c 0%, #cbb4d4 100%)" style="--gradient: linear-gradient(135deg, #20002c 0%, #cbb4d4 100%);"><span>Amethyst Veil</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #000428 0%, #004e92 100%)" style="--gradient: linear-gradient(135deg, #000428 0%, #004e92 100%);"><span>Midnight Azure</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)" style="--gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);"><span>Celestial Noir</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #b3ffab 0%, #12fff7 100%)" style="--gradient: linear-gradient(135deg, #b3ffab 0%, #12fff7 100%);"><span>Mint Aura</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)" style="--gradient: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);"><span>Dreamscape</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #f6d365 0%, #fda085 100%)" style="--gradient: linear-gradient(135deg, #f6d365 0%, #fda085 100%);"><span>Golden Hour</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)" style="--gradient: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);"><span>Tropical Mist</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%)" style="--gradient: linear-gradient(135deg, #fc5c7d 0%, #6a82fb 100%);"><span>Cosmic Bloom</span></button>
-                                    <button type="button" class="bg-option" data-bg-option="linear-gradient(135deg, #ba5370 0%, #f4e2d8 100%)" style="--gradient: linear-gradient(135deg, #ba5370 0%, #f4e2d8 100%);"><span>Rosé Cloud</span></button>
-                                </div>
-                                <div class="flex items-center gap-4">
-                                    <label for="customBackgroundPicker" class="text-sm font-semibold text-gray-600">Or choose a custom colour</label>
-                                    <input type="color" id="customBackgroundPicker" class="h-12 w-12 rounded-full border-0 shadow-inner cursor-pointer" value="#000000" aria-label="Custom background colour picker">
-                                </div>
-                                <div class="hidden">
-                                    {{ form.background_style }}
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <div class="flex flex-wrap justify-end gap-3 pt-4">
-                        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-800 transition">
-                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                            Cancel
+                    <footer class="ed-actions">
+                        <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--ghost">
+                            <i data-lucide="arrow-left"></i> {% trans "Cancel" %}
                         </a>
-                        <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 shadow-lg hover:shadow-xl transition">
-                            <i data-lucide="save" class="w-4 h-4"></i>
-                            {{ builder_variant.submit_label|default:'Save card' }}
+                        <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg">
+                            <i data-lucide="save"></i>
+                            {{ builder_variant.submit_label|default:_("Save card") }}
                         </button>
-                    </div>
+                    </footer>
                 </form>
             </section>
 
-            <aside class="preview-pane" aria-label="Live card preview">
-                <div class="preview-pane__sticky" id="previewScroll">
-                    <header class="preview-pane__header">
-                        <span class="preview-pane__eyebrow">Live preview</span>
-                        <h2 class="preview-pane__title">Your card in real time</h2>
-                        <p class="preview-pane__subtitle">Every field you update is reflected instantly. Try changing names, colours, or social links.</p>
-                    </header>
-                    <article class="simple-preview" id="previewCard">
-                        <div class="simple-preview__body">
-                            <div class="simple-preview__row">
-                                <div class="simple-avatar">
-                                    <img id="previewAvatarImg" class="simple-avatar__img hidden" alt="Avatar preview">
-                                    <span id="previewAvatarFallback" class="simple-avatar__fallback">
-                                        <i data-lucide="user" class="w-6 h-6"></i>
-                                    </span>
+            {# ===== RIGHT: Live preview ===== #}
+            <aside class="ed-preview-shell" aria-label="Live card preview">
+                <div class="ed-preview-sticky" id="previewScroll">
+                    <div class="ed-preview-head">
+                        <span class="mc-caption">{% trans "Live preview" %}</span>
+                        <h2>{% trans "Your card, real-time" %}</h2>
+                    </div>
+
+                    <article class="mc-tilt ed-preview-card" id="previewCard" data-mc-tilt data-mc-tilt-max="5"
+                             style="--vc-hero-bg: linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%);">
+                        <div class="mc-tilt__shine"></div>
+                        <div class="ed-preview-card__inner">
+                            <div class="ed-preview-avatar">
+                                <img id="previewAvatarImg" alt="" class="hidden">
+                                <span id="previewAvatarFallback" class="ed-preview-avatar__init">You</span>
+                            </div>
+                            <h3 id="previewName" class="ed-preview-name">{% trans "Your Name" %}</h3>
+                            <p id="previewJob" class="ed-preview-role mc-text-muted">{% trans "Your role" %}</p>
+                            <p id="previewCompany" class="ed-preview-company mc-text-accent"></p>
+
+                            <div id="previewLogoRow" class="ed-preview-brand hidden">
+                                <div class="ed-preview-brand__mark">
+                                    <img id="previewLogoImg" alt="" class="hidden">
+                                    <span id="previewLogoFallback">B</span>
                                 </div>
-                                <div class="simple-identity">
-                                    <p id="previewName" class="simple-name">Your Name</p>
-                                    <p id="previewJob" class="simple-role">Your role</p>
-                                    <p id="previewCompany" class="simple-company">Company</p>
-                                </div>
+                                <span id="previewLogoText"></span>
                             </div>
 
-                            <div id="previewLogoRow" class="simple-logo hidden">
-                                <div class="simple-logo__thumb">
-                                    <img id="previewLogoImg" class="simple-logo__img hidden" alt="Brand logo preview">
-                                    <span id="previewLogoFallback" class="simple-logo__fallback">
-                                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                                    </span>
-                                </div>
-                                <p id="previewLogoText" class="simple-logo__text">Brand name</p>
-                            </div>
-
-                            <ul class="simple-contact">
-                                <li id="previewEmailRow" class="simple-contact__item">
-                                    <i data-lucide="mail" class="w-4 h-4"></i>
-                                    <span id="previewEmail">hello@example.com</span>
+                            <ul class="ed-preview-contact">
+                                <li id="previewEmailRow" class="hidden">
+                                    <i data-lucide="mail"></i>
+                                    <span id="previewEmail"></span>
                                 </li>
-                                <li id="previewPhoneRow" class="simple-contact__item">
-                                    <i data-lucide="phone" class="w-4 h-4"></i>
-                                    <span id="previewPhone">+00 000 000</span>
+                                <li id="previewPhoneRow" class="hidden">
+                                    <i data-lucide="phone"></i>
+                                    <span id="previewPhone" class="mc-mono"></span>
                                 </li>
-                                <li id="previewWebsiteRow" class="simple-contact__item">
-                                    <i data-lucide="globe" class="w-4 h-4"></i>
-                                    <a id="previewWebsite" class="simple-link" rel="nofollow noopener">example.com</a>
+                                <li id="previewWebsiteRow" class="hidden">
+                                    <i data-lucide="globe"></i>
+                                    <a id="previewWebsite" rel="nofollow noopener"></a>
                                 </li>
-                                <li id="previewAddressRow" class="simple-contact__item">
-                                    <i data-lucide="map-pin" class="w-4 h-4"></i>
-                                    <span id="previewAddress">City, Country</span>
+                                <li id="previewAddressRow" class="hidden">
+                                    <i data-lucide="map-pin"></i>
+                                    <span id="previewAddress"></span>
                                 </li>
-                                <li id="previewBirthdayRow" class="simple-contact__item">
-                                    <i data-lucide="calendar" class="w-4 h-4"></i>
-                                    <span id="previewBirthday">Birthday</span>
+                                <li id="previewBirthdayRow" class="hidden">
+                                    <i data-lucide="cake"></i>
+                                    <span id="previewBirthday"></span>
                                 </li>
                             </ul>
 
-                            <section class="simple-notes hidden" id="previewNotesSection">
-                                <h3 class="simple-notes__label">Notes</h3>
-                                <p id="previewNotes" class="simple-notes__text"></p>
-                            </section>
+                            <div id="previewNotesSection" class="ed-preview-notes hidden">
+                                <span class="mc-caption">{% trans "Notes" %}</span>
+                                <p id="previewNotes"></p>
+                            </div>
 
-                            <div class="simple-socials" aria-label="Social links">
-                                <span class="simple-social hidden" data-social-preview="facebook"><i data-lucide="facebook" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="whatsapp"><i data-lucide="message-circle" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="youtube"><i data-lucide="youtube" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="instagram"><i data-lucide="instagram" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="twitter"><i data-lucide="twitter" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="linkedin"><i data-lucide="linkedin" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="github"><i data-lucide="github" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="tiktok"><i data-lucide="music-2" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="snapchat"><i data-lucide="ghost" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="likee"><i data-lucide="heart" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="messenger"><i data-lucide="message-square" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="discord"><i data-lucide="gamepad-2" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="parrale"><i data-lucide="waves" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="pinterest"><i data-lucide="pin" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="telegram"><i data-lucide="send" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="wechat"><i data-lucide="message-circle-more" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="upwork"><i data-lucide="briefcase" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="fiverr"><i data-lucide="sparkles" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="threads"><i data-lucide="at-sign" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="behance"><i data-lucide="palette" class="w-4 h-4"></i></span>
-                                <span class="simple-social hidden" data-social-preview="dribbble"><i data-lucide="basketball" class="w-4 h-4"></i></span>
+                            <div class="ed-preview-socials" aria-label="Social links">
+                                <span class="ed-preview-social hidden" data-social-preview="facebook"  style="--c:#1877F2"><i data-lucide="facebook"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="whatsapp"  style="--c:#25D366"><i data-lucide="message-circle"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="youtube"   style="--c:#FF0000"><i data-lucide="youtube"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="instagram" style="--c:#E1306C"><i data-lucide="instagram"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="twitter"   style="--c:#1DA1F2"><i data-lucide="twitter"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="linkedin"  style="--c:#0A66C2"><i data-lucide="linkedin"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="github"><i data-lucide="github"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="tiktok"    style="--c:#00F2EA"><i data-lucide="music-2"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="snapchat"  style="--c:#FFFC00"><i data-lucide="ghost"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="likee"     style="--c:#FF0050"><i data-lucide="heart"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="messenger" style="--c:#0078FF"><i data-lucide="message-square"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="discord"   style="--c:#5865F2"><i data-lucide="gamepad-2"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="parrale"><i data-lucide="waves"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="pinterest" style="--c:#E60023"><i data-lucide="pin"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="telegram"  style="--c:#229ED9"><i data-lucide="send"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="wechat"    style="--c:#09B83E"><i data-lucide="message-circle-more"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="upwork"    style="--c:#14A800"><i data-lucide="briefcase"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="fiverr"    style="--c:#1DBF73"><i data-lucide="sparkles"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="threads"><i data-lucide="at-sign"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="behance"   style="--c:#1769FF"><i data-lucide="palette"></i></span>
+                                <span class="ed-preview-social hidden" data-social-preview="dribbble"  style="--c:#EA4C89"><i data-lucide="basketball"></i></span>
                             </div>
                         </div>
                     </article>
@@ -428,973 +360,585 @@
     </div>
 </div>
 
+{{ form.media }}
+
 <style>
-    .editor-canvas {
-        background: radial-gradient(120% 120% at 10% 10%, rgba(236, 72, 153, 0.12), transparent 60%),
-                    radial-gradient(120% 140% at 90% 20%, rgba(56, 189, 248, 0.1), transparent 70%),
-                    #f8fafc;
-    }
-    .editor-glow {
-        position: absolute;
-        border-radius: 9999px;
-        filter: blur(0px);
-        opacity: 0.5;
-        animation: glowFloat 20s ease-in-out infinite;
-    }
-    .editor-glow--one { width: 420px; height: 420px; top: -180px; left: -140px; background: rgba(236, 72, 153, 0.25); }
-    .editor-glow--two { width: 360px; height: 360px; bottom: -160px; right: -160px; background: rgba(59, 130, 246, 0.2); animation-delay: 6s; }
-    .editor-glow--three { width: 520px; height: 520px; top: 45%; left: 40%; background: rgba(125, 211, 252, 0.18); animation-delay: 3s; }
-    @keyframes glowFloat { 0%, 100% { transform: translate3d(0,0,0); opacity: 0.45; } 50% { transform: translate3d(0,-18px,0); opacity: 0.65; } }
+/* ===== Editor page ===== */
+.ed-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-6) 0 var(--mc-s-9); overflow: hidden; }
+.ed-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.ed-container { position: relative; z-index: 1; }
 
-    .glass-surface {
-        background: rgba(255, 255, 255, 0.78);
-        border-radius: 32px;
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: 0 40px 90px -45px rgba(15, 23, 42, 0.35);
-        backdrop-filter: blur(14px);
-        padding: clamp(1.75rem, 3vw, 3rem);
-    }
-    .builder-header {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        margin-bottom: 2.5rem;
-    }
-    @media (min-width: 768px) {
-        .builder-header { flex-direction: row; justify-content: space-between; align-items: flex-start; }
-    }
-    .builder-badge {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.55rem 0.9rem 0.55rem 0.75rem;
-        border-radius: 999px;
-        border: 1px solid rgba(236, 72, 153, 0.35);
-        background: rgba(236, 72, 153, 0.12);
-        color: #be123c;
-        font-weight: 600;
-        font-size: 0.75rem;
-        letter-spacing: 0.14em;
-        text-transform: uppercase;
-    }
-    .builder-badge__pulse {
-        position: absolute;
-        inset: -4px;
-        border-radius: inherit;
-        background: radial-gradient(circle at center, rgba(236, 72, 153, 0.2), transparent 65%);
-        opacity: 0;
-        animation: pulseBadge 2.6s ease-in-out infinite;
-    }
-    @keyframes pulseBadge { 0%, 70% { opacity: 0; transform: scale(0.9); } 80% { opacity: 0.6; transform: scale(1.05); } 100% { opacity: 0; transform: scale(1.1); } }
-    .limit-pill {
-        background: rgba(129, 140, 248, 0.15);
-        color: #4338ca;
-        border: 1px solid rgba(129, 140, 248, 0.4);
-    }
+.ed-hero { margin-bottom: var(--mc-s-6); display: flex; flex-direction: column; gap: var(--mc-s-3); }
+.ed-hero__title { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: var(--mc-s-3) 0 0; }
+.ed-hero__lede { margin: var(--mc-s-2) 0 0; max-width: 640px; }
+.ed-quota {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    padding: 0.35rem 0.85rem;
+    border-radius: var(--mc-r-full);
+    border: 1px solid var(--mc-border-glow);
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    font-size: var(--mc-fs-caption);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: var(--mc-s-3);
+}
+.ed-quota i { width: 0.9rem; height: 0.9rem; }
 
-    .builder-panel input, .builder-panel textarea, .builder-panel select {
-        width: 100%;
-        border-radius: 1rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        background: rgba(255, 255, 255, 0.92);
-        transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
-    }
-    .builder-panel input:focus, .builder-panel textarea:focus, .builder-panel select:focus {
-        outline: none;
-        border-color: rgba(99, 102, 241, 0.45);
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
-        transform: translateY(-2px);
-    }
+.ed-grid { display: grid; grid-template-columns: 1fr; gap: var(--mc-s-6); align-items: start; }
+@media (min-width: 1024px) { .ed-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); } }
 
-    .hidden { display: none !important; }
+/* Form shell */
+.ed-form-shell {
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-xl);
+    padding: clamp(1.5rem, 3vw, 2.2rem);
+    box-shadow: var(--mc-shadow-2);
+}
+.ed-form { display: flex; flex-direction: column; gap: var(--mc-s-7); }
 
-    .required-indicator {
-        color: #dc2626;
-        margin-left: 0.25rem;
-    }
+.ed-section { display: flex; flex-direction: column; gap: var(--mc-s-4); }
+.ed-section__head {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding-bottom: var(--mc-s-3);
+    border-bottom: 1px solid var(--mc-border);
+}
+.ed-section__head h2 { font-size: 1.15rem; margin: 0; flex: 1; }
+.ed-step {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--mc-accent);
+    color: var(--mc-text-inv);
+    display: grid;
+    place-items: center;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    box-shadow: 0 0 0 4px var(--mc-accent-halo);
+}
 
-    .bg-option {
-        position: relative;
-        border-radius: 1rem;
-        padding: 1px;
-        height: 110px;
-        display: flex;
-        align-items: flex-end;
-        justify-content: center;
-        overflow: hidden;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: rgba(255, 255, 255, 0.95);
-        font-weight: 600;
-        border: none;
-        box-shadow: 0 10px 25px -15px rgba(15, 23, 42, 0.4);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .bg-option span { position: relative; z-index: 2; padding-bottom: 0.9rem; }
-    .bg-option::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        z-index: 1;
-        background: var(--gradient, linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%));
-    }
-    .bg-option:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 18px 35px -20px rgba(15, 23, 42, 0.5);
-    }
-    .bg-option.active {
-        box-shadow: 0 22px 45px -20px rgba(236, 72, 153, 0.6);
-        transform: translateY(-6px) scale(1.01);
-    }
-    .bg-option.active::after {
-        content: '';
-        position: absolute;
-        inset: 4px;
-        border-radius: 0.9rem;
-        border: 2px solid rgba(255, 255, 255, 0.6);
-        z-index: 2;
-    }
+.ed-grid-2 { display: grid; grid-template-columns: 1fr; gap: var(--mc-s-4); }
+@media (min-width: 720px) { .ed-grid-2 { grid-template-columns: 1fr 1fr; } }
+.ed-full { grid-column: 1 / -1; }
 
-    .preview-pane { position: relative; }
-    .preview-pane__sticky {
-        position: sticky;
-        top: clamp(1.5rem, 10vh, 5rem);
-        display: flex;
-        flex-direction: column;
-        gap: 1.75rem;
-    }
-    .preview-pane__header {
-        background: #0f172a;
-        color: #e2e8f0;
-        border-radius: 1.5rem;
-        padding: clamp(1.4rem, 2.5vw, 2.1rem);
-        border: 1px solid rgba(148, 163, 184, 0.25);
-        box-shadow: 0 20px 45px -30px rgba(15, 23, 42, 0.8);
-    }
-    .preview-pane__eyebrow {
-        display: inline-block;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.22em;
-        font-weight: 600;
-        color: rgba(226, 232, 240, 0.65);
-    }
-    .preview-pane__title {
-        margin-top: 0.6rem;
-        font-size: clamp(1.3rem, 2.4vw, 1.7rem);
-        font-weight: 700;
-    }
-    .preview-pane__subtitle {
-        margin-top: 0.45rem;
-        font-size: 0.9rem;
-        color: rgba(226, 232, 240, 0.8);
-        line-height: 1.6;
-    }
-    .simple-preview {
-        background: #000000;
-        border-radius: 1.6rem;
-        color: #f8fafc;
-        padding: clamp(1.6rem, 2.5vw, 2.2rem);
-        box-shadow: 0 30px 65px -35px rgba(15, 23, 42, 0.85);
-        border: 1px solid rgba(148, 163, 184, 0.2);
-        transition: background 0.4s ease;
-    }
-    .simple-preview__body { display: flex; flex-direction: column; gap: 1.4rem; }
-    .simple-preview__row { display: flex; gap: 1rem; align-items: center; }
-    .simple-avatar {
-        width: 64px;
-        height: 64px;
-        border-radius: 1.2rem;
-        background: rgba(15, 23, 42, 0.55);
-        display: grid;
-        place-items: center;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    .simple-avatar__img { width: 100%; height: 100%; object-fit: cover; }
-    .simple-avatar__fallback { color: rgba(226, 232, 240, 0.85); }
-    .simple-identity { display: flex; flex-direction: column; gap: 0.35rem; }
-    .simple-name {
-        font-size: clamp(1.3rem, 2.4vw, 1.8rem);
-        font-weight: 700;
-    }
-    .simple-role {
-        font-size: 1rem;
-        color: rgba(226, 232, 240, 0.78);
-    }
-    .simple-company {
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.14em;
-        color: rgba(226, 232, 240, 0.6);
-    }
-    .simple-logo {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border-radius: 1.1rem;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(148, 163, 184, 0.25);
-    }
-    .simple-logo__thumb {
-        width: 40px;
-        height: 40px;
-        border-radius: 0.9rem;
-        overflow: hidden;
-        display: grid;
-        place-items: center;
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(148, 163, 184, 0.3);
-    }
-    .simple-logo__img { width: 100%; height: 100%; object-fit: cover; }
-    .simple-logo__fallback { color: rgba(226, 232, 240, 0.8); }
-    .simple-logo__text { font-size: 0.95rem; font-weight: 600; }
-    .simple-contact { list-style: none; padding: 0; margin: 0; display: grid; gap: 0.5rem; }
-    .simple-contact__item {
-        display: flex;
-        align-items: center;
-        gap: 0.55rem;
-        font-size: 0.9rem;
-        background: rgba(15, 23, 42, 0.5);
-        border-radius: 0.9rem;
-        padding: 0.65rem 0.75rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
-    }
-    .simple-link { color: inherit; text-decoration: none; }
-    .simple-link:hover { text-decoration: underline; }
-    .simple-notes {
-        background: rgba(15, 23, 42, 0.55);
-        border-radius: 1.1rem;
-        padding: 0.9rem 1rem;
-        border: 1px solid rgba(148, 163, 184, 0.25);
-    }
-    .simple-notes__label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        color: rgba(226, 232, 240, 0.65);
-        margin-bottom: 0.4rem;
-    }
-    .simple-notes__text { font-size: 0.95rem; line-height: 1.6; color: rgba(248, 250, 252, 0.9); white-space: pre-line; }
-    .simple-socials { display: flex; flex-wrap: wrap; gap: 0.55rem; }
-    .simple-social {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-        box-shadow: 0 12px 28px -18px rgba(15,23,42,0.55);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    .simple-social i { width: 18px; height: 18px; }
-    .simple-social:hover { transform: translateY(-2px); box-shadow: 0 18px 36px -20px rgba(15,23,42,0.65); }
-    .simple-social[data-social-preview="facebook"] { background: #1877F2; }
-    .simple-social[data-social-preview="whatsapp"] { background: #25D366; }
-    .simple-social[data-social-preview="youtube"] { background: #FF0000; }
-    .simple-social[data-social-preview="instagram"] { background: linear-gradient(135deg,#F58529,#DD2A7B,#8134AF,#515BD4); }
-    .simple-social[data-social-preview="twitter"] { background: #1DA1F2; }
-    .simple-social[data-social-preview="linkedin"] { background: #0A66C2; }
-    .simple-social[data-social-preview="github"] { background: #181717; }
-    .simple-social[data-social-preview="tiktok"] { background: linear-gradient(135deg,#010101 0%,#ff0050 50%,#00f2ea 100%); }
-    .simple-social[data-social-preview="snapchat"] { background: #FFFC00; color: #1f2937; }
-    .simple-social[data-social-preview="likee"] { background: linear-gradient(135deg,#FF0050 0%,#FF7A59 40%,#FFB347 70%,#FFE29F 100%); }
-    .simple-social[data-social-preview="messenger"] { background: linear-gradient(135deg,#8b5cf6,#5b21b6,#3b82f6); }
-    .simple-social[data-social-preview="discord"] { background: #5865F2; }
-    .simple-social[data-social-preview="parrale"] { background: linear-gradient(135deg,#ff9a9e,#fad0c4); color: #1f2937; }
-    .simple-social[data-social-preview="pinterest"] { background: #E60023; }
-    .simple-social[data-social-preview="telegram"] { background: #229ED9; }
-    .simple-social[data-social-preview="wechat"] { background: #09b83e; }
-    .simple-social[data-social-preview="upwork"] { background: #14a800; }
-    .simple-social[data-social-preview="fiverr"] { background: #1dbf73; }
-    .simple-social[data-social-preview="threads"] { background: #101010; }
-    .simple-social[data-social-preview="behance"] { background: #0057ff; }
-    .simple-social[data-social-preview="dribbble"] { background: linear-gradient(135deg,#ec4899,#f472b6); }
+/* Field overrides — beat inline Tailwind on Django fields */
+.ed-form input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
+.ed-form select,
+.ed-form textarea {
+    width: 100%;
+    font-family: var(--mc-font-body);
+    font-size: var(--mc-fs-body);
+    color: var(--mc-text-hi);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-md);
+    padding: 0.85rem 1rem;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease), background var(--mc-dur-fast) var(--mc-ease);
+    outline: none;
+    box-shadow: none;
+}
+.ed-form input:hover, .ed-form select:hover, .ed-form textarea:hover { border-color: var(--mc-border-glow); }
+.ed-form input:focus, .ed-form select:focus, .ed-form textarea:focus {
+    border-color: var(--mc-accent);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo);
+    background: var(--mc-bg-3);
+}
+.ed-form input::placeholder, .ed-form textarea::placeholder { color: var(--mc-text-lo); }
+.ed-form input[type="file"] {
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+    padding: 0.6rem;
+    background: var(--mc-bg-2);
+    border: 1px dashed var(--mc-border-hi);
+    border-radius: var(--mc-r-md);
+    cursor: pointer;
+}
+.ed-form input[type="file"]::file-selector-button {
+    background: var(--mc-accent);
+    color: var(--mc-text-inv);
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--mc-r-sm);
+    margin-right: var(--mc-s-3);
+    cursor: pointer;
+    font-weight: 600;
+}
+.ed-form textarea { min-height: 6rem; resize: vertical; }
+.ed-form input[type="date"] { color-scheme: dark; }
 
-    @media (max-width: 1023px) {
-        .preview-pane__sticky { position: static; }
-    }
+/* Background option grid */
+.ed-bg-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--mc-s-3);
+}
+@media (min-width: 640px) { .ed-bg-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 1200px) { .ed-bg-grid { grid-template-columns: repeat(4, 1fr); } }
 
+.ed-bg-opt {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--mc-r-md);
+    background: var(--gradient, var(--mc-bg-3));
+    border: 2px solid transparent;
+    color: #fff;
+    font-weight: 600;
+    font-size: var(--mc-fs-body-sm);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding: var(--mc-s-3);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+    cursor: pointer;
+    transition: transform var(--mc-dur-fast) var(--mc-ease), border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.ed-bg-opt:hover { transform: translateY(-3px); box-shadow: var(--mc-shadow-2); }
+.ed-bg-opt.is-selected {
+    border-color: var(--mc-accent);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo), var(--mc-shadow-2);
+}
+
+.ed-color-row {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding-top: var(--mc-s-3);
+}
+.ed-color-row input[type="color"] {
+    width: 48px; height: 48px;
+    border: 2px solid var(--mc-border-hi);
+    border-radius: 50%;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+}
+
+/* Form footer actions */
+.ed-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--mc-s-3);
+    padding-top: var(--mc-s-5);
+    border-top: 1px solid var(--mc-border);
+    flex-wrap: wrap;
+}
+
+/* ===== Preview shell (sticky, right side) ===== */
+.ed-preview-shell { position: relative; }
+.ed-preview-sticky { position: sticky; top: calc(72px + var(--mc-s-5)); display: flex; flex-direction: column; gap: var(--mc-s-4); }
+.ed-preview-head { display: flex; flex-direction: column; gap: 4px; }
+.ed-preview-head h2 { font-size: 1.15rem; margin: 0; }
+
+.ed-preview-card {
+    background: var(--vc-hero-bg);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-2xl);
+    padding: clamp(1.5rem, 3vw, 2rem);
+    text-align: center;
+    color: var(--mc-text-hi);
+    box-shadow: var(--mc-shadow-3), 0 0 0 1px var(--mc-accent-halo);
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+}
+.ed-preview-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, rgba(255,255,255,0.10), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+.ed-preview-card__inner { position: relative; z-index: 1; display: flex; flex-direction: column; gap: var(--mc-s-3); align-items: center; }
+
+.ed-preview-avatar {
+    width: 96px; height: 96px;
+    border-radius: 50%;
+    border: 3px solid var(--mc-accent);
+    box-shadow: 0 0 0 6px var(--mc-accent-halo);
+    background: var(--mc-bg-3);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    margin-bottom: var(--mc-s-3);
+}
+.ed-preview-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.ed-preview-avatar__init { font-family: var(--mc-font-display); font-size: 1.6rem; font-weight: 700; color: var(--mc-text-hi); text-transform: uppercase; }
+.ed-preview-name { font-family: var(--mc-font-display); font-size: 1.5rem; margin: 0; }
+.ed-preview-role { margin: 0; font-size: var(--mc-fs-body-sm); }
+.ed-preview-company { margin: 0; font-size: var(--mc-fs-body-sm); font-weight: 600; }
+.ed-preview-company:empty { display: none; }
+
+.ed-preview-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-bg-3);
+    border: 1px solid var(--mc-border);
+    margin-top: var(--mc-s-2);
+}
+.ed-preview-brand__mark {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--mc-bg-2);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: var(--mc-accent);
+}
+.ed-preview-brand__mark img { width: 100%; height: 100%; object-fit: cover; }
+.ed-preview-brand span:last-child { font-size: var(--mc-fs-body-sm); font-weight: 600; }
+
+.ed-preview-contact {
+    list-style: none;
+    padding: var(--mc-s-3) 0 0;
+    margin: 0;
+    width: 100%;
+    display: grid;
+    gap: var(--mc-s-2);
+    border-top: 1px solid var(--mc-border);
+    margin-top: var(--mc-s-3);
+}
+.ed-preview-contact li {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--mc-r-sm);
+    background: var(--mc-bg-3);
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+    text-align: left;
+    word-break: break-word;
+}
+.ed-preview-contact li i { color: var(--mc-accent); width: 1rem; height: 1rem; flex-shrink: 0; }
+.ed-preview-contact li a { color: var(--mc-accent); }
+
+.ed-preview-notes {
+    width: 100%;
+    text-align: left;
+    padding: var(--mc-s-3);
+    background: var(--mc-bg-3);
+    border-radius: var(--mc-r-sm);
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+    margin-top: var(--mc-s-3);
+}
+.ed-preview-notes .mc-caption { display: block; margin-bottom: var(--mc-s-2); }
+
+.ed-preview-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mc-s-2);
+    justify-content: center;
+    padding-top: var(--mc-s-3);
+    border-top: 1px solid var(--mc-border);
+    margin-top: var(--mc-s-3);
+    width: 100%;
+}
+.ed-preview-social {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--mc-bg-3);
+    color: var(--c, var(--mc-text-md));
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--mc-border);
+}
+.ed-preview-social i { width: 0.95rem; height: 0.95rem; }
+
+.hidden { display: none !important; }
 </style>
 
 <script>
-    (function() {
-        const form = document.getElementById('card-builder-form');
-        if (!form) { return; }
+(function() {
+    'use strict';
 
-        const fallbackBackground = '#000000';
-        const fieldIds = ['firstName','lastName','jobTitle','company','logo_name','email','phone','address','website','birthday','notes','facebook','whatsapp','youtube','instagram','twitter','linkedin','github','tiktok','snapchat','likee','messenger','discord','parrale','pinterest','telegram','wechat','upwork','fiverr','threads','behance','dribbble'];
-        const inputs = {};
-        fieldIds.forEach(name => {
-            const el = document.getElementById(`id_${name}`);
-            if (el) {
-                inputs[name] = el;
-            }
-        });
+    /* ============  Country picker (reused for phone + whatsapp)  ============ */
+    var countriesCache = null;
+    var COUNTRIES_URL = "{% static 'cards/country_codes.json' %}";
 
-        const getFieldValue = name => {
-            const direct = inputs[name];
-            const baseControl = direct || (form && form.elements ? form.elements[name] : null);
-            if (!baseControl) { return ''; }
+    function sanitizeDigits(v) { return v ? v.replace(/\D/g, '') : ''; }
 
-            if (typeof RadioNodeList !== 'undefined' && baseControl instanceof RadioNodeList) {
-                return (baseControl.value || '').trim();
-            }
+    function setupPicker(picker) {
+        var role = picker.dataset.countryPicker;               // "phone" or "whatsapp"
+        var hiddenCountry  = picker.querySelector('input[type="hidden"][name$="_country"]');
+        var hiddenCombined = picker.querySelector('input[type="hidden"][name="' + (role === 'whatsapp' ? 'whatsapp' : 'phone') + '"]');
+        var localInput = document.getElementById('id_' + role + '_number');
+        var button = picker.querySelector('[data-country-button]');
+        var flagEl = picker.querySelector('[data-country-flag]');
+        var codeEl = picker.querySelector('[data-country-code]');
+        var dropdown = picker.querySelector('[data-country-dropdown]');
+        var searchInput = picker.querySelector('[data-country-search]');
+        var listEl = picker.querySelector('[data-country-list]');
+        var emptyState = picker.querySelector('[data-country-empty]');
 
-            if (baseControl.value !== undefined) {
-                if (baseControl.type === 'file') { return ''; }
-                return (baseControl.value || '').trim();
-            }
+        if (!hiddenCountry || !button) return;
 
-            const length = baseControl.length;
-            if (typeof length === 'number' && length > 0) {
-                for (let i = 0; i < length; i += 1) {
-                    const option = baseControl[i];
-                    if (!option) { continue; }
-                    if (option.checked || option.selected) {
-                        if (option.type === 'file') { return ''; }
-                        return (option.value || '').trim();
-                    }
-                }
-            }
+        var filtered = [], activeIndex = -1;
 
-            return '';
-        };
-
-        const previewCard = document.getElementById('previewCard');
-        const previewName = document.getElementById('previewName');
-        const previewJob = document.getElementById('previewJob');
-        const previewCompany = document.getElementById('previewCompany');
-        const previewLogoRow = document.getElementById('previewLogoRow');
-        const previewLogoImg = document.getElementById('previewLogoImg');
-        const previewLogoFallback = document.getElementById('previewLogoFallback');
-        const previewLogoText = document.getElementById('previewLogoText');
-        const previewEmailRow = document.getElementById('previewEmailRow');
-        const previewPhoneRow = document.getElementById('previewPhoneRow');
-        const previewWebsiteRow = document.getElementById('previewWebsiteRow');
-        const previewAddressRow = document.getElementById('previewAddressRow');
-        const previewBirthdayRow = document.getElementById('previewBirthdayRow');
-        const previewEmail = document.getElementById('previewEmail');
-        const previewPhone = document.getElementById('previewPhone');
-        const previewWebsite = document.getElementById('previewWebsite');
-        const previewAddress = document.getElementById('previewAddress');
-        const previewBirthday = document.getElementById('previewBirthday');
-        const previewNotes = document.getElementById('previewNotes');
-        const previewNotesSection = document.getElementById('previewNotesSection');
-        const previewAvatarImg = document.getElementById('previewAvatarImg');
-        const previewAvatarFallback = document.getElementById('previewAvatarFallback');
-        const hasPreview = Boolean(
-            previewCard &&
-            previewName &&
-            previewJob &&
-            previewCompany &&
-            previewEmail &&
-            previewPhone &&
-            previewWebsite &&
-            previewAddress &&
-            previewBirthday &&
-            previewNotes
-        );
-        const backgroundField = document.getElementById('id_background_style');
-        const backgroundOptions = document.querySelectorAll('[data-bg-option]');
-        const customPicker = document.getElementById('customBackgroundPicker');
-        const logoInput = document.getElementById('id_logo');
-        const socialElements = document.querySelectorAll('[data-social-preview]');
-        const whatsappCountryField = document.getElementById('id_whatsapp_country');
-        const whatsappNumberField = document.getElementById('id_whatsapp_number');
-        const whatsappHiddenField = document.getElementById('id_whatsapp');
-        const phoneCountryField = document.getElementById('id_phone_country');
-        const phoneNumberField = document.getElementById('id_phone_number');
-        const phoneHiddenField = document.getElementById('id_phone');
-        if (whatsappHiddenField) {
-            whatsappHiddenField.dataset.initialValue = whatsappHiddenField.value;
+        function closeDropdown() {
+            dropdown.classList.add('hidden');
+            button.setAttribute('aria-expanded', 'false');
         }
-        if (phoneHiddenField) {
-            phoneHiddenField.dataset.initialValue = phoneHiddenField.value;
+        function openDropdown() {
+            dropdown.classList.remove('hidden');
+            button.setAttribute('aria-expanded', 'true');
+            renderList('');
+            searchInput.value = '';
+            setTimeout(function() { searchInput.focus(); }, 0);
         }
-
-        const COUNTRY_DATA_URL = "{% static 'cards/country_codes.json' %}";
-        const phonePickerContainer = document.querySelector('[data-country-picker="phone"]');
-        const whatsappPickerContainer = document.querySelector('[data-country-picker="whatsapp"]');
-        const countryPickerConfigs = {
-            phone: {
-                type: 'phone',
-                container: phonePickerContainer,
-                hiddenInput: phoneCountryField,
-                defaultCode: (phonePickerContainer && phonePickerContainer.dataset ? phonePickerContainer.dataset.defaultCode : undefined) || '880'
-            },
-            whatsapp: {
-                type: 'whatsapp',
-                container: whatsappPickerContainer,
-                hiddenInput: whatsappCountryField,
-                defaultCode: (whatsappPickerContainer && whatsappPickerContainer.dataset ? whatsappPickerContainer.dataset.defaultCode : undefined) || '880'
-            }
-        };
-        let countryDataset = [];
-        let openCountryPicker = null;
-
-        const escapeHtml = (value) => value
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-
-        const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-        const highlightMatch = (text, term) => {
-            if (!term) {
-                return escapeHtml(text);
-            }
-            const regex = new RegExp(`(${escapeRegExp(term)})`, 'ig');
-            return escapeHtml(text).replace(regex, '<span class="text-pink-500 font-semibold">$1</span>');
-        };
-
-        const closeCountryDropdown = (config) => {
-            if (!config || !config.dropdown) { return; }
-            config.dropdown.classList.add('hidden');
-            if (config.button) {
-                config.button.setAttribute('aria-expanded', 'false');
-            }
-            if (config.searchInput) {
-                config.searchInput.value = '';
-            }
-            config.filteredCountries = config.allCountries;
-            config.activeIndex = -1;
-            openCountryPicker = openCountryPicker === config ? null : openCountryPicker;
-        };
-
-        const setCountrySelection = (config, country, trigger = true) => {
-            if (!country || !config || !config.hiddenInput) { return; }
-            config.selectedCountry = country;
-            config.hiddenInput.value = country.dialDigits;
-            if (config.container) {
-                config.container.dataset.selectedCode = country.dialDigits;
-            }
-            if (config.buttonFlag) {
-                config.buttonFlag.textContent = country.flag;
-            }
-            if (config.buttonCode) {
-                config.buttonCode.textContent = country.dial_code;
-            }
-            if (trigger && config.hiddenInput) {
-                config.hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
-            }
-        };
-
-        const applyBackground = (backgroundValue) => {
-            const value = backgroundValue || fallbackBackground;
-            if (previewCard) {
-                previewCard.style.setProperty('background', value);
-            }
-            if (backgroundField) {
-                backgroundField.value = value;
-            }
-        };
-
-        const setActiveBackground = (option) => {
-            backgroundOptions.forEach(btn => btn.classList.remove('active'));
-            if (option) {
-                option.classList.add('active');
-            }
-        };
-
-        const updatePreview = () => {
-            if (!hasPreview) { return; }
-            const values = {};
-            fieldIds.forEach(name => {
-                values[name] = getFieldValue(name);
-            });
-
-            const fullName = [values.firstName, values.lastName].filter(Boolean).join(' ').trim() || 'Your Name';
-            previewName.textContent = fullName;
-            previewJob.textContent = values.jobTitle || 'Your role';
-            previewCompany.textContent = values.company || 'Company';
-
-            const logoName = values.logo_name;
-            if (previewLogoRow && previewLogoText) {
-                const hasLogoImage = Boolean(previewLogoImg && !previewLogoImg.classList.contains('hidden'));
-                if (logoName || hasLogoImage) {
-                    previewLogoRow.classList.remove('hidden');
-                    previewLogoText.textContent = logoName || 'Brand name';
-                    if (previewLogoFallback) {
-                        if (hasLogoImage) {
-                            previewLogoFallback.classList.add('hidden');
-                        } else {
-                            previewLogoFallback.classList.remove('hidden');
-                        }
-                    }
+        function updateButtonDisplay(c) {
+            if (!c) return;
+            flagEl.textContent = c.flag;
+            codeEl.textContent = c.dial_code;
+            picker.dataset.selectedCode = c.dialDigits;
+        }
+        function updateHiddenValues() {
+            var cd = sanitizeDigits(hiddenCountry.value);
+            var ld = localInput ? sanitizeDigits(localInput.value) : '';
+            if (cd && ld.startsWith(cd)) ld = ld.slice(cd.length);
+            if (localInput) localInput.value = ld;
+            if (hiddenCombined) {
+                if (role === 'whatsapp') {
+                    hiddenCombined.value = (cd && ld) ? 'https://wa.me/' + cd + ld : '';
                 } else {
-                    previewLogoRow.classList.add('hidden');
+                    hiddenCombined.value = cd ? (cd + ld) : ld;
                 }
             }
-
-            const toggleRow = (rowElement, hasValue) => {
-                if (!rowElement) { return; }
-                rowElement.classList.toggle('hidden', !hasValue);
-            };
-
-            toggleRow(previewEmailRow, Boolean(values.email));
-            toggleRow(previewPhoneRow, Boolean(values.phone));
-            toggleRow(previewWebsiteRow, Boolean(values.website));
-            toggleRow(previewAddressRow, Boolean(values.address));
-            toggleRow(previewBirthdayRow, Boolean(values.birthday));
-
-            previewEmail.textContent = values.email || 'hello@example.com';
-            previewPhone.textContent = values.phone || '+00 000 000';
-            previewWebsite.textContent = values.website || 'example.com';
-            if (values.website) {
-                previewWebsite.href = values.website.startsWith('http') ? values.website : `https://${values.website}`;
-            } else {
-                previewWebsite.removeAttribute('href');
-            }
-            previewAddress.textContent = values.address || 'City, Country';
-            previewBirthday.textContent = values.birthday || 'Birthday';
-
-            if (values.notes) {
-                previewNotes.textContent = values.notes;
-                previewNotes.classList.remove('hidden');
-                if (previewNotesSection) {
-                    previewNotesSection.classList.remove('hidden');
-                }
-            } else {
-                previewNotes.textContent = '';
-                previewNotes.classList.add('hidden');
-                if (previewNotesSection) {
-                    previewNotesSection.classList.add('hidden');
-                }
-            }
-
-            socialElements.forEach(elem => {
-                const network = elem.dataset.socialPreview;
-                const value = values[network] || '';
-                elem.classList.toggle('hidden', !value);
-            });
-        };
-
-        const syncWhatsappLink = (updateField = true) => {
-            if (!whatsappCountryField || !whatsappNumberField || !whatsappHiddenField) { return; }
-            const country = whatsappCountryField.value.trim();
-            const number = whatsappNumberField.value.replace(/\D/g, '');
-            if (country && number) {
-                const full = `${country}${number}`;
-                if (updateField) {
-                    whatsappHiddenField.value = `https://wa.me/${full}`;
-                    whatsappHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
-                } else {
-                    whatsappHiddenField.value = `https://wa.me/${full}`;
-                }
-            } else if (updateField) {
-                whatsappHiddenField.value = whatsappHiddenField.dataset.initialValue || '';
-                whatsappHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        };
-
-        const syncPhoneValue = (updateField = true) => {
-            if (!phoneCountryField || !phoneNumberField || !phoneHiddenField) { return; }
-            const country = phoneCountryField.value.trim();
-            const number = phoneNumberField.value.replace(/\D/g, '');
-            if (country && number) {
-                const full = `+${country} ${number}`;
-                if (updateField) {
-                    phoneHiddenField.value = full;
-                    phoneHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
-                } else {
-                    phoneHiddenField.value = full;
-                }
-            } else if (updateField) {
-                phoneHiddenField.value = phoneHiddenField.dataset.initialValue || '';
-                phoneHiddenField.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-        };
-
-        const loadCountryData = async () => {
-            if (countryDataset.length) { return countryDataset; }
-            try {
-                const response = await fetch(COUNTRY_DATA_URL, { cache: 'force-cache' });
-                const data = await response.json();
-                countryDataset = data.map(country => ({
-                    ...country,
-                    dialDigits: String(country.dial_code || '').replace(/[^0-9]/g, '')
-                })).filter(country => country.dialDigits.length);
-            } catch (err) {
-                console.warn('Unable to load country data', err);
-                countryDataset = [];
-            }
-            return countryDataset;
-        };
-
-        const initCountryPicker = async (config) => {
-            if (!config || !config.container || !config.hiddenInput) { return; }
-            const allCountries = await loadCountryData();
-            if (!allCountries.length) { return; }
-            config.allCountries = allCountries;
-            config.filteredCountries = allCountries;
-            config.dropdown = config.container.querySelector('[data-country-dropdown]');
-            config.button = config.container.querySelector('[data-country-button]');
-            config.searchInput = config.container.querySelector('[data-country-search]');
-            config.list = config.container.querySelector('[data-country-list]');
-            config.emptyState = config.container.querySelector('[data-country-empty]');
-            config.buttonFlag = config.button ? config.button.querySelector('[data-country-flag]') : null;
-            config.buttonCode = config.button ? config.button.querySelector('[data-country-code]') : null;
-            config.activeIndex = -1;
-
-            const renderCountries = () => {
-                if (!config.list) { return; }
-                config.list.innerHTML = '';
-                if (!config.filteredCountries.length) {
-                    if (config.emptyState) {
-                        config.emptyState.classList.remove('hidden');
-                    }
-                    return;
-                }
-                if (config.emptyState) {
-                    config.emptyState.classList.add('hidden');
-                }
-                const activeTerm = config.searchInput ? config.searchInput.value : '';
-                config.filteredCountries.forEach((country, index) => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `
-                        <button type="button" class="flex items-center gap-3 w-full px-3 py-2 text-left text-sm hover:bg-pink-50">
-                            <span class="text-lg">${country.flag}</span>
-                            <span class="flex-1">${highlightMatch(country.name, activeTerm)}</span>
-                            <span class="text-xs text-gray-400">${country.dial_code}</span>
-                        </button>
-                    `;
-                    li.querySelector('button').addEventListener('click', () => {
-                        setCountrySelection(config, country);
-                        closeCountryDropdown(config);
-                    });
-                    config.list.appendChild(li);
-                    if (config.activeIndex === index) {
-                        li.querySelector('button').classList.add('bg-pink-100');
-                    }
-                });
-            };
-
-            const openDropdown = () => {
-                if (!config.dropdown) { return; }
-                if (openCountryPicker && openCountryPicker !== config) {
-                    closeCountryDropdown(openCountryPicker);
-                }
-                config.dropdown.classList.remove('hidden');
-                if (config.button) {
-                    config.button.setAttribute('aria-expanded', 'true');
-                }
-                if (config.searchInput) {
-                    try {
-                        config.searchInput.focus({ preventScroll: true });
-                    } catch (err) {
-                        config.searchInput.focus();
-                    }
-                }
-                openCountryPicker = config;
-            };
-
-            if (config.button) {
-                config.button.addEventListener('click', () => {
-                    if (config.dropdown && config.dropdown.classList.contains('hidden')) {
-                        openDropdown();
-                    } else {
-                        closeCountryDropdown(config);
-                    }
-                });
-            }
-
-            if (config.searchInput) {
-                config.searchInput.addEventListener('input', () => {
-                    const term = config.searchInput.value.trim().toLowerCase();
-                    config.filteredCountries = config.allCountries.filter(country =>
-                        country.name.toLowerCase().includes(term) || country.dialDigits.includes(term)
-                    );
-                    config.activeIndex = config.filteredCountries.length ? 0 : -1;
-                    renderCountries();
-                });
-            }
-
-            if (config.dropdown) {
-                config.dropdown.addEventListener('keydown', event => {
-                    if (!['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) { return; }
-                    if (event.key === 'Escape') {
-                        closeCountryDropdown(config);
-                        if (config.button) {
-                            config.button.focus();
-                        }
-                        return;
-                    }
-                    if (event.key === 'Enter' && config.activeIndex >= 0) {
-                        const country = config.filteredCountries[config.activeIndex];
-                        setCountrySelection(config, country);
-                        closeCountryDropdown(config);
-                        if (config.button) {
-                            config.button.focus();
-                        }
-                        event.preventDefault();
-                        return;
-                    }
-                    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-                        event.preventDefault();
-                        if (!config.filteredCountries.length) { return; }
-                        if (event.key === 'ArrowDown') {
-                            config.activeIndex = (config.activeIndex + 1) % config.filteredCountries.length;
-                        } else {
-                            config.activeIndex = (config.activeIndex - 1 + config.filteredCountries.length) % config.filteredCountries.length;
-                        }
-                        renderCountries();
-                        if (config.list) {
-                            const buttons = config.list.querySelectorAll('button');
-                            const activeButton = buttons[config.activeIndex];
-                            if (activeButton && activeButton.scrollIntoView) {
-                                activeButton.scrollIntoView({ block: 'nearest' });
-                            }
-                        }
-                    }
-                });
-            }
-
-            document.addEventListener('click', event => {
-                if (!config.dropdown || config.dropdown.classList.contains('hidden')) { return; }
-                if (!config.container.contains(event.target)) {
-                    closeCountryDropdown(config);
-                }
-            });
-
-            config.allCountries.forEach(country => {
-                if (country.dialDigits === config.hiddenInput.value) {
-                    setCountrySelection(config, country, false);
-                }
-            });
-
-            if (!config.selectedCountry) {
-                const fallback = config.allCountries.find(country => country.dialDigits === config.defaultCode) || config.allCountries[0];
-                setCountrySelection(config, fallback, false);
-            }
-
-            renderCountries();
-        };
-
-        Object.values(countryPickerConfigs).forEach(config => initCountryPicker(config));
-
-        backgroundOptions.forEach(option => {
-            const gradient = option.getAttribute('data-bg-option');
-            option.style.setProperty('--gradient', gradient);
-            option.addEventListener('click', () => {
-                setActiveBackground(option);
-                applyBackground(gradient);
-            });
-        });
-
-        if (customPicker) {
-            customPicker.addEventListener('input', event => {
-                const value = event.target.value;
-                backgroundOptions.forEach(btn => btn.classList.remove('active'));
-                applyBackground(value);
-            });
+            // Trigger preview update
+            document.dispatchEvent(new CustomEvent('mc:preview-refresh'));
         }
-
-        if (backgroundField && backgroundField.value) {
-            const match = Array.from(backgroundOptions).find(option => option.getAttribute('data-bg-option') === backgroundField.value);
-            if (match) {
-                setActiveBackground(match);
-                applyBackground(backgroundField.value);
-            } else {
-                applyBackground(backgroundField.value);
-            }
-            if (customPicker && /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(backgroundField.value.trim())) {
-                customPicker.value = backgroundField.value.trim();
-            }
-        } else {
-            applyBackground(fallbackBackground);
-            if (customPicker) {
-                customPicker.value = fallbackBackground;
-            }
+        function selectCountry(c) {
+            hiddenCountry.value = c.dialDigits;
+            updateButtonDisplay(c);
+            updateHiddenValues();
         }
-
-        fieldIds.forEach(name => {
-            const input = inputs[name];
-            if (!input) { return; }
-            input.addEventListener('input', updatePreview);
-            input.addEventListener('change', updatePreview);
-        });
-
-        const isFormElement = el => {
-            if (!el || !el.tagName) { return false; }
-            const tag = el.tagName.toUpperCase();
-            return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
-        };
-
-        form.addEventListener('input', event => {
-            if (isFormElement(event.target)) {
-                updatePreview();
-            }
-        });
-        form.addEventListener('change', event => {
-            if (isFormElement(event.target)) {
-                updatePreview();
-            }
-        });
-
-        if (whatsappCountryField) {
-            whatsappCountryField.addEventListener('change', () => {
-                syncWhatsappLink();
-                updatePreview();
-            });
-        }
-
-        if (whatsappNumberField) {
-            whatsappNumberField.addEventListener('input', () => {
-                syncWhatsappLink();
-                updatePreview();
-            });
-            whatsappNumberField.addEventListener('blur', () => syncWhatsappLink());
-        }
-
-        if (phoneCountryField) {
-            phoneCountryField.addEventListener('change', () => {
-                syncPhoneValue();
-            });
-        }
-
-        if (phoneNumberField) {
-            phoneNumberField.addEventListener('input', () => {
-                syncPhoneValue();
-            });
-            phoneNumberField.addEventListener('blur', () => syncPhoneValue());
-        }
-
-        let initialLogoSrc = previewLogoImg ? (previewLogoImg.getAttribute('src') || '') : '';
-        if (logoInput && previewLogoImg && previewLogoFallback) {
-            logoInput.addEventListener('change', event => {
-                const [file] = event.target.files || [];
-                if (!file) {
-                    if (initialLogoSrc) {
-                        previewLogoImg.src = initialLogoSrc;
-                        previewLogoImg.classList.remove('hidden');
-                        previewLogoFallback.classList.add('hidden');
-                    } else {
-                        previewLogoImg.src = '';
-                        previewLogoImg.classList.add('hidden');
-                        previewLogoFallback.classList.remove('hidden');
-                    }
-                    updatePreview();
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = e => {
-                    previewLogoImg.src = e.target.result;
-                    previewLogoImg.classList.remove('hidden');
-                    previewLogoFallback.classList.add('hidden');
-                    updatePreview();
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-        if (previewLogoImg && previewLogoImg.getAttribute('src') && !previewLogoImg.classList.contains('hidden')) {
-            if (previewLogoFallback) {
-                previewLogoFallback.classList.add('hidden');
-            }
-            if (previewLogoRow) {
-                previewLogoRow.classList.remove('hidden');
-            }
-        }
-
-        const avatarInput = document.getElementById('id_avatar');
-        if (avatarInput && previewAvatarImg && previewAvatarFallback) {
-            avatarInput.addEventListener('change', event => {
-                const [file] = event.target.files;
-                if (!file) {
-                    previewAvatarImg.classList.add('hidden');
-                    previewAvatarImg.src = '';
-                    previewAvatarFallback.classList.remove('hidden');
-                    return;
-                }
-                const reader = new FileReader();
-                reader.onload = e => {
-                    previewAvatarImg.src = e.target.result;
-                    previewAvatarImg.classList.remove('hidden');
-                    previewAvatarFallback.classList.add('hidden');
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-
-        if (previewAvatarImg && previewAvatarImg.getAttribute('src')) {
-            previewAvatarImg.classList.remove('hidden');
-            previewAvatarFallback.classList.add('hidden');
-        }
-
-        syncPhoneValue(false);
-        syncWhatsappLink(false);
-        updatePreview();
-    })();
-
-    (function() {
-        const select = document.getElementById('id_extra_highlight');
-        const wrapper = document.querySelector('[data-highlight-content-wrapper]');
-        const input = document.getElementById('id_extra_highlight_content');
-        const hint = wrapper ? wrapper.querySelector('[data-highlight-hint]') : null;
-        const phoneNote = wrapper ? wrapper.querySelector('[data-highlight-phone-note]') : null;
-
-        if (!select || !wrapper || !input) { return; }
-
-        const hints = {
-            phone: 'Enter the phone number you want highlighted. Digits only; country code optional.',
-            email: 'Enter the contact email that should appear in the spotlight.',
-            website: 'Enter the website URL starting with https://',
-            default: 'Provide the exact information that should appear. For phone numbers use digits only.'
-        };
-
-        const fillFromField = (fieldId) => {
-            const field = document.getElementById(fieldId);
-            if (field && !input.value) {
-                input.value = field.value || '';
-            }
-        };
-
-        const sanitizeDigits = value => (value || '').replace(/\D/g, '');
-
-        const handleState = () => {
-            const choice = (select.value || '').toLowerCase();
-            if (phoneNote) { phoneNote.classList.add('hidden'); }
-            if (!choice) {
-                wrapper.hidden = true;
-                input.value = '';
+        function renderList(term) {
+            var q = term.trim().toLowerCase();
+            filtered = !q ? countriesCache : countriesCache.filter(function(c) { return c.search.indexOf(q) !== -1; });
+            if (!filtered.length) {
+                listEl.innerHTML = '';
+                emptyState.classList.remove('hidden');
                 return;
             }
+            emptyState.classList.add('hidden');
+            activeIndex = filtered.findIndex(function(c) { return c.dialDigits === hiddenCountry.value; });
+            if (activeIndex < 0) activeIndex = 0;
+            listEl.innerHTML = filtered.map(function(c, i) {
+                var cls = i === activeIndex ? 'active' : '';
+                return '<li data-country-item data-index="' + i + '" data-dial="' + c.dialDigits + '" class="' + cls + '">' +
+                    '<span class="flag">' + c.flag + '</span>' +
+                    '<span class="label">' + c.name + '<small>' + c.dial_code + '</small></span></li>';
+            }).join('');
+        }
 
-            wrapper.hidden = false;
-            if (hint) {
-                hint.textContent = hints[choice] || hints.default;
-            }
+        document.addEventListener('click', function(e) {
+            if (!picker.contains(e.target) && !dropdown.classList.contains('hidden')) closeDropdown();
+        });
+        button.addEventListener('click', function() {
+            if (!countriesCache) return;
+            dropdown.classList.contains('hidden') ? openDropdown() : closeDropdown();
+        });
+        listEl.addEventListener('mousedown', function(e) {
+            var item = e.target.closest('[data-country-item]');
+            if (!item) return;
+            e.preventDefault();
+            var c = filtered[Number(item.dataset.index)];
+            if (c) { selectCountry(c); closeDropdown(); button.focus(); }
+        });
+        searchInput.addEventListener('input', function(e) { renderList(e.target.value); });
+        searchInput.addEventListener('keydown', function(e) {
+            if (!filtered.length) return;
+            if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = (activeIndex + 1) % filtered.length; renderList(e.target.value); }
+            if (e.key === 'ArrowUp')   { e.preventDefault(); activeIndex = (activeIndex - 1 + filtered.length) % filtered.length; renderList(e.target.value); }
+            if (e.key === 'Enter')     { e.preventDefault(); var c = filtered[activeIndex >= 0 ? activeIndex : 0]; if (c) { selectCountry(c); closeDropdown(); button.focus(); } }
+            if (e.key === 'Escape')    { e.preventDefault(); closeDropdown(); button.focus(); }
+        });
+        if (localInput) {
+            localInput.addEventListener('input', function() {
+                var s = sanitizeDigits(localInput.value);
+                if (s !== localInput.value) localInput.value = s;
+                updateHiddenValues();
+            });
+        }
 
-            if (!input.value) {
-                if (choice === 'phone') {
-                    const localField = document.getElementById('id_phone_number_local');
-                    const digits = sanitizeDigits(localField ? localField.value : '') || sanitizeDigits(document.getElementById('id_phone_number') ? document.getElementById('id_phone_number').value : '');
-                    if (digits) {
-                        input.value = digits;
-                    }
-                }
-                if (choice === 'email') {
-                    fillFromField('id_email');
-                }
-                if (choice === 'website') {
-                    fillFromField('id_website');
-                }
-            }
+        function initFromCache() {
+            var init = sanitizeDigits(hiddenCountry.value) || picker.dataset.defaultCode || '880';
+            var initC = countriesCache.find(function(c) { return c.dialDigits === init; }) || countriesCache[0];
+            selectCountry(initC);
+        }
 
-            if (choice === 'phone' && phoneNote) {
-                phoneNote.classList.remove('hidden');
-            }
-        };
+        if (countriesCache) initFromCache();
+        else {
+            fetch(COUNTRIES_URL).then(function(r) { return r.json(); }).then(function(data) {
+                countriesCache = data.map(function(c) {
+                    return Object.assign({}, c, {
+                        dialDigits: c.dial_code.replace(/[^0-9]/g, ''),
+                        search: c.name.toLowerCase() + ' ' + c.dial_code.replace('+','') + ' ' + c.code.toLowerCase()
+                    });
+                });
+                initFromCache();
+            }).catch(function() {
+                hiddenCountry.value = hiddenCountry.value || '880';
+                updateButtonDisplay({ flag: '🌐', dial_code: '+' + hiddenCountry.value, dialDigits: hiddenCountry.value });
+                updateHiddenValues();
+            });
+        }
+    }
 
-        handleState();
-        select.addEventListener('change', handleState);
-    })();
+    document.querySelectorAll('[data-country-picker]').forEach(setupPicker);
+
+    /* ============  Background selector  ============ */
+    var bgHidden = document.getElementById('id_background_style');
+    var bgButtons = document.querySelectorAll('.ed-bg-opt');
+    var colorPicker = document.getElementById('customBackgroundPicker');
+    var previewCard = document.getElementById('previewCard');
+
+    function applyBackground(value) {
+        if (bgHidden) bgHidden.value = value;
+        if (previewCard) previewCard.style.setProperty('--vc-hero-bg', value);
+        bgButtons.forEach(function(b) { b.classList.toggle('is-selected', b.dataset.bgOption === value); });
+    }
+    bgButtons.forEach(function(b) {
+        b.addEventListener('click', function() { applyBackground(b.dataset.bgOption); });
+    });
+    if (colorPicker) {
+        colorPicker.addEventListener('input', function(e) { applyBackground(e.target.value); });
+    }
+    // Initialize from stored value
+    if (bgHidden && bgHidden.value) applyBackground(bgHidden.value);
+    else applyBackground('linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%)');
+
+    /* ============  Live preview  ============ */
+    function bindPreview(fieldId, previewId, rowId) {
+        var field = document.getElementById(fieldId);
+        var target = document.getElementById(previewId);
+        var row = rowId ? document.getElementById(rowId) : null;
+        if (!field || !target) return;
+        function sync() {
+            var v = (field.value || '').trim();
+            if (row) row.classList.toggle('hidden', !v);
+            if (target.tagName === 'A') { target.href = v; target.textContent = v; }
+            else target.textContent = v || target.dataset.default || '';
+        }
+        field.addEventListener('input', sync);
+        document.addEventListener('mc:preview-refresh', sync);
+        sync();
+    }
+
+    /* Text/URL/email fields */
+    bindPreview('id_firstName',  'previewName',     null);   // handled specially below
+    bindPreview('id_jobTitle',   'previewJob',      null);
+    bindPreview('id_company',    'previewCompany',  null);
+    bindPreview('id_email',      'previewEmail',    'previewEmailRow');
+    bindPreview('id_phone',      'previewPhone',    'previewPhoneRow');
+    bindPreview('id_website',    'previewWebsite',  'previewWebsiteRow');
+    bindPreview('id_address',    'previewAddress',  'previewAddressRow');
+    bindPreview('id_birthday',   'previewBirthday', 'previewBirthdayRow');
+    bindPreview('id_notes',      'previewNotes',    'previewNotesSection');
+    bindPreview('id_logo_name',  'previewLogoText', 'previewLogoRow');
+
+    /* Full-name concat (firstName + lastName) */
+    function syncName() {
+        var f = (document.getElementById('id_firstName') || {}).value || '';
+        var l = (document.getElementById('id_lastName')  || {}).value || '';
+        var n = (f + ' ' + l).trim();
+        var el = document.getElementById('previewName');
+        if (el) el.textContent = n || '{% trans "Your Name" %}';
+        var fb = document.getElementById('previewAvatarFallback');
+        if (fb) fb.textContent = ((f.slice(0,1) || '') + (l.slice(0,1) || '')).toUpperCase() || 'You';
+    }
+    ['id_firstName','id_lastName'].forEach(function(id) {
+        var e = document.getElementById(id);
+        if (e) e.addEventListener('input', syncName);
+    });
+    syncName();
+
+    /* Avatar preview from file upload */
+    var avatarInput = document.getElementById('id_avatar');
+    var avatarImg = document.getElementById('previewAvatarImg');
+    var avatarFallback = document.getElementById('previewAvatarFallback');
+    if (avatarInput && avatarImg) {
+        avatarInput.addEventListener('change', function(e) {
+            var file = e.target.files && e.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                avatarImg.src = ev.target.result;
+                avatarImg.classList.remove('hidden');
+                if (avatarFallback) avatarFallback.classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /* Logo preview from file upload */
+    var logoInput = document.getElementById('id_logo');
+    var logoImg = document.getElementById('previewLogoImg');
+    var logoFallback = document.getElementById('previewLogoFallback');
+    if (logoInput && logoImg) {
+        logoInput.addEventListener('change', function(e) {
+            var file = e.target.files && e.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                logoImg.src = ev.target.result;
+                logoImg.classList.remove('hidden');
+                if (logoFallback) logoFallback.classList.add('hidden');
+                var row = document.getElementById('previewLogoRow');
+                if (row) row.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    /* Social preview badges */
+    var socials = ['facebook','instagram','linkedin','twitter','youtube','github','tiktok','snapchat','likee','messenger','discord','parrale','pinterest','telegram','wechat','upwork','fiverr','threads','behance','dribbble'];
+    socials.forEach(function(net) {
+        var input = document.getElementById('id_' + net);
+        var badge = document.querySelector('.ed-preview-social[data-social-preview="' + net + '"]');
+        if (!input || !badge) return;
+        function sync() { badge.classList.toggle('hidden', !(input.value || '').trim()); }
+        input.addEventListener('input', sync);
+        sync();
+    });
+
+    /* WhatsApp preview badge (special: hidden field id_whatsapp) */
+    var waHidden = document.getElementById('id_whatsapp');
+    var waBadge = document.querySelector('.ed-preview-social[data-social-preview="whatsapp"]');
+    function syncWa() {
+        if (!waBadge) return;
+        waBadge.classList.toggle('hidden', !(waHidden && waHidden.value));
+    }
+    document.addEventListener('mc:preview-refresh', syncWa);
+    syncWa();
+
+    /* Business highlight visibility */
+    var highlightSelect = document.getElementById('id_extra_highlight');
+    var highlightWrap = document.querySelector('[data-highlight-content-wrapper]');
+    var highlightPhoneNote = document.querySelector('[data-highlight-phone-note]');
+    var highlightHint = document.querySelector('[data-highlight-hint]');
+    if (highlightSelect && highlightWrap) {
+        function updateHighlight() {
+            var v = highlightSelect.value;
+            highlightWrap.toggleAttribute('hidden', !v);
+            if (highlightPhoneNote) highlightPhoneNote.classList.toggle('hidden', v !== 'phone');
+            if (highlightHint) highlightHint.classList.toggle('hidden', v === 'phone');
+        }
+        highlightSelect.addEventListener('change', updateHighlight);
+        updateHighlight();
+    }
+})();
 </script>
 {% endblock %}

@@ -54,7 +54,7 @@ class CardViewTests(TestCase):
         self.assertTrue(response.context['is_owner'])
         self.assertFalse(response.context['from_qr'])
         self.assertFalse(response.context['show_guest_cta'])
-        self.assertNotContains(response, 'Create a card for yourself')
+        self.assertNotContains(response, 'Create my own MY-Card')
 
         # Test as owner from QR
         response = self.client.get(self.card.get_absolute_url() + '?qr=1')
@@ -69,7 +69,7 @@ class CardViewTests(TestCase):
         self.assertFalse(response.context['is_owner'])
         self.assertFalse(response.context['from_qr'])
         self.assertTrue(response.context['show_guest_cta'])
-        self.assertContains(response, 'Create a card for yourself')
+        self.assertContains(response, 'Create my own MY-Card')
 
     def test_business_card_highlight_phone(self):
         self.card.card_type = Card.TYPE_BUSINESS

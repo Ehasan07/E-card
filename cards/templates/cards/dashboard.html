@@ -1,840 +1,434 @@
 {% extends 'cards/base.html' %}
+{% load i18n %}
 
-{% block title %}Dashboard{% endblock %}
+{% block title %}Dashboard — MY-Card{% endblock %}
 
 {% block content %}
-<div class="min-h-screen">
-    <div class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-pink-100/60 via-white to-indigo-100/60"></div>
-        <div class="relative container mx-auto px-4 py-12">
-            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 mb-10">
-                <div class="space-y-4">
-                    <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-pink-200 text-xs font-semibold tracking-[0.35em] uppercase text-pink-500">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        Your hub
+{# ===== Top nav ===== #}
+<nav class="mc-nav">
+    <div class="mc-container mc-nav__inner">
+        <a href="{% url 'index' %}" class="mc-nav__logo">
+            <span class="mc-nav__logo-mark"></span>
+            MY-Card
+        </a>
+        <ul class="mc-nav__links">
+            <li><a href="{% url 'dashboard' %}" class="mc-nav-link" aria-current="page">{% trans "Dashboard" %}</a></li>
+            <li><a href="{% url 'user_messages' %}" class="mc-nav-link">{% trans "Messages" %}</a></li>
+            <li><a href="{% url 'documentation' %}" class="mc-nav-link">{% trans "Docs" %}</a></li>
+        </ul>
+        <div class="mc-nav__actions">
+            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+            </button>
+            <a href="{% url 'logout' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                <i data-lucide="log-out"></i> {% trans "Sign out" %}
+            </a>
+        </div>
+    </div>
+</nav>
+
+<div class="dash-page">
+    <div class="dash-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+        <div class="mc-aurora mc-aurora--cyan"              style="width:520px;height:520px;bottom:-200px;right:-160px;opacity:0.28;"></div>
+    </div>
+
+    <div class="mc-container dash-container">
+
+        {# ===== Hero row ===== #}
+        <header class="dash-hero mc-fade-up">
+            <div class="dash-hero__intro">
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    {% trans "Your studio" %}
+                </span>
+                <h1 class="dash-hero__title">
+                    {% blocktrans with name=request.user.first_name|default:request.user.username %}Welcome back, {{ name }}{% endblocktrans %}
+                </h1>
+                <p class="dash-hero__lede mc-text-muted">
+                    {% trans "All your interactive cards in one place. Edit, share, and track engagement." %}
+                </p>
+            </div>
+            <div class="dash-hero__cta">
+                <a href="{% url 'create_card' %}" class="mc-btn mc-btn--primary">
+                    <i data-lucide="user-plus"></i> {% trans "New personal card" %}
+                </a>
+                <a href="{% url 'create_business_card' %}" class="mc-btn mc-btn--ghost">
+                    <i data-lucide="briefcase"></i> {% trans "New business card" %}
+                </a>
+            </div>
+        </header>
+
+        {# ===== Metric tiles (bento) ===== #}
+        <section class="dash-metrics mc-fade-up mc-fade-up--d1">
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="id-card"></i> {% trans "Total cards" %}</span>
+                <span class="mc-metric__value">{{ cards|length }}</span>
+                <span class="mc-metric__delta">
+                    <i data-lucide="check"></i> {% trans "Active" %}
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="layers"></i> {% trans "Card allowance" %}</span>
+                <span class="mc-metric__value mc-mono">{{ cards|length }} / {{ card_limit }}</span>
+                <span class="mc-metric__delta {% if at_card_limit %}mc-metric__delta--down{% endif %}">
+                    {% if at_card_limit %}
+                        <i data-lucide="alert-triangle"></i> {% trans "Limit reached" %}
+                    {% else %}
+                        <i data-lucide="plus-circle"></i> {% blocktrans count remaining=cards_remaining %}{{ remaining }} slot left{% plural %}{{ remaining }} slots left{% endblocktrans %}
+                    {% endif %}
+                </span>
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="clock"></i> {% trans "Latest update" %}</span>
+                <span class="mc-metric__value" style="font-size:1.35rem;">
+                    {% if latest_update %}
+                        {{ latest_update|timesince }} {% trans "ago" %}
+                    {% else %}
+                        <span class="mc-text-muted" style="font-size:1rem;">{% trans "No updates yet" %}</span>
+                    {% endif %}
+                </span>
+                {% if latest_update_log %}
+                    <span class="mc-metric__delta">
+                        <i data-lucide="edit-3"></i> {{ latest_update_log.summary|default:_("Edited details") }}
                     </span>
-                    <div>
-                        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Welcome back, {{ request.user.first_name|default:request.user.username }}</h1>
-                        <p class="text-gray-600 max-w-xl">All your interactive calling cards in one place. Edit, preview, and share in seconds.</p>
-                    </div>
+                {% endif %}
+            </div>
+            <div class="mc-metric">
+                <span class="mc-metric__label"><i data-lucide="inbox"></i> {% trans "Messages" %}</span>
+                <a href="{% url 'user_messages' %}" class="mc-metric__value" style="text-decoration:none;font-size:1.35rem;">
+                    {% trans "Open inbox" %} <i data-lucide="arrow-right" style="width:1rem;height:1rem;vertical-align:-2px;"></i>
+                </a>
+                <span class="mc-metric__delta">
+                    <i data-lucide="mail"></i> {% trans "Upgrade requests & admin replies" %}
+                </span>
+            </div>
+        </section>
+
+        {# ===== Limit banner ===== #}
+        {% if at_card_limit %}
+            <section class="dash-banner mc-fade-up mc-fade-up--d2">
+                <div class="dash-banner__icon"><i data-lucide="lock"></i></div>
+                <div class="dash-banner__body">
+                    <h3>{% trans "You've hit your card limit." %}</h3>
+                    <p class="mc-text-muted">
+                        {% blocktrans with lim=card_limit %}Your current plan allows {{ lim }} card(s). To publish more, request an upgrade — an admin will review shortly.{% endblocktrans %}
+                    </p>
                 </div>
-                <div class="dashboard-actions">
-                    <div class="action-card">
-                        <div class="action-row action-row--primary">
-                            <a href="{% url 'user_messages' %}" class="message-box-btn">
-                                <span class="icon"><i data-lucide="inbox" class="w-4 h-4"></i></span>
-                                Message box
-                                {% if responded_messages_count %}
-                                    <span class="message-pill" title="Responses from admin">{{ responded_messages_count }}</span>
-                                {% elif pending_upgrade_count %}
-                                    <span class="message-pill message-pill--pending" title="Pending requests">{{ pending_upgrade_count }}</span>
+                <a href="{% url 'user_messages' %}" class="mc-btn mc-btn--primary">
+                    <i data-lucide="rocket"></i> {% trans "Request upgrade" %}
+                </a>
+            </section>
+        {% endif %}
+
+        {# ===== Cards grid or empty state ===== #}
+        {% if cards %}
+            <section class="dash-cards-head mc-fade-up mc-fade-up--d2">
+                <h2>{% trans "Your cards" %}</h2>
+                <span class="mc-caption">{{ cards|length }} {% blocktrans count total=cards|length %}card{% plural %}cards{% endblocktrans %}</span>
+            </section>
+            <section class="dash-cards mc-fade-up mc-fade-up--d3">
+                {% for card in cards %}
+                    <article class="mc-card mc-card--interactive dash-card">
+                        <div class="dash-card__banner" style="background: {{ card.card_data.background_style|default:'linear-gradient(135deg,#7CFFB2,#38E1FF)' }};">
+                            <div class="dash-card__avatar">
+                                {% if card.avatar %}
+                                    <img src="{{ card.avatar.url }}" alt="">
+                                {% else %}
+                                    <span>{{ card.card_data.firstName|default:''|slice:':1' }}{{ card.card_data.lastName|default:''|slice:':1' }}</span>
                                 {% endif %}
-                            </a>
-                            <a href="{% url 'index' %}" class="back-home-btn">
-                                <span class="icon"><i data-lucide="home" class="w-4 h-4"></i></span>
-                                Back to home
-                            </a>
-                            <a href="{% url 'logout' %}" class="logout-btn">
-                                <span class="icon"><i data-lucide="log-out" class="w-4 h-4"></i></span>
-                                Logout
-                            </a>
+                            </div>
+                            <span class="mc-badge {% if card.is_active %}mc-badge--success{% else %}mc-badge--warn{% endif %} dash-card__status">
+                                <span class="mc-badge__dot"></span>
+                                {% if card.is_active %}{% trans "Live" %}{% else %}{% trans "Offline" %}{% endif %}
+                            </span>
                         </div>
-                        <div class="action-row action-row--cta">
-                            <a href="{% url 'create_card' %}" class="cta-pill cta-pill--personal">
-                                <span class="cta-pill__ring"></span>
-                                <span class="cta-pill__label">
-                                    <i data-lucide="user" class="w-4 h-4"></i>
-                                    Personal card
-                                </span>
-                            </a>
-                            <a href="{% url 'create_business_card' %}" class="cta-pill cta-pill--business">
-                                <span class="cta-pill__ring"></span>
-                                <span class="cta-pill__label">
-                                    <i data-lucide="briefcase" class="w-4 h-4"></i>
-                                    Business card
-                                </span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                <div class="dashboard-pulse">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-pink-100 text-pink-600">
-                            <i data-lucide="id-card" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <p class="stat-label">Active cards</p>
-                            <p class="stat-value">{{ cards|length }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-pulse" style="animation-delay: 0.2s;">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-indigo-100 text-indigo-600">
-                            <i data-lucide="refresh-cw" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <p class="stat-label">Last updated</p>
-                            <p class="stat-value">{% if latest_update %}{{ latest_update|timesince }} ago{% else %}No updates yet{% endif %}</p>
-                            {% if latest_update_log %}
-                                <button type="button" class="stat-link" data-change-toggle="latest-change-log" aria-expanded="false">
-                                    <i data-lucide="history" class="w-4 h-4"></i>
-                                    <span data-toggle-text>View changes</span>
-                                </button>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                <div class="dashboard-pulse" style="animation-delay: 0.4s;">
-                    <div class="stat-card">
-                        <div class="stat-icon bg-emerald-100 text-emerald-600">
-                            <i data-lucide="share-2" class="w-5 h-5"></i>
-                        </div>
-                        <div>
-                            <p class="stat-label">Share ready</p>
-                            <p class="stat-value">{% if cards %}Yes{% else %}Create one{% endif %}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {% if latest_update_log %}
-                <div id="latest-change-log" class="change-panel hidden">
-                    <article class="change-entry">
-                        <header class="change-entry__header">
-                            <span class="change-entry__title">Most recent update</span>
-                            <span class="change-entry__time">{{ latest_update_log.created_at|timesince }} ago</span>
-                        </header>
-                        {% if latest_update_log.summary %}
-                            <p class="change-entry__summary">{{ latest_update_log.summary }}</p>
-                        {% endif %}
-                        <ul class="change-entry__diffs">
-                            {% for change in latest_update_log.changes %}
-                                <li class="change-diff">
-                                    <span class="change-diff__label">{{ change.label }}</span>
-                                    <div class="change-diff__values">
-                                        <span class="change-diff__value change-diff__value--before">{{ change.before|default:'—' }}</span>
-                                        <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                                        <span class="change-diff__value change-diff__value--after">{{ change.after|default:'—' }}</span>
-                                    </div>
-                                </li>
-                            {% empty %}
-                                <li class="change-empty">No tracked field changes were detected.</li>
-                            {% endfor %}
-                        </ul>
-                    </article>
-                </div>
-            {% endif %}
-
-            <div class="limit-banner {% if at_card_limit %}limit-banner--warning{% else %}limit-banner--info{% endif %} mb-10">
-                <div class="limit-icon">
-                    {% if at_card_limit %}
-                        <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                    {% else %}
-                        <i data-lucide="sparkles" class="w-5 h-5"></i>
-                    {% endif %}
-                </div>
-                <div>
-                    {% if at_card_limit %}
-                        <p class="font-semibold text-gray-800">Limit reached — contact an administrator to extend beyond {{ card_limit }} card{{ card_limit|pluralize }}.</p>
-                    {% else %}
-                        <p class="font-semibold text-gray-800">You can publish {{ cards_remaining }} more card{{ cards_remaining|pluralize }} with your current allowance of {{ card_limit }}.</p>
-                        <p class="text-sm text-gray-500">Upgrade requests go straight to the admin team.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            {% if cards %}
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {% for card in cards %}
-                        <div class="card-preview group">
-                            <div class="flex items-start gap-4">
-                                <div class="avatar-shell">
-                                    {% if card.avatar %}
-                                        <img src="{{ card.avatar.url }}" alt="{{ card.card_data.firstName }} {{ card.card_data.lastName }}" class="avatar-img">
-                                    {% else %}
-                                        <div class="avatar-placeholder">
-                                            <i data-lucide="user" class="w-6 h-6"></i>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="flex-1 space-y-2">
-                                    <div class="flex items-center justify-between gap-3">
-                                        <div>
-                                            <h3 class="text-lg font-semibold text-gray-900">{{ card.card_data.firstName|default:'Card' }} {{ card.card_data.lastName|default:card.id }}</h3>
-                                            <p class="text-sm text-gray-500">{{ card.card_data.jobTitle|default:'No title set yet' }}</p>
-                                            <span class="type-pill {% if card.card_type == 'business' %}type-pill--business{% endif %}">{{ card.get_card_type_display }}</span>
-                                        </div>
-                                        <span class="status-pill {% if card.is_active %}status-pill--live{% else %}status-pill--offline{% endif %}">
-                                            <span class="status-dot"></span>
-                                            {% if card.is_active %}Live{% else %}Offline{% endif %}
+                        <div class="dash-card__body">
+                            <div class="dash-card__meta">
+                                <h3 class="dash-card__name">{{ card.card_data.firstName|default:_("Card") }} {{ card.card_data.lastName|default:card.id }}</h3>
+                                <p class="dash-card__title mc-text-muted">
+                                    {{ card.card_data.jobTitle|default:_("No title set yet") }}
+                                    {% if card.card_data.company %} · {{ card.card_data.company }}{% endif %}
+                                </p>
+                                <div class="dash-card__pills">
+                                    <span class="mc-badge">{{ card.get_card_type_display }}</span>
+                                    <span class="mc-badge">
+                                        <i data-lucide="clock"></i>
+                                        {{ card.updated_at|timesince }} {% trans "ago" %}
+                                    </span>
+                                    {% if card.card_data.website %}
+                                        <span class="mc-badge">
+                                            <i data-lucide="globe"></i>
+                                            {{ card.card_data.website|cut:'https://'|cut:'http://'|truncatechars:20 }}
                                         </span>
-                                    </div>
-                                    <div class="preview-banner" style="background: {{ card.card_data.background_style|default:'linear-gradient(135deg,#ff9a9e,#fad0c4)' }};"></div>
-                                    <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
-                                        <span class="inline-flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-gray-200">
-                                            <i data-lucide="calendar" class="w-4 h-4"></i>
-                                            Updated {{ card.updated_at|timesince }} ago
-                                        </span>
-                                        {% if card.recent_logs and card.recent_logs|length %}
-                                            <button type="button" class="change-pill" data-change-toggle="card-change-{{ card.id }}" aria-expanded="false">
-                                                <i data-lucide="history" class="w-4 h-4"></i>
-                                                <span data-toggle-text>View changes</span>
-                                            </button>
-                                        {% endif %}
-                                        {% if card.card_data.website %}
-                                            <span class="inline-flex items-center gap-2 bg-white/80 px-3 py-1 rounded-full border border-gray-200">
-                                                <i data-lucide="globe" class="w-4 h-4"></i>
-                                                {{ card.card_data.website|cut:'https://'|cut:'http://'|truncatechars:20 }}
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                    {% if card.recent_logs and card.recent_logs|length %}
-                                        <div id="card-change-{{ card.id }}" class="change-panel hidden">
-                                            {% for log in card.recent_logs|slice:":3" %}
-                                                <article class="change-entry">
-                                                    <header class="change-entry__header">
-                                                        <span class="change-entry__title">Updated {{ log.created_at|timesince }} ago</span>
-                                                        <span class="change-entry__time">{{ log.created_at|date:"M d, Y · H:i" }}</span>
-                                                    </header>
-                                                    {% if log.summary %}
-                                                        <p class="change-entry__summary">{{ log.summary }}</p>
-                                                    {% endif %}
-                                                    <ul class="change-entry__diffs">
-                                                        {% for change in log.changes %}
-                                                            <li class="change-diff">
-                                                                <span class="change-diff__label">{{ change.label }}</span>
-                                                                <div class="change-diff__values">
-                                                                    <span class="change-diff__value change-diff__value--before">{{ change.before|default:'—' }}</span>
-                                                                    <i data-lucide="arrow-right" class="w-3 h-3"></i>
-                                                                    <span class="change-diff__value change-diff__value--after">{{ change.after|default:'—' }}</span>
-                                                                </div>
-                                                            </li>
-                                                        {% empty %}
-                                                            <li class="change-empty">No tracked field changes were detected.</li>
-                                                        {% endfor %}
-                                                    </ul>
-                                                </article>
-                                            {% endfor %}
-                                            {% if card.recent_logs|length > 3 %}
-                                                <p class="change-more">Showing latest 3 updates.</p>
-                                            {% endif %}
-                                        </div>
                                     {% endif %}
-                                    <div class="flex flex-wrap gap-3 pt-2">
-                                        <a href="{% url 'view_card' card.slug %}" class="card-action {% if not card.is_active %}soft-disabled{% endif %}">
-                                            <i data-lucide="eye" class="w-4 h-4"></i>
-                                            {% if card.is_active %}View card{% else %}Preview offline{% endif %}
-                                        </a>
-                                        <a href="{% url 'edit_card' card.slug %}" class="card-action accent">
-                                            <i data-lucide="edit-3" class="w-4 h-4"></i>
-                                            Edit details
-                                        </a>
-                                        {% if card.is_active %}
-                                            <button type="button" class="card-action" data-copy-url="{{ card.get_absolute_url }}" onclick="(function(btn){const url=new URL(btn.dataset.copyUrl, window.location.origin).href;navigator.clipboard.writeText(url).then(()=>{btn.dataset.original=btn.dataset.original||btn.innerHTML;btn.innerHTML='<i data-lucide=\'check\' class=\'w-4 h-4\'></i>Copied!';setTimeout(()=>{btn.innerHTML=btn.dataset.original;lucide.createIcons();},1500);}).catch(()=>alert('Unable to copy link'));})(this)">
-                                                <i data-lucide="copy" class="w-4 h-4"></i>
-                                                Copy link
-                                            </button>
-                                        {% else %}
-                                            <form action="{% url 'request_upgrade' card.slug %}" method="post">
-                                                {% csrf_token %}
-                                                <input type="hidden" name="plan" value="card_reactivation">
-                                                <button type="submit" class="card-action upgrade">
-                                                    <i data-lucide="power" class="w-4 h-4"></i>
-                                                    Request reactivation
-                                                </button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
                                 </div>
                             </div>
+
+                            {% if card.recent_logs %}
+                                <details class="dash-card__log">
+                                    <summary>
+                                        <i data-lucide="history"></i>
+                                        {% trans "Recent changes" %}
+                                        <span class="mc-caption">({{ card.recent_logs|length }})</span>
+                                    </summary>
+                                    <ul class="dash-card__log-list">
+                                        {% for log in card.recent_logs|slice:":3" %}
+                                            <li>
+                                                <span class="mc-caption mc-mono">{{ log.created_at|date:"M d, H:i" }}</span>
+                                                <span>{{ log.summary|default:_("Updated card") }}</span>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </details>
+                            {% endif %}
+
+                            <div class="dash-card__actions">
+                                <a href="{% url 'view_card' card.slug %}" class="mc-btn mc-btn--ghost mc-btn--sm">
+                                    <i data-lucide="eye"></i>
+                                    {% if card.is_active %}{% trans "View" %}{% else %}{% trans "Preview" %}{% endif %}
+                                </a>
+                                <a href="{% url 'edit_card' card.slug %}" class="mc-btn mc-btn--primary mc-btn--sm">
+                                    <i data-lucide="edit-3"></i> {% trans "Edit" %}
+                                </a>
+                                {% if card.is_active %}
+                                    <button type="button" class="mc-btn mc-btn--outline mc-btn--sm" data-copy-url="{{ card.get_absolute_url }}">
+                                        <i data-lucide="copy"></i> {% trans "Copy link" %}
+                                    </button>
+                                {% else %}
+                                    <form action="{% url 'request_upgrade' card.slug %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="plan" value="card_reactivation">
+                                        <button type="submit" class="mc-btn mc-btn--outline mc-btn--sm">
+                                            <i data-lucide="power"></i> {% trans "Reactivate" %}
+                                        </button>
+                                    </form>
+                                {% endif %}
+                            </div>
                         </div>
-                    {% endfor %}
+                    </article>
+                {% endfor %}
+            </section>
+        {% else %}
+            <section class="dash-empty mc-fade-up mc-fade-up--d2">
+                <div class="dash-empty__icon"><i data-lucide="id-card"></i></div>
+                <h2>{% trans "No cards yet" %}</h2>
+                <p class="mc-text-muted">
+                    {% trans "Create your first digital card and share it with anyone in under a minute." %}
+                </p>
+                <div class="dash-empty__cta">
+                    <a href="{% url 'create_card' %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
+                        <i data-lucide="user-plus"></i> {% trans "Personal card" %}
+                    </a>
+                    <a href="{% url 'create_business_card' %}" class="mc-btn mc-btn--ghost mc-btn--lg">
+                        <i data-lucide="briefcase"></i> {% trans "Business card" %}
+                    </a>
                 </div>
-            {% else %}
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i data-lucide="id-card" class="w-10 h-10"></i>
-                    </div>
-                    <h2 class="text-2xl font-semibold text-gray-800">No cards yet</h2>
-                    <p class="text-gray-600 max-w-md mx-auto">Create your first digital card and share it instantly with anyone—add your details, customize the look, and publish.</p>
-                    <div class="flex flex-wrap items-center justify-center gap-4 mt-6">
-                        <a href="{% url 'create_card' %}" class="empty-cta">
-                            <i data-lucide="user-plus" class="w-4 h-4"></i>
-                            Personal card
-                        </a>
-                        <a href="{% url 'create_business_card' %}" class="empty-cta empty-cta--secondary">
-                            <i data-lucide="briefcase" class="w-4 h-4"></i>
-                            Business card
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
+            </section>
+        {% endif %}
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const toggles = document.querySelectorAll('[data-change-toggle]');
-        toggles.forEach(button => {
-            const targetId = button.getAttribute('data-change-toggle');
-            if (!targetId) { return; }
-            const panel = document.getElementById(targetId);
-            if (!panel) { return; }
+<style>
+/* ===== Dashboard-specific layout ===== */
+.dash-page { position: relative; min-height: calc(100vh - 72px); overflow: hidden; padding: var(--mc-s-6) 0 var(--mc-s-9); }
+.dash-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.dash-container { position: relative; z-index: 1; }
 
-            button.addEventListener('click', () => {
-                const currentlyExpanded = button.getAttribute('aria-expanded') === 'true';
-                const nextExpanded = !currentlyExpanded;
-                button.setAttribute('aria-expanded', String(nextExpanded));
-                if (nextExpanded) {
-                    panel.classList.remove('hidden');
-                } else {
-                    panel.classList.add('hidden');
-                }
-                const labelTarget = button.querySelector('[data-toggle-text]');
-                if (labelTarget) {
-                    labelTarget.textContent = nextExpanded ? 'Hide changes' : 'View changes';
-                }
-            });
+/* Hero */
+.dash-hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--mc-s-5);
+    margin-bottom: var(--mc-s-7);
+    flex-wrap: wrap;
+}
+.dash-hero__intro { display: flex; flex-direction: column; gap: var(--mc-s-3); max-width: 640px; }
+.dash-hero__title { font-size: clamp(1.8rem, 3vw, 2.4rem); margin: 0; }
+.dash-hero__lede { margin: 0; font-size: 1rem; }
+.dash-hero__cta { display: flex; gap: var(--mc-s-3); flex-wrap: wrap; }
+
+/* Metric tiles */
+.dash-metrics {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-4);
+    margin-bottom: var(--mc-s-6);
+}
+@media (min-width: 720px) { .dash-metrics { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1080px) { .dash-metrics { grid-template-columns: repeat(4, 1fr); } }
+
+/* Limit banner */
+.dash-banner {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-4);
+    padding: var(--mc-s-4) var(--mc-s-5);
+    background: linear-gradient(135deg, rgba(245,158,11,0.10), var(--mc-bg-1));
+    border: 1px solid rgba(245,158,11,0.35);
+    border-radius: var(--mc-r-lg);
+    margin-bottom: var(--mc-s-6);
+    flex-wrap: wrap;
+}
+.dash-banner__icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: rgba(245,158,11,0.15);
+    color: var(--mc-warn);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+.dash-banner__body { flex: 1; min-width: 240px; }
+.dash-banner__body h3 { margin: 0 0 var(--mc-s-1); font-size: 1.1rem; }
+.dash-banner__body p { margin: 0; font-size: var(--mc-fs-body-sm); }
+
+/* Cards head + grid */
+.dash-cards-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: var(--mc-s-4);
+    gap: var(--mc-s-3);
+}
+.dash-cards-head h2 { font-size: 1.3rem; margin: 0; }
+
+.dash-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-5);
+}
+@media (min-width: 900px) { .dash-cards { grid-template-columns: repeat(2, 1fr); } }
+
+.dash-card { padding: 0; overflow: hidden; }
+.dash-card__banner {
+    position: relative;
+    padding: var(--mc-s-5);
+    padding-top: var(--mc-s-6);
+    height: 120px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    color: #fff;
+}
+.dash-card__banner::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.35) 100%);
+    pointer-events: none;
+}
+.dash-card__avatar {
+    width: 68px; height: 68px;
+    border-radius: 50%;
+    background: var(--mc-bg-1);
+    border: 3px solid var(--mc-accent);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo), var(--mc-shadow-2);
+    display: grid;
+    place-items: center;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    color: var(--mc-text-hi);
+    overflow: hidden;
+    margin-bottom: -30px;
+    position: relative;
+    z-index: 1;
+}
+.dash-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.dash-card__status { position: relative; z-index: 1; }
+
+.dash-card__body { padding: var(--mc-s-6) var(--mc-s-5) var(--mc-s-5); display: flex; flex-direction: column; gap: var(--mc-s-4); }
+.dash-card__meta { display: flex; flex-direction: column; gap: var(--mc-s-2); }
+.dash-card__name { margin: 0; font-size: 1.15rem; }
+.dash-card__title { margin: 0; font-size: var(--mc-fs-body-sm); }
+.dash-card__pills { display: flex; flex-wrap: wrap; gap: var(--mc-s-2); margin-top: var(--mc-s-1); }
+
+.dash-card__log summary {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    font-size: var(--mc-fs-body-sm);
+    font-weight: 600;
+    color: var(--mc-text-md);
+    cursor: pointer;
+    padding: var(--mc-s-2) var(--mc-s-3);
+    border-radius: var(--mc-r-sm);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    width: fit-content;
+}
+.dash-card__log summary::-webkit-details-marker { display: none; }
+.dash-card__log summary:hover { color: var(--mc-accent); border-color: var(--mc-border-glow); }
+.dash-card__log summary i { width: 0.95rem; height: 0.95rem; }
+.dash-card__log-list {
+    list-style: none;
+    padding: var(--mc-s-3) var(--mc-s-3) 0;
+    margin: var(--mc-s-3) 0 0;
+    display: grid;
+    gap: var(--mc-s-2);
+    font-size: var(--mc-fs-body-sm);
+    color: var(--mc-text-md);
+}
+.dash-card__log-list li { display: flex; gap: var(--mc-s-3); align-items: center; }
+
+.dash-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mc-s-2);
+    padding-top: var(--mc-s-3);
+    border-top: 1px solid var(--mc-border);
+}
+
+/* Empty state */
+.dash-empty {
+    padding: var(--mc-s-8) var(--mc-s-5);
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-xl);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--mc-s-3);
+}
+.dash-empty__icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid;
+    place-items: center;
+}
+.dash-empty__icon i { width: 2rem; height: 2rem; }
+.dash-empty h2 { margin: 0; }
+.dash-empty p { margin: 0; max-width: 420px; }
+.dash-empty__cta { display: flex; flex-wrap: wrap; gap: var(--mc-s-3); margin-top: var(--mc-s-3); }
+</style>
+
+<script>
+(function() {
+    // Copy card URL
+    document.querySelectorAll('[data-copy-url]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var url = new URL(btn.dataset.copyUrl, window.location.origin).href;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(url).then(function() {
+                    if (window.Swal) {
+                        Swal.fire({
+                            toast: true, position: 'top-end', icon: 'success',
+                            title: 'Card link copied!', timer: 1800, showConfirmButton: false,
+                            background: 'var(--mc-bg-2)', color: 'var(--mc-text-hi)', iconColor: 'var(--mc-accent)'
+                        });
+                    } else { alert('Link copied!'); }
+                }).catch(function() { window.prompt('Copy this URL', url); });
+            } else { window.prompt('Copy this URL', url); }
         });
     });
+})();
 </script>
-
-<style>
-    .dashboard-pulse { animation: dashPulse 8s ease-in-out infinite; }
-    @keyframes dashPulse {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-6px); }
-    }
-    .stat-card {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1.2rem;
-        border-radius: 1.25rem;
-        background: rgba(255,255,255,0.78);
-        border: 1px solid rgba(255,255,255,0.6);
-        box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.65);
-        backdrop-filter: blur(8px);
-    }
-    .stat-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-    }
-    .stat-label {
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.2em;
-        color: #64748b;
-        font-weight: 600;
-    }
-    .stat-value {
-        font-size: 1.4rem;
-        font-weight: 700;
-        color: #0f172a;
-    }
-    .card-preview {
-        border-radius: 1.5rem;
-        background: rgba(255,255,255,0.85);
-        border: 1px solid rgba(255,255,255,0.6);
-        padding: 1.5rem;
-        box-shadow: 0 30px 60px -35px rgba(15, 23, 42, 0.6);
-        transition: transform 0.35s ease, box-shadow 0.35s ease;
-        backdrop-filter: blur(10px);
-    }
-    .card-preview:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 35px 70px -30px rgba(236, 72, 153, 0.45);
-    }
-    .limit-banner {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        padding: 1.25rem;
-        border-radius: 1.25rem;
-        border: 1px solid transparent;
-        background: rgba(255,255,255,0.85);
-        box-shadow: 0 24px 45px -30px rgba(15,23,42,0.25);
-        backdrop-filter: blur(6px);
-    }
-    .limit-banner--info {
-        border-color: rgba(199,210,254,0.6);
-    }
-    .limit-banner--warning {
-        border-color: rgba(254,202,202,0.6);
-        background: rgba(254,226,226,0.78);
-    }
-    .limit-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 1rem;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(236,72,153,0.12);
-        color: #ec4899;
-    }
-    .limit-banner--warning .limit-icon {
-        background: rgba(248,113,113,0.18);
-        color: #dc2626;
-    }
-    .avatar-shell {
-        width: 3.5rem;
-        height: 3.5rem;
-        border-radius: 1.2rem;
-        background: rgba(255,255,255,0.9);
-        border: 1px solid rgba(148,163,184,0.25);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        box-shadow: inset 0 1px 0 rgba(255,255,255,0.6);
-    }
-    .avatar-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-    .avatar-placeholder {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 100%;
-        height: 100%;
-        color: #94a3b8;
-    }
-    .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.3rem 0.7rem;
-        border-radius: 999px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        border: 1px solid transparent;
-    }
-    .status-pill--live {
-        background: rgba(220, 252, 231, 0.9);
-        border-color: rgba(22, 163, 74, 0.2);
-        color: #166534;
-    }
-    .status-pill--offline {
-        background: rgba(254, 226, 226, 0.85);
-        border-color: rgba(248, 113, 113, 0.35);
-        color: #b91c1c;
-    }
-    .status-dot {
-        position: relative;
-        width: 8px;
-        height: 8px;
-        border-radius: 999px;
-        background: currentColor;
-    }
-    .status-pill--live .status-dot::after {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border-radius: inherit;
-        background: rgba(34, 197, 94, 0.35);
-        animation: ping 1.5s infinite;
-    }
-    .status-pill--offline .status-dot::after {
-        content: '';
-        position: absolute;
-        inset: -4px;
-        border-radius: inherit;
-        background: rgba(248, 113, 113, 0.25);
-    }
-    @keyframes ping {
-        0% { transform: scale(1); opacity: 0.8; }
-        80%, 100% { transform: scale(1.8); opacity: 0; }
-    }
-    .preview-banner {
-        height: 90px;
-        border-radius: 1rem;
-        background-size: cover;
-        background-position: center;
-        border: 1px solid rgba(255,255,255,0.45);
-        box-shadow: inset 0 1px 15px -12px rgba(15,23,42,0.8);
-    }
-    .card-action {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.55rem 1rem;
-        border-radius: 0.9rem;
-        background: rgba(255,255,255,0.92);
-        border: 1px solid rgba(226,232,240,0.9);
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #475569;
-        transition: transform 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
-    }
-    .card-action:hover {
-        transform: translateY(-3px);
-        color: #111827;
-        box-shadow: 0 15px 35px -30px rgba(15, 23, 42, 0.45);
-    }
-    .card-action.soft-disabled {
-        border-style: dashed;
-        opacity: 0.75;
-    }
-    .card-action.upgrade {
-        background: rgba(236,72,153,0.12);
-        border: 1px solid rgba(236,72,153,0.35);
-        color: #be185d;
-    }
-    .card-action.upgrade:hover {
-        color: #9d174d;
-        box-shadow: 0 20px 40px -30px rgba(236,72,153,0.5);
-    }
-    .card-action i { opacity: 0.75; }
-    .card-action.accent {
-        background: linear-gradient(135deg, rgba(236,72,153,0.95), rgba(244,114,182,0.95));
-        color: white;
-        border: none;
-        box-shadow: 0 20px 45px -25px rgba(236,72,153,0.6);
-    }
-    .card-action.accent:hover {
-        box-shadow: 0 25px 60px -25px rgba(236,72,153,0.7);
-    }
-    .empty-state {
-        background: rgba(255,255,255,0.88);
-        border: 1px solid rgba(226,232,240,0.7);
-        border-radius: 1.75rem;
-        padding: 3rem 2rem;
-        text-align: center;
-        box-shadow: 0 25px 60px -35px rgba(15, 23, 42, 0.45);
-    }
-    .empty-icon {
-        width: 4rem;
-        height: 4rem;
-        border-radius: 1.25rem;
-        margin: 0 auto 1.5rem auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(244,114,182,0.12);
-        color: #ec4899;
-    }
-    .empty-cta {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: linear-gradient(135deg, #ec4899, #f59e0b);
-        color: white;
-        padding: 0.75rem 1.5rem;
-        border-radius: 999px;
-        font-weight: 600;
-        margin-top: 1.5rem;
-        box-shadow: 0 20px 45px -25px rgba(236,72,153,0.5);
-    }
-    .empty-cta--secondary {
-        background: linear-gradient(135deg, #4338ca, #0ea5e9);
-        box-shadow: 0 20px 45px -25px rgba(14,165,233,0.5);
-    }
-    .empty-cta:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 25px 60px -25px rgba(236,72,153,0.65);
-    }
-    .empty-cta--secondary:hover {
-        box-shadow: 0 25px 60px -25px rgba(14,165,233,0.65);
-    }
-    .cta-pill {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.9rem 1.5rem;
-        border-radius: 1.25rem;
-        font-weight: 600;
-        color: #0f172a;
-        background: rgba(255,255,255,0.92);
-        border: 1px solid rgba(226,232,240,0.75);
-        box-shadow: 0 20px 40px -28px rgba(15,23,42,0.35);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .cta-pill__ring {
-        position: absolute;
-        inset: -30%;
-        background: radial-gradient(circle, rgba(236,72,153,0.08) 0%, rgba(255,255,255,0) 65%);
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    .cta-pill__label {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        position: relative;
-        z-index: 1;
-    }
-    .cta-pill:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 28px 60px -26px rgba(236,72,153,0.35);
-    }
-    .cta-pill:hover .cta-pill__ring { opacity: 1; }
-    .cta-pill--business {
-        color: #1f2937;
-        border-color: rgba(148,163,184,0.5);
-    }
-    .cta-pill--business .cta-pill__ring {
-        background: radial-gradient(circle, rgba(59,130,246,0.1) 0%, rgba(255,255,255,0) 65%);
-    }
-    .cta-pill--personal .cta-pill__ring {
-        background: radial-gradient(circle, rgba(236,72,153,0.12) 0%, rgba(255,255,255,0) 65%);
-    }
-    .type-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.4rem;
-        font-size: 0.7rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-top: 0.6rem;
-        padding: 0.35rem 0.75rem;
-        border-radius: 999px;
-        background: rgba(59,130,246,0.1);
-        color: #1d4ed8;
-        font-weight: 600;
-    }
-    .type-pill::before {
-        content: '';
-        width: 6px;
-        height: 6px;
-        border-radius: 999px;
-        background: currentColor;
-    }
-    .type-pill--business {
-        background: rgba(236,72,153,0.12);
-        color: #be185d;
-    }
-    .dashboard-actions {
-        width: 100%;
-        display: flex;
-        justify-content: center;
-    }
-    @media (min-width: 1024px) {
-        .dashboard-actions { justify-content: flex-end; }
-    }
-    .action-card {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        width: 100%;
-        max-width: 420px;
-        padding: 1.4rem;
-        border-radius: 1.75rem;
-        background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(236, 254, 255, 0.88));
-        border: 1px solid rgba(226, 232, 240, 0.65);
-        box-shadow: 0 28px 70px -40px rgba(15, 23, 42, 0.5);
-        overflow: hidden;
-    }
-    @media (max-width: 1023px) {
-        .action-card { max-width: none; }
-    }
-    .action-card::before {
-        content: '';
-        position: absolute;
-        inset: -60% 20% auto -20%;
-        height: 220px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(236,72,153,0.35), transparent 60%);
-        opacity: 0.35;
-        pointer-events: none;
-    }
-    .action-card::after {
-        content: '';
-        position: absolute;
-        inset: auto -30% -70% 10%;
-        height: 260px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(59,130,246,0.32), transparent 65%);
-        opacity: 0.4;
-        pointer-events: none;
-    }
-    .action-row {
-        position: relative;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.75rem;
-        justify-content: center;
-        z-index: 1;
-    }
-    .action-row .cta-pill {
-        flex: 1 1 48%;
-    }
-    @media (min-width: 1024px) {
-        .action-row .cta-pill { flex: 0 0 auto; }
-    }
-    .action-row--primary {
-        justify-content: center;
-    }
-    @media (min-width: 768px) {
-        .action-row--primary { justify-content: flex-end; }
-    }
-    .action-row--primary > a {
-        flex: 1 1 100%;
-        justify-content: center;
-    }
-    @media (min-width: 768px) {
-        .action-row--primary > a {
-            flex: 0 0 auto;
-            justify-content: initial;
-        }
-    }
-    .action-row--cta {
-        padding-top: 0.2rem;
-        border-top: 1px dashed rgba(148, 163, 184, 0.4);
-        justify-content: center;
-    }
-    @media (min-width: 1024px) {
-        .action-row--cta { justify-content: space-between; }
-    }
-    .back-home-btn {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.8rem 1.4rem;
-        border-radius: 1.1rem;
-        font-weight: 600;
-        color: #475569;
-        background: rgba(255,255,255,0.88);
-        border: 1px solid rgba(226,232,240,0.85);
-        box-shadow: 0 18px 40px -28px rgba(15,23,42,0.35);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .back-home-btn::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(236,72,153,0.12), rgba(59,130,246,0.12));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    .back-home-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 24px 52px -26px rgba(59,130,246,0.35);
-    }
-    .back-home-btn:hover::after { opacity: 1; }
-    .back-home-btn .icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 0.9rem;
-        background: rgba(59,130,246,0.12);
-        color: #2563eb;
-        position: relative;
-        z-index: 1;
-    }
-    .logout-btn {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.8rem 1.4rem;
-        border-radius: 1.1rem;
-        font-weight: 600;
-        color: #b91c1c;
-        background: rgba(254,226,226,0.9);
-        border: 1px solid rgba(248,113,113,0.45);
-        box-shadow: 0 18px 40px -28px rgba(248,113,113,0.45);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .logout-btn::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(248,113,113,0.18), rgba(251,191,36,0.12));
-        opacity: 0;
-        transition: opacity 0.3s ease;
-    }
-    .logout-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 24px 52px -26px rgba(248,113,113,0.55);
-    }
-    .logout-btn:hover::after {
-        opacity: 1;
-    }
-    .logout-btn .icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 0.9rem;
-        background: rgba(248,113,113,0.18);
-        color: #b91c1c;
-        position: relative;
-        z-index: 1;
-    }
-    .message-box-btn {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.6rem;
-        padding: 0.8rem 1.4rem;
-        border-radius: 1.1rem;
-        font-weight: 600;
-        color: #1e3a8a;
-        background: rgba(191, 219, 254, 0.72);
-        border: 1px solid rgba(191, 219, 254, 0.9);
-        box-shadow: 0 18px 40px -28px rgba(37, 99, 235, 0.35);
-        overflow: hidden;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .message-box-btn:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 24px 52px -26px rgba(59, 130, 246, 0.4);
-    }
-    .message-box-btn .icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 0.9rem;
-        background: rgba(59,130,246,0.18);
-        color: #1d4ed8;
-        position: relative;
-        z-index: 1;
-    }
-    .message-pill {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 1.8rem;
-        padding: 0.15rem 0.45rem;
-        border-radius: 999px;
-        background: rgba(16, 185, 129, 0.16);
-        color: #047857;
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.04em;
-    }
-    .message-pill--pending {
-        background: rgba(251, 191, 36, 0.18);
-        color: #92400e;
-    }
-    @media (max-width: 768px) {
-        .card-preview { padding: 1.2rem; }
-        .preview-banner { height: 80px; }
-        .stat-card { padding: 1rem; }
-    }
-</style>
 {% endblock %}

@@ -1,355 +1,241 @@
 {% extends 'cards/base.html' %}
-{% load static %}
+{% load static i18n %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Create account — MY-Card{% endblock %}
 
 {% block content %}
+<div class="mc-auth">
+    <div class="mc-auth__bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:560px;height:560px;top:-160px;right:-180px;"></div>
+        <div class="mc-aurora mc-aurora--magenta"           style="width:420px;height:420px;bottom:-160px;left:-140px;opacity:0.28;"></div>
+    </div>
 
-<div class="min-h-screen flex items-center justify-center px-4 py-12">
-    <div class="relative w-full max-w-5xl register-animate">
-        <div class="absolute inset-0 -z-10">
-            <div class="floating-orb orb-delay-0 absolute -top-24 -left-24 w-80 h-80 bg-pink-300/30 rounded-full blur-3xl"></div>
-            <div class="floating-orb orb-delay-1 absolute -bottom-20 -right-16 w-72 h-72 bg-indigo-300/30 rounded-full blur-3xl"></div>
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 backdrop-blur-xl bg-white/70 border border-white/80 rounded-3xl shadow-2xl overflow-hidden">
-            <div class="relative hidden lg:flex flex-col justify-between p-10 text-white" style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
-                <div>
-                    <span class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.4em] font-semibold bg-white/20 px-4 py-1 rounded-full">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        Join MY-Card</span>
-                    <h2 class="text-3xl font-bold mt-5 mb-3">Start crafting memorable MY-Cards</h2>
-                    <p class="text-white/90 leading-relaxed">Create a profile to unlock signature MY-Card designs, cached delivery, and instant QR sharing you control.</p>
-                </div>
-                <div class="space-y-4">
-                    <div class="glass-feature">
-                        <i data-lucide="palette" class="w-5 h-5"></i>
-                        Customize neon-fresh themes
-                    </div>
-                    <div class="glass-feature">
-                        <i data-lucide="share-2" class="w-5 h-5"></i>
-                        Share MY-Cards instantly with QR & links
-                    </div>
-                    <div class="glass-feature">
-                        <i data-lucide="hard-drive" class="w-5 h-5"></i>
-                        Cached delivery for every launch
-                    </div>
-                </div>
+    <div class="mc-auth__shell mc-fade-up">
+        <aside class="mc-auth__promo">
+            <div class="mc-auth__promo-head">
+                <a href="{% url 'index' %}" class="mc-nav__logo">
+                    <span class="mc-nav__logo-mark"></span>
+                    MY-Card
+                </a>
+                <span class="mc-badge mc-badge--accent" style="align-self:flex-start;">
+                    <i data-lucide="sparkles"></i>
+                    {% trans "Join free" %}
+                </span>
+                <h2 class="mc-auth__promo-title">{% trans "Start crafting cards people remember." %}</h2>
+                <p class="mc-auth__promo-lede">{% trans "Sign up in under a minute and get a shareable link, QR, and wallet pass — no credit card, no watermarks." %}</p>
             </div>
 
-            <div class="p-8 lg:p-10">
-                <div class="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Create your MY-Card account</h1>
-                        <p class="text-sm text-gray-500">Join in under a minute and start designing signature MY-Cards.</p>
-                    </div>
-                    <div class="hidden sm:flex items-center justify-center w-12 h-12 rounded-2xl bg-pink-100 text-pink-500">
-                        <i data-lucide="id-card" class="w-6 h-6"></i>
-                    </div>
+            <div class="mc-auth__preview">
+                <div class="mc-auth__preview-avatar">RH</div>
+                <div class="mc-auth__preview-body">
+                    <span class="mc-auth__preview-name">Rakib Hasan</span>
+                    <span class="mc-auth__preview-role">Founder · Onset Labs</span>
                 </div>
+                <span class="mc-badge mc-badge--accent" style="margin-left:auto;">
+                    <i data-lucide="wallet"></i>
+                    Wallet
+                </span>
+            </div>
 
-                <form method="post" class="space-y-5" id="register-form">
-                    {% csrf_token %}
-                    {% if user_form.non_field_errors or profile_form.non_field_errors %}
-                        <div class="form-alert">
-                            {% for error in user_form.non_field_errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                            {% for error in profile_form.non_field_errors %}
-                                <p>{{ error }}</p>
-                            {% endfor %}
-                        </div>
+            <div class="mc-auth__feats">
+                <div class="mc-auth__feat"><i data-lucide="palette"></i>{% trans "Modern themes with dark & light modes" %}</div>
+                <div class="mc-auth__feat"><i data-lucide="share-2"></i>{% trans "QR, link, Apple / Google Wallet share" %}</div>
+                <div class="mc-auth__feat"><i data-lucide="line-chart"></i>{% trans "Real-time view + lead analytics" %}</div>
+            </div>
+        </aside>
+
+        <section class="mc-auth__form-wrap">
+            <header>
+                <h1 class="mc-auth__title">{% trans "Create your account" %}</h1>
+                <p class="mc-auth__subtitle">{% trans "Just a phone number and email — you can add the design in the next step." %}</p>
+            </header>
+
+            <form method="post" class="mc-auth__form" id="register-form">
+                {% csrf_token %}
+                {% if user_form.non_field_errors or profile_form.non_field_errors %}
+                    <div class="mc-auth__errors">
+                        {% for error in user_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                        {% for error in profile_form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+
+                <label class="mc-label">
+                    <span><i data-lucide="user"></i> {% trans "Username" %}</span>
+                    {{ user_form.username }}
+                    {% if user_form.username.errors %}
+                        <span class="mc-field-error">{{ user_form.username.errors|striptags }}</span>
                     {% endif %}
-                    <div class="grid grid-cols-1 gap-4">
-                        <label class="form-field">
-                            <span><i data-lucide="user" class="w-4 h-4"></i> Username</span>
-                            {{ user_form.username }}
-                            {% if user_form.username.errors %}
-                                <small class="form-error">{{ user_form.username.errors|striptags }}</small>
-                            {% endif %}
-                        </label>
-                        <label class="form-field">
-                            <span><i data-lucide="mail" class="w-4 h-4"></i> Email</span>
-                            {{ user_form.email }}
-                            {% if user_form.email.errors %}
-                                <small class="form-error">{{ user_form.email.errors|striptags }}</small>
-                            {% endif %}
-                        </label>
-                        <label class="form-field">
-                            <span><i data-lucide="lock" class="w-4 h-4"></i> Password</span>
-                            <div class="password-wrapper">
-                                {{ user_form.password }}
-                                <button type="button" class="password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
-                                    <span class="icon-hidden">🔒</span>
-                                    <span class="icon-visible">👁</span>
-                                </button>
-                            </div>
-                            {% if user_form.password.errors %}
-                                <small class="form-error">{{ user_form.password.errors|striptags }}</small>
-                            {% endif %}
-                        </label>
-                        <label class="form-field">
-                            <span><i data-lucide="phone" class="w-4 h-4"></i> Phone number</span>
-                            <div class="phone-picker" data-country-wrapper>
-                                <div class="country-selector" data-country-picker="register-phone" data-default-code="{{ profile_form.phone_country.value|default:'880' }}" data-selected-code="{{ profile_form.phone_country.value|default:'880' }}">
-                                    {{ profile_form.phone_country }}
-                                    {{ profile_form.phone_number }}
-                                    <button type="button" class="country-trigger" data-country-button>
-                                        <span class="flag" data-country-flag>🌐</span>
-                                        <span class="dial" data-country-code>+000</span>
-                                        <i data-lucide="chevron-down" class="w-4 h-4"></i>
-                                    </button>
-                                    <div class="country-dropdown hidden" data-country-dropdown>
-                                        <div class="country-search">
-                                            <input type="text" data-country-search placeholder="Search country or code">
-                                        </div>
-                                        <ul data-country-list></ul>
-                                        <p class="country-empty hidden" data-country-empty>No results found</p>
-                                    </div>
-                                </div>
-                                {{ profile_form.phone_number_local }}
-                            </div>
-                            {% if profile_form.phone_number_local.errors %}
-                                <small class="form-error">{{ profile_form.phone_number_local.errors|striptags }}</small>
-                            {% endif %}
-                            {% if profile_form.phone_country.errors %}
-                                <small class="form-error">{{ profile_form.phone_country.errors|striptags }}</small>
-                            {% endif %}
-                        </label>
+                </label>
+
+                <label class="mc-label">
+                    <span><i data-lucide="mail"></i> {% trans "Email" %}</span>
+                    {{ user_form.email }}
+                    {% if user_form.email.errors %}
+                        <span class="mc-field-error">{{ user_form.email.errors|striptags }}</span>
+                    {% endif %}
+                </label>
+
+                <label class="mc-label">
+                    <span><i data-lucide="lock"></i> {% trans "Password" %}</span>
+                    <div class="mc-password-wrap">
+                        {{ user_form.password }}
+                        <button type="button" class="mc-password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
+                            <i data-lucide="eye"     data-mc-eye="on"></i>
+                            <i data-lucide="eye-off" data-mc-eye="off"></i>
+                        </button>
                     </div>
+                    {% if user_form.password.errors %}
+                        <span class="mc-field-error">{{ user_form.password.errors|striptags }}</span>
+                    {% endif %}
+                </label>
 
-                    <button type="submit" class="w-full relative inline-flex items-center justify-center gap-3 px-6 py-3 rounded-2xl text-white font-semibold overflow-hidden group">
-                        <span class="absolute inset-0 bg-gradient-to-r from-pink-500 via-rose-500 to-orange-400 group-hover:opacity-90 transition"></span>
-                        <span class="absolute -inset-0.5 bg-gradient-to-r from-rose-200 to-orange-200 opacity-0 group-hover:opacity-60 blur-lg transition"></span>
-                        <span class="relative flex items-center gap-3">
-                            <i data-lucide="rocket" class="w-5 h-5"></i>
-                            Register now
-                        </span>
-                    </button>
-                </form>
+                <label class="mc-label">
+                    <span><i data-lucide="phone"></i> {% trans "Phone number" %}</span>
+                    <div class="mc-phone-picker" data-country-wrapper>
+                        <div class="mc-country-selector" data-country-picker="register-phone" data-default-code="{{ profile_form.phone_country.value|default:'880' }}" data-selected-code="{{ profile_form.phone_country.value|default:'880' }}">
+                            {{ profile_form.phone_country }}
+                            {{ profile_form.phone_number }}
+                            <button type="button" class="mc-country-trigger" data-country-button aria-expanded="false">
+                                <span class="mc-country-flag" data-country-flag>🌐</span>
+                                <span class="mc-country-dial" data-country-code>+000</span>
+                                <i data-lucide="chevron-down"></i>
+                            </button>
+                            <div class="mc-country-dropdown hidden" data-country-dropdown>
+                                <div class="mc-country-search">
+                                    <input type="text" data-country-search placeholder="Search country or code">
+                                </div>
+                                <ul data-country-list></ul>
+                                <p class="mc-country-empty hidden" data-country-empty>No results found</p>
+                            </div>
+                        </div>
+                        {{ profile_form.phone_number_local }}
+                    </div>
+                    {% if profile_form.phone_number_local.errors %}
+                        <span class="mc-field-error">{{ profile_form.phone_number_local.errors|striptags }}</span>
+                    {% endif %}
+                    {% if profile_form.phone_country.errors %}
+                        <span class="mc-field-error">{{ profile_form.phone_country.errors|striptags }}</span>
+                    {% endif %}
+                </label>
 
-                <div class="mt-8 space-y-2 text-sm text-gray-500">
-                    <p class="flex items-center gap-2">
-                        <i data-lucide="log-in" class="w-4 h-4 text-pink-500"></i>
-                        Already have an account?
-                        <a href="{% url 'login' %}" class="text-pink-600 font-semibold hover:underline">Log in</a>
-                    </p>
-                    <p class="flex items-center gap-2">
-                        <i data-lucide="shield" class="w-4 h-4 text-pink-500"></i>
-                        Need admin access?
-                        <a href="{% url 'admin_login' %}" class="text-pink-600 font-semibold hover:underline">Admin login</a>
-                    </p>
-                    <p class="flex items-center gap-2">
-                        <i data-lucide="arrow-left" class="w-4 h-4 text-pink-500"></i>
-                        Explore more on the
-                        <a href="{% url 'index' %}" class="text-pink-600 font-semibold hover:underline">home page</a>
-                    </p>
-                </div>
+                <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg mc-btn--block">
+                    <i data-lucide="rocket"></i>
+                    {% trans "Create account" %}
+                </button>
+            </form>
+
+            <div class="mc-auth__footer">
+                <p><i data-lucide="log-in" style="display:inline-block;width:0.9rem;height:0.9rem;vertical-align:-2px;margin-right:4px;color:var(--mc-accent);"></i> {% trans "Already have an account?" %} <a href="{% url 'login' %}">{% trans "Log in" %}</a></p>
+                <p><i data-lucide="shield" style="display:inline-block;width:0.9rem;height:0.9rem;vertical-align:-2px;margin-right:4px;color:var(--mc-accent);"></i> {% trans "Admin?" %} <a href="{% url 'admin_login' %}">{% trans "Admin login" %}</a></p>
+                <p><a href="{% url 'index' %}">← {% trans "Back to home" %}</a></p>
             </div>
-        </div>
+        </section>
     </div>
 </div>
 
 <style>
-    .register-animate {
-        animation: fadeInUp 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .floating-orb {
-        animation: orbDrift 18s ease-in-out infinite;
-    }
-    .floating-orb.orb-delay-1 { animation-delay: 4s; }
-    .register-animate .glass-feature {
-        animation: slideFade 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-        opacity: 0;
-    }
-    .register-animate .glass-feature:nth-child(1) { animation-delay: 0.2s; }
-    .register-animate .glass-feature:nth-child(2) { animation-delay: 0.35s; }
-    .register-animate .glass-feature:nth-child(3) { animation-delay: 0.5s; }
+/* ===== Phone country picker (dark theme) ===== */
+.mc-phone-picker {
+    display: flex;
+    gap: var(--mc-s-2);
+    align-items: stretch;
+}
+.mc-country-selector { position: relative; }
+.mc-country-selector input[type="hidden"] { display: none; }
 
-    #register-form input {
-        width: 100%;
-        border-radius: 1rem;
-        padding: 0.75rem 1rem;
-        border: 1px solid rgba(148,163,184,0.25);
-        background: rgba(255,255,255,0.9);
-        transition: border 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
-    }
-    #register-form input:focus {
-        outline: none;
-        border-color: rgba(244,114,182,0.6);
-        box-shadow: 0 0 0 4px rgba(244,114,182,0.2);
-        transform: translateY(-2px);
-    }
-    .form-field {
-        display: flex;
-        flex-direction: column;
-        gap: 0.4rem;
-        font-size: 0.85rem;
-        font-weight: 600;
-        color: #475569;
-    }
-    .form-error {
-        display: inline-block;
-        margin-top: 0.35rem;
-        color: #dc2626;
-        font-size: 0.75rem;
-        font-weight: 500;
-    }
-    .form-alert {
-        background: rgba(254, 226, 226, 0.8);
-        border: 1px solid rgba(248, 113, 113, 0.4);
-        color: #b91c1c;
-        font-size: 0.85rem;
-        padding: 0.75rem 1rem;
-        border-radius: 1rem;
-        display: grid;
-        gap: 0.25rem;
-    }
-    .form-field span {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        text-transform: uppercase;
-        letter-spacing: 0.09em;
-        font-size: 0.7rem;
-    }
-    .glass-feature {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.75rem 1rem;
-        border-radius: 1rem;
-        background: rgba(255,255,255,0.18);
-        border: 1px solid rgba(255,255,255,0.35);
-        backdrop-filter: blur(6px);
-        font-weight: 600;
-        letter-spacing: 0.03em;
-    }
-    @media (max-width: 1023px) {
-        .glass-feature { padding: 0.65rem 0.9rem; }
-    }
+.mc-country-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    padding: 0.85rem 1rem;
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    color: var(--mc-text-hi);
+    font-weight: 600;
+    font-size: var(--mc-fs-body-sm);
+    min-width: 128px;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.mc-country-trigger:hover,
+.mc-country-trigger:focus {
+    outline: none;
+    border-color: var(--mc-accent);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo);
+}
+.mc-country-flag { font-size: 1.2rem; line-height: 1; }
+.mc-country-dial { font-family: var(--mc-font-mono); font-variant-numeric: tabular-nums; }
+.mc-country-trigger i { width: 1rem; height: 1rem; color: var(--mc-text-md); }
 
-    .phone-picker {
-        display: flex;
-        gap: 0.6rem;
-        align-items: center;
-    }
-    .country-selector {
-        position: relative;
-    }
-    .country-selector input[type="hidden"] {
-        display: none;
-    }
-    .country-trigger {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.7rem 0.95rem;
-        border-radius: 1rem;
-        border: 1px solid rgba(148,163,184,0.3);
-        background: rgba(255,255,255,0.95);
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: border 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, transform 0.25s ease;
-        min-width: 110px;
-        justify-content: space-between;
-    }
-    .country-trigger .flag {
-        font-size: 1.1rem;
-        line-height: 1;
-    }
-    .country-trigger .dial {
-        font-variant-numeric: tabular-nums;
-    }
-    .country-trigger:hover,
-    .country-trigger:focus {
-        border-color: rgba(244,114,182,0.6);
-        background: rgba(255,255,255,1);
-        box-shadow: 0 0 0 4px rgba(244,114,182,0.15);
-        outline: none;
-        transform: translateY(-2px);
-    }
-    .country-dropdown {
-        position: absolute;
-        z-index: 40;
-        top: calc(100% + 0.5rem);
-        left: 0;
-        width: 260px;
-        background: #ffffff;
-        border-radius: 1rem;
-        box-shadow: 0 28px 70px -32px rgba(15,23,42,0.35);
-        border: 1px solid rgba(226,232,240,0.7);
-        overflow: hidden;
-    }
-    .country-search {
-        padding: 0.6rem;
-        border-bottom: 1px solid rgba(226,232,240,0.7);
-    }
-    .country-search input {
-        width: 100%;
-        border-radius: 0.75rem;
-        border: 1px solid rgba(148,163,184,0.45);
-        padding: 0.55rem 0.8rem;
-        font-size: 0.85rem;
-        transition: border 0.3s ease, box-shadow 0.3s ease;
-    }
-    .country-search input:focus {
-        outline: none;
-        border-color: rgba(244,114,182,0.6);
-        box-shadow: 0 0 0 3px rgba(244,114,182,0.15);
-    }
-    [data-country-list] {
-        max-height: 220px;
-        overflow-y: auto;
-        padding: 0.4rem 0;
-    }
-    [data-country-item] {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        padding: 0.55rem 0.9rem;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: background 0.2s ease;
-    }
-    [data-country-item]:hover,
-    [data-country-item].active {
-        background: rgba(244,114,182,0.12);
-    }
-    [data-country-item] .flag {
-        font-size: 1.1rem;
-    }
-    [data-country-item] .label {
-        display: flex;
-        flex-direction: column;
-        line-height: 1.1;
-    }
-    .country-empty {
-        padding: 0.9rem;
-        font-size: 0.8rem;
-        color: #94a3b8;
-        text-align: center;
-    }
+.mc-country-dropdown {
+    position: absolute;
+    z-index: 40;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    width: 280px;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-md);
+    box-shadow: var(--mc-shadow-3);
+    overflow: hidden;
+}
+.mc-country-dropdown.hidden { display: none; }
+.mc-country-search {
+    padding: var(--mc-s-3);
+    border-bottom: 1px solid var(--mc-border);
+}
+.mc-country-search input {
+    width: 100%;
+    background: var(--mc-bg-3);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-sm);
+    color: var(--mc-text-hi);
+    padding: 0.5rem 0.75rem;
+    font-size: var(--mc-fs-body-sm);
+    outline: none;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.mc-country-search input:focus { border-color: var(--mc-accent); box-shadow: 0 0 0 3px var(--mc-accent-halo); }
+[data-country-list] {
+    list-style: none;
+    padding: 0.4rem 0;
+    margin: 0;
+    max-height: 240px;
+    overflow-y: auto;
+}
+[data-country-item] {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: 0.55rem 0.9rem;
+    font-size: var(--mc-fs-body-sm);
+    cursor: pointer;
+    color: var(--mc-text-hi);
+    transition: background var(--mc-dur-fast) var(--mc-ease);
+}
+[data-country-item]:hover,
+[data-country-item].active {
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+}
+[data-country-item] .flag { font-size: 1.15rem; }
+[data-country-item] .label { display: flex; flex-direction: column; line-height: 1.15; }
+[data-country-item] .label small { color: var(--mc-text-md); font-family: var(--mc-font-mono); }
+.mc-country-empty {
+    padding: 0.9rem;
+    font-size: var(--mc-fs-body-sm);
+    color: var(--mc-text-lo);
+    text-align: center;
+}
+.mc-country-empty.hidden { display: none; }
 
-    button[type="submit"] {
-        transition: transform 0.3s ease;
-    }
-    button[type="submit"]:hover {
-        transform: translateY(-3px) scale(1.01);
-    }
-
-    @keyframes fadeInUp {
-        0% { opacity: 0; transform: translateY(28px) scale(0.98); }
-        60% { opacity: 1; }
-        100% { opacity: 1; transform: translateY(0) scale(1); }
-    }
-    @keyframes orbDrift {
-        0%, 100% { transform: translate3d(0,0,0) scale(1); opacity: 0.55; }
-        50% { transform: translate3d(12px,-16px,0) scale(1.08); opacity: 0.85; }
-    }
-    @keyframes slideFade {
-        0% { opacity: 0; transform: translateY(16px); }
-        100% { opacity: 1; transform: translateY(0); }
-    }
+@media (max-width: 480px) {
+    .mc-country-dropdown { width: 100%; }
+    .mc-country-trigger { min-width: 108px; }
+}
 </style>
 
 <script>
@@ -373,14 +259,13 @@
         let filtered = [];
         let activeIndex = -1;
 
-        const sanitizeDigits = (value) => value ? value.replace(/\D/g, '') : '';
+        const sanitizeDigits = (v) => v ? v.replace(/\D/g, '') : '';
 
         const closeDropdown = () => {
             dropdown.classList.add('hidden');
             button.setAttribute('aria-expanded', 'false');
-            activeIndex = filtered.findIndex(country => country.dialDigits === hiddenCountry.value);
+            activeIndex = filtered.findIndex(c => c.dialDigits === hiddenCountry.value);
         };
-
         const openDropdown = () => {
             dropdown.classList.remove('hidden');
             button.setAttribute('aria-expanded', 'true');
@@ -389,139 +274,89 @@
             setTimeout(() => searchInput.focus(), 0);
         };
 
-        const updateButtonDisplay = (country) => {
-            if (!country) { return; }
-            flagEl.textContent = country.flag;
-            codeEl.textContent = country.dial_code;
-            picker.dataset.selectedCode = country.dialDigits;
+        const updateButtonDisplay = (c) => {
+            if (!c) return;
+            flagEl.textContent = c.flag;
+            codeEl.textContent = c.dial_code;
+            picker.dataset.selectedCode = c.dialDigits;
         };
 
         const updateHiddenValues = () => {
-            const countryDigits = sanitizeDigits(hiddenCountry.value);
-            let localDigits = sanitizeDigits(localInput.value);
-
-            if (countryDigits && localDigits.startsWith(countryDigits)) {
-                localDigits = localDigits.slice(countryDigits.length);
-            }
-
-            localInput.value = localDigits;
-            hiddenCombined.value = countryDigits ? `${countryDigits}${localDigits}` : localDigits;
+            const cd = sanitizeDigits(hiddenCountry.value);
+            let ld = sanitizeDigits(localInput.value);
+            if (cd && ld.startsWith(cd)) ld = ld.slice(cd.length);
+            localInput.value = ld;
+            hiddenCombined.value = cd ? `${cd}${ld}` : ld;
         };
 
-        const selectCountry = (country) => {
-            hiddenCountry.value = country.dialDigits;
-            updateButtonDisplay(country);
+        const selectCountry = (c) => {
+            hiddenCountry.value = c.dialDigits;
+            updateButtonDisplay(c);
             updateHiddenValues();
         };
 
         const renderList = (term) => {
-            const query = term.trim().toLowerCase();
-            filtered = !query
-                ? countries
-                : countries.filter(country => country.search.includes(query));
-
+            const q = term.trim().toLowerCase();
+            filtered = !q ? countries : countries.filter(c => c.search.includes(q));
             if (!filtered.length) {
                 listEl.innerHTML = '';
                 emptyState.classList.remove('hidden');
                 activeIndex = -1;
                 return;
             }
-
             emptyState.classList.add('hidden');
-            activeIndex = filtered.findIndex(country => country.dialDigits === hiddenCountry.value);
-            if (activeIndex < 0) { activeIndex = 0; }
-
-            listEl.innerHTML = filtered.map((country, index) => {
-                const activeClass = index === activeIndex ? 'active' : '';
-                return `<li data-country-item data-index="${index}" data-dial="${country.dialDigits}" class="${activeClass}">` +
-                    `<span class="flag">${country.flag}</span>` +
-                    `<span class="label">${country.name}<small>${country.dial_code}</small></span>` +
-                `</li>`;
+            activeIndex = filtered.findIndex(c => c.dialDigits === hiddenCountry.value);
+            if (activeIndex < 0) activeIndex = 0;
+            listEl.innerHTML = filtered.map((c, i) => {
+                const cls = i === activeIndex ? 'active' : '';
+                return `<li data-country-item data-index="${i}" data-dial="${c.dialDigits}" class="${cls}">` +
+                    `<span class="flag">${c.flag}</span>` +
+                    `<span class="label">${c.name}<small>${c.dial_code}</small></span></li>`;
             }).join('');
         };
 
-        document.addEventListener('click', (event) => {
-            if (!picker.contains(event.target) && !dropdown.classList.contains('hidden')) {
-                closeDropdown();
-            }
+        document.addEventListener('click', (e) => {
+            if (!picker.contains(e.target) && !dropdown.classList.contains('hidden')) closeDropdown();
         });
-
         button.addEventListener('click', () => {
-            if (dropdown.classList.contains('hidden')) {
-                openDropdown();
-            } else {
-                closeDropdown();
+            dropdown.classList.contains('hidden') ? openDropdown() : closeDropdown();
+        });
+        listEl.addEventListener('mousedown', (e) => {
+            const item = e.target.closest('[data-country-item]');
+            if (!item) return;
+            e.preventDefault();
+            const c = filtered[Number(item.dataset.index)];
+            if (c) { selectCountry(c); closeDropdown(); button.focus(); }
+        });
+        listEl.addEventListener('mousemove', (e) => {
+            const item = e.target.closest('[data-country-item]');
+            if (!item) return;
+            const idx = Number(item.dataset.index);
+            if (!Number.isNaN(idx)) {
+                activeIndex = idx;
+                listEl.querySelectorAll('[data-country-item]').forEach((n, i) => n.classList.toggle('active', i === activeIndex));
             }
         });
-
-        listEl.addEventListener('mousedown', (event) => {
-            const item = event.target.closest('[data-country-item]');
-            if (!item) { return; }
-            event.preventDefault();
-            const country = filtered[Number(item.dataset.index)];
-            if (country) {
-                selectCountry(country);
-                closeDropdown();
-                button.focus();
-            }
-        });
-
-        listEl.addEventListener('mousemove', (event) => {
-            const item = event.target.closest('[data-country-item]');
-            if (!item) { return; }
-            const index = Number(item.dataset.index);
-            if (!Number.isNaN(index)) {
-                activeIndex = index;
-                listEl.querySelectorAll('[data-country-item]').forEach((node, idx) => {
-                    node.classList.toggle('active', idx === activeIndex);
-                });
-            }
-        });
-
-        searchInput.addEventListener('input', (event) => {
-            renderList(event.target.value);
-        });
-
-        searchInput.addEventListener('keydown', (event) => {
-            if (!filtered.length) { return; }
-            if (event.key === 'ArrowDown') {
-                event.preventDefault();
-                activeIndex = (activeIndex + 1) % filtered.length;
-                renderList(event.target.value);
-            }
-            if (event.key === 'ArrowUp') {
-                event.preventDefault();
-                activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
-                renderList(event.target.value);
-            }
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                const country = filtered[activeIndex >= 0 ? activeIndex : 0];
-                if (country) {
-                    selectCountry(country);
-                    closeDropdown();
-                    button.focus();
-                }
-            }
-            if (event.key === 'Escape') {
-                event.preventDefault();
-                closeDropdown();
-                button.focus();
-            }
+        searchInput.addEventListener('input', (e) => renderList(e.target.value));
+        searchInput.addEventListener('keydown', (e) => {
+            if (!filtered.length) return;
+            if (e.key === 'ArrowDown') { e.preventDefault(); activeIndex = (activeIndex + 1) % filtered.length; renderList(e.target.value); }
+            if (e.key === 'ArrowUp')   { e.preventDefault(); activeIndex = (activeIndex - 1 + filtered.length) % filtered.length; renderList(e.target.value); }
+            if (e.key === 'Enter')     { e.preventDefault(); const c = filtered[activeIndex >= 0 ? activeIndex : 0]; if (c) { selectCountry(c); closeDropdown(); button.focus(); } }
+            if (e.key === 'Escape')    { e.preventDefault(); closeDropdown(); button.focus(); }
         });
 
         fetch(datasetUrl)
-            .then(response => response.json())
+            .then(r => r.json())
             .then(data => {
-                countries = data.map(country => ({
-                    ...country,
-                    dialDigits: country.dial_code.replace(/[^0-9]/g, ''),
-                    search: `${country.name.toLowerCase()} ${country.dial_code.replace('+','')} ${country.code.toLowerCase()}`
+                countries = data.map(c => ({
+                    ...c,
+                    dialDigits: c.dial_code.replace(/[^0-9]/g, ''),
+                    search: `${c.name.toLowerCase()} ${c.dial_code.replace('+','')} ${c.code.toLowerCase()}`
                 }));
-
-                const initialCode = sanitizeDigits(hiddenCountry.value) || picker.dataset.defaultCode || '880';
-                const initialCountry = countries.find(country => country.dialDigits === initialCode) || countries[0];
-                selectCountry(initialCountry);
+                const init = sanitizeDigits(hiddenCountry.value) || picker.dataset.defaultCode || '880';
+                const initC = countries.find(c => c.dialDigits === init) || countries[0];
+                selectCountry(initC);
                 renderList('');
                 updateHiddenValues();
             })
@@ -533,58 +368,25 @@
 
         if (localInput) {
             localInput.addEventListener('input', () => {
-                const sanitized = sanitizeDigits(localInput.value);
-                if (sanitized !== localInput.value) {
-                    localInput.value = sanitized;
-                }
+                const s = sanitizeDigits(localInput.value);
+                if (s !== localInput.value) localInput.value = s;
                 updateHiddenValues();
             });
         }
     })();
 
     (function() {
-        document.querySelectorAll('[data-password-toggle]').forEach(toggle => {
-            const wrapper = toggle.closest('.password-wrapper');
-            if (!wrapper) { return; }
-            const input = wrapper.querySelector('input[type="password"], input[type="text"]');
-            if (!input) { return; }
-
-            toggle.addEventListener('click', () => {
-                const isVisible = input.type === 'text';
-                input.type = isVisible ? 'password' : 'text';
-                toggle.dataset.visible = isVisible ? 'false' : 'true';
+        document.querySelectorAll('[data-password-toggle]').forEach(t => {
+            const wrap = t.closest('.mc-password-wrap');
+            if (!wrap) return;
+            const input = wrap.querySelector('input');
+            if (!input) return;
+            t.addEventListener('click', () => {
+                const visible = input.type === 'text';
+                input.type = visible ? 'password' : 'text';
+                t.dataset.visible = visible ? 'false' : 'true';
             });
         });
     })();
 </script>
 {% endblock %}
-    .password-wrapper {
-        position: relative;
-    }
-    .password-wrapper input[type="password"],
-    .password-wrapper input[type="text"] {
-        padding-right: 3rem;
-    }
-    .password-toggle {
-        position: absolute;
-        top: 50%;
-        right: 0.85rem;
-        transform: translateY(-50%);
-        background: transparent;
-        border: none;
-        cursor: pointer;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1rem;
-        color: #94a3b8;
-    }
-    .password-toggle .icon-visible {
-        display: none;
-    }
-    .password-toggle[data-visible="true"] .icon-visible {
-        display: inline;
-    }
-    .password-toggle[data-visible="true"] .icon-hidden {
-        display: none;
-    }
