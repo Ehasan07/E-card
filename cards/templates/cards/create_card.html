@@ -148,8 +148,19 @@
                                 </label>
                             {% endif %}
                             <label class="mc-label ed-full">
-                                <span><i data-lucide="sticky-note"></i> {% trans "Notes" %}</span>
+                                <span>
+                                    <i data-lucide="sticky-note"></i> {% trans "Notes / bio" %}
+                                    {% if feature_ai %}
+                                        <button type="button" id="aiBioBtn" class="ed-ai-btn" title="Generate 3 bio suggestions with AI">
+                                            <i data-lucide="sparkles"></i>
+                                            {% trans "Suggest with AI" %}
+                                        </button>
+                                    {% endif %}
+                                </span>
                                 {{ form.notes }}
+                                {% if feature_ai %}
+                                    <div id="aiBioResults" class="ed-ai-results hidden"></div>
+                                {% endif %}
                             </label>
                         </div>
                     </section>
@@ -178,11 +189,39 @@
                         </div>
                     </section>
 
-                    {# ---- Section 3: Background ---- #}
+                    {# ---- Section 3: Themes ---- #}
+                    {% if themes %}
                     <section class="ed-section">
                         <header class="ed-section__head">
                             <span class="ed-step">3</span>
-                            <h2>{% trans "Background style" %}</h2>
+                            <h2>{% trans "Curated themes" %}</h2>
+                            <span class="mc-caption">{% trans "Complete design in one click" %}</span>
+                        </header>
+                        <div class="ed-themes">
+                            {% for t in themes %}
+                                <button type="button" class="ed-theme"
+                                        data-theme-slug="{{ t.slug }}"
+                                        data-theme-bg="{{ t.background }}"
+                                        data-theme-accent="{{ t.accent_color }}"
+                                        data-theme-text="{{ t.text_color }}"
+                                        style="--tbg: {{ t.background }}; --taccent: {{ t.accent_color }}; --ttext: {{ t.text_color }};"
+                                        title="{{ t.description }}">
+                                    <span class="ed-theme__swatch"></span>
+                                    <span class="ed-theme__meta">
+                                        <span class="ed-theme__name">{{ t.name }}</span>
+                                        {% if t.is_premium %}<span class="ed-theme__pro">PRO</span>{% endif %}
+                                    </span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    {# ---- Section 4: Background (advanced / custom) ---- #}
+                    <section class="ed-section">
+                        <header class="ed-section__head">
+                            <span class="ed-step">4</span>
+                            <h2>{% trans "Or pick a custom background" %}</h2>
                             <span class="mc-caption">{% trans "Tap or use the picker" %}</span>
                         </header>
                         <div class="ed-bg-grid" id="background-options">
@@ -206,10 +245,10 @@
                         <div class="hidden">{{ form.background_style }}</div>
                     </section>
 
-                    {# ---- Section 4: Socials ---- #}
+                    {# ---- Section 5: Socials ---- #}
                     <section class="ed-section">
                         <header class="ed-section__head">
-                            <span class="ed-step">4</span>
+                            <span class="ed-step">5</span>
                             <h2>{% trans "Social connections" %}</h2>
                         </header>
                         <div class="ed-grid-2">
@@ -473,6 +512,100 @@
 }
 .ed-form textarea { min-height: 6rem; resize: vertical; }
 .ed-form input[type="date"] { color-scheme: dark; }
+
+/* AI bio button + suggestions */
+.ed-ai-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    margin-left: auto;
+    border-radius: var(--mc-r-full);
+    background: linear-gradient(135deg, var(--mc-accent), var(--mc-cyan));
+    color: var(--mc-text-inv);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: transform var(--mc-dur-fast) var(--mc-ease);
+}
+.ed-ai-btn:hover { transform: translateY(-1px); }
+.ed-ai-btn i { width: 0.85rem; height: 0.85rem; }
+.ed-ai-btn:disabled { opacity: 0.6; pointer-events: none; }
+.ed-ai-results { display: grid; gap: var(--mc-s-2); margin-top: var(--mc-s-3); }
+.ed-ai-results.hidden { display: none !important; }
+.ed-ai-suggestion {
+    padding: var(--mc-s-3);
+    background: var(--mc-accent-halo);
+    border: 1px solid var(--mc-border-glow);
+    border-radius: var(--mc-r-md);
+    cursor: pointer;
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+    text-align: left;
+    transition: transform var(--mc-dur-fast) var(--mc-ease);
+}
+.ed-ai-suggestion:hover { transform: translateY(-2px); }
+.ed-ai-suggestion__hint { display: block; margin-top: 4px; font-size: var(--mc-fs-caption); color: var(--mc-text-md); }
+
+/* Curated theme picker */
+.ed-themes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--mc-s-3);
+}
+.ed-theme {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-3);
+    padding: 0;
+    background: var(--mc-bg-2);
+    border: 2px solid transparent;
+    border-radius: var(--mc-r-md);
+    overflow: hidden;
+    cursor: pointer;
+    text-align: left;
+    transition:
+        transform var(--mc-dur-fast) var(--mc-ease),
+        border-color var(--mc-dur-fast) var(--mc-ease),
+        box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.ed-theme:hover { transform: translateY(-3px); }
+.ed-theme.is-selected {
+    border-color: var(--taccent, var(--mc-accent));
+    box-shadow: 0 0 0 4px var(--mc-accent-halo), var(--mc-shadow-2);
+}
+.ed-theme__swatch {
+    height: 88px;
+    background: var(--tbg);
+    position: relative;
+    overflow: hidden;
+}
+.ed-theme__swatch::after {
+    content: '';
+    position: absolute;
+    inset: 10% 15%;
+    border-radius: 8px;
+    background: var(--ttext);
+    opacity: 0.15;
+}
+.ed-theme__meta {
+    padding: var(--mc-s-2) var(--mc-s-3) var(--mc-s-3);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--mc-s-2);
+}
+.ed-theme__name { font-weight: 600; font-size: var(--mc-fs-body-sm); color: var(--mc-text-hi); }
+.ed-theme__pro {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 2px 6px;
+    border-radius: var(--mc-r-sm);
+    background: linear-gradient(135deg, #F471FF, #7CFFB2);
+    color: var(--mc-text-inv);
+}
 
 /* Background option grid */
 .ed-bg-grid {
@@ -801,9 +934,10 @@
 
     document.querySelectorAll('[data-country-picker]').forEach(setupPicker);
 
-    /* ============  Background selector  ============ */
+    /* ============  Background / theme selector  ============ */
     var bgHidden = document.getElementById('id_background_style');
     var bgButtons = document.querySelectorAll('.ed-bg-opt');
+    var themeButtons = document.querySelectorAll('.ed-theme');
     var colorPicker = document.getElementById('customBackgroundPicker');
     var previewCard = document.getElementById('previewCard');
 
@@ -811,9 +945,25 @@
         if (bgHidden) bgHidden.value = value;
         if (previewCard) previewCard.style.setProperty('--vc-hero-bg', value);
         bgButtons.forEach(function(b) { b.classList.toggle('is-selected', b.dataset.bgOption === value); });
+        themeButtons.forEach(function(b) { b.classList.toggle('is-selected', b.dataset.themeBg === value); });
     }
     bgButtons.forEach(function(b) {
         b.addEventListener('click', function() { applyBackground(b.dataset.bgOption); });
+    });
+    themeButtons.forEach(function(b) {
+        b.addEventListener('click', function() {
+            applyBackground(b.dataset.themeBg);
+            // Persist the theme slug too so view_card can pick up accent/text colours
+            var slugHidden = document.getElementById('id_theme_slug');
+            if (!slugHidden) {
+                slugHidden = document.createElement('input');
+                slugHidden.type = 'hidden';
+                slugHidden.name = 'theme_slug';
+                slugHidden.id = 'id_theme_slug';
+                document.getElementById('card-builder-form').appendChild(slugHidden);
+            }
+            slugHidden.value = b.dataset.themeSlug;
+        });
     });
     if (colorPicker) {
         colorPicker.addEventListener('input', function(e) { applyBackground(e.target.value); });
@@ -925,6 +1075,64 @@
     }
     document.addEventListener('mc:preview-refresh', syncWa);
     syncWa();
+
+    /* AI bio suggest button */
+    var aiBtn = document.getElementById('aiBioBtn');
+    var aiResults = document.getElementById('aiBioResults');
+    if (aiBtn && aiResults) {
+        aiBtn.addEventListener('click', function() {
+            var first = (document.getElementById('id_firstName') || {}).value || '';
+            var last  = (document.getElementById('id_lastName')  || {}).value || '';
+            var role  = (document.getElementById('id_jobTitle')  || {}).value || '';
+            var company = (document.getElementById('id_company') || {}).value || '';
+            var CSRF = (document.cookie.match(/csrftoken=([^;]+)/) || [])[1] || '';
+
+            aiBtn.disabled = true;
+            aiBtn.innerHTML = '<i data-lucide="loader-2"></i> {% trans "Thinking..." %}';
+            if (window.lucide) lucide.createIcons();
+            aiResults.classList.remove('hidden');
+            aiResults.innerHTML = '<div class="mc-text-muted" style="text-align:center;padding:1rem;">{% trans "Generating suggestions..." %}</div>';
+
+            fetch("{% url 'ai_bio' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                body: JSON.stringify({ firstName: first, lastName: last, jobTitle: role, company: company }),
+            }).then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+            .then(function(res) {
+                aiBtn.disabled = false;
+                aiBtn.innerHTML = '<i data-lucide="sparkles"></i> {% trans "Suggest with AI" %}';
+                if (window.lucide) lucide.createIcons();
+                if (!res.ok) {
+                    aiResults.innerHTML = '<div class="mc-field-error">' + (res.data.error || '{% trans "Something went wrong." %}') + '</div>';
+                    return;
+                }
+                var bios = res.data.bios || [];
+                if (!bios.length) {
+                    aiResults.innerHTML = '<div class="mc-text-muted">{% trans "No suggestions right now — try again." %}</div>';
+                    return;
+                }
+                aiResults.innerHTML = bios.map(function(b, i) {
+                    return '<button type="button" class="ed-ai-suggestion" data-bio="' + b.replace(/"/g, '&quot;') + '">' +
+                        b + '<span class="ed-ai-suggestion__hint">{% trans "Click to use" %}</span></button>';
+                }).join('');
+                aiResults.querySelectorAll('.ed-ai-suggestion').forEach(function(el) {
+                    el.addEventListener('click', function() {
+                        var notes = document.getElementById('id_notes');
+                        if (notes) {
+                            notes.value = el.dataset.bio;
+                            notes.dispatchEvent(new Event('input'));
+                        }
+                        aiResults.classList.add('hidden');
+                    });
+                });
+            }).catch(function() {
+                aiBtn.disabled = false;
+                aiBtn.innerHTML = '<i data-lucide="sparkles"></i> {% trans "Suggest with AI" %}';
+                if (window.lucide) lucide.createIcons();
+                aiResults.innerHTML = '<div class="mc-field-error">{% trans "Network error." %}</div>';
+            });
+        });
+    }
 
     /* Business highlight visibility */
     var highlightSelect = document.getElementById('id_extra_highlight');

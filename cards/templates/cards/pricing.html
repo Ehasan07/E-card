@@ -1,0 +1,171 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Pricing — MY-Card{% endblock %}
+{% block page_icon %}badge-dollar-sign{% endblock %}
+{% block page_label %}Pricing{% endblock %}
+
+{% block content %}
+<nav class="mc-nav">
+    <div class="mc-container mc-nav__inner">
+        <a href="{% url 'index' %}" class="mc-nav__logo">
+            <span class="mc-nav__logo-mark"></span>
+            MY-Card
+        </a>
+        <ul class="mc-nav__links">
+            <li><a href="{% url 'index' %}#features" class="mc-nav-link">{% trans "Features" %}</a></li>
+            <li><a href="{% url 'pricing' %}" class="mc-nav-link" aria-current="page">{% trans "Pricing" %}</a></li>
+            <li><a href="{% url 'documentation' %}" class="mc-nav-link">{% trans "Docs" %}</a></li>
+        </ul>
+        <div class="mc-nav__actions">
+            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme"><i data-lucide="moon" data-mc-theme-icon="moon"></i><i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i></button>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Dashboard" %}</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
+                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="pr-page">
+    <div class="pr-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+        <div class="mc-aurora mc-aurora--cyan"              style="width:460px;height:460px;bottom:-180px;right:-160px;opacity:0.32;"></div>
+    </div>
+
+    <div class="mc-container pr-container">
+        <header class="pr-hero mc-fade-up">
+            <span class="mc-badge mc-badge--accent">
+                <i data-lucide="badge-dollar-sign"></i>
+                {% trans "Pricing" %}
+            </span>
+            <h1>{% trans "Simple pricing. No watermark on Pro." %}</h1>
+            <p class="mc-text-muted">
+                {% trans "Priced in taka for BD users and USD via Stripe for the rest of the world." %}
+                {% if not feature_payments %}
+                    <br>
+                    <span class="mc-caption">{% trans "Automatic payments coming soon — for now, upgrades go through admin approval." %}</span>
+                {% endif %}
+            </p>
+        </header>
+
+        <div class="pr-grid mc-fade-up mc-fade-up--d1">
+            {% for plan in plans %}
+                <div class="mc-card {% if plan.featured %}mc-card--glow pr-plan pr-plan--featured{% else %}pr-plan{% endif %}">
+                    {% if plan.featured %}<span class="mc-badge mc-badge--accent pr-plan__ribbon">{% trans "Most popular" %}</span>{% endif %}
+                    <header>
+                        <span class="mc-caption {% if plan.featured %}mc-text-accent{% endif %}">{{ plan.name }}</span>
+                        <div class="pr-plan__price">
+                            <span class="mc-mono">৳{{ plan.price_bdt }}</span>
+                            <small>/{% trans "month" %}</small>
+                        </div>
+                        <p class="mc-text-muted">≈ ${{ plan.price_usd }} · {% trans "billed monthly" %}</p>
+                    </header>
+                    <ul class="pr-plan__list">
+                        {% for feat in plan.features %}
+                            <li><i data-lucide="check"></i> {{ feat }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% if plan.slug == 'free' %}
+                        <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">{{ plan.cta }}</a>
+                    {% elif request.user.is_authenticated %}
+                        <form method="post" action="{% url 'pricing_checkout' plan.slug %}">
+                            {% csrf_token %}
+                            <button type="submit" class="mc-btn mc-btn--{% if plan.featured %}primary{% else %}outline{% endif %} mc-btn--block">
+                                {{ plan.cta }}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'register' %}?next={% url 'pricing' %}" class="mc-btn mc-btn--{% if plan.featured %}primary{% else %}outline{% endif %} mc-btn--block">{{ plan.cta }}</a>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <section class="pr-faq mc-fade-up mc-fade-up--d2">
+            <h2>{% trans "Frequently asked" %}</h2>
+            <details class="mc-card pr-faq__item">
+                <summary>{% trans "Can I upgrade or downgrade anytime?" %}</summary>
+                <p class="mc-text-muted">{% trans "Yes — plan changes take effect at the start of the next billing cycle. Existing cards remain accessible even if you downgrade." %}</p>
+            </details>
+            <details class="mc-card pr-faq__item">
+                <summary>{% trans "How does bKash payment work?" %}</summary>
+                <p class="mc-text-muted">{% trans "We use bKash Merchant Checkout. You get a bKash prompt on your phone, confirm the payment, and your plan activates instantly." %}</p>
+            </details>
+            <details class="mc-card pr-faq__item">
+                <summary>{% trans "Do you offer a free trial?" %}</summary>
+                <p class="mc-text-muted">{% trans "The Free tier is essentially an infinite trial — no card required, no watermark on your first card. Upgrade whenever you're ready." %}</p>
+            </details>
+        </section>
+    </div>
+</div>
+
+<style>
+.pr-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-7) 0 var(--mc-s-9); overflow: hidden; }
+.pr-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.pr-container { position: relative; z-index: 1; }
+.pr-hero {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto var(--mc-s-8);
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-3);
+    align-items: center;
+}
+.pr-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0; }
+
+.pr-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-5);
+    max-width: 1080px;
+    margin: 0 auto var(--mc-s-9);
+}
+@media (min-width: 900px) { .pr-grid { grid-template-columns: repeat(3, 1fr); align-items: start; } }
+
+.pr-plan { position: relative; display: flex; flex-direction: column; gap: var(--mc-s-4); padding: var(--mc-s-6); }
+.pr-plan__ribbon { position: absolute; top: -12px; right: var(--mc-s-4); }
+.pr-plan__price {
+    font-family: var(--mc-font-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--mc-text-hi);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: var(--mc-s-2) 0;
+}
+.pr-plan__price small { font-size: var(--mc-fs-body-sm); font-weight: 500; color: var(--mc-text-md); }
+.pr-plan__list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-2); font-size: var(--mc-fs-body-sm); color: var(--mc-text-md); }
+.pr-plan__list li { display: flex; align-items: center; gap: var(--mc-s-2); }
+.pr-plan__list i { color: var(--mc-accent); width: 1rem; height: 1rem; }
+.pr-plan--featured { border-color: var(--mc-border-glow); }
+
+.pr-faq { max-width: 780px; margin: 0 auto; }
+.pr-faq h2 { text-align: center; margin: 0 0 var(--mc-s-5); }
+.pr-faq__item { padding: var(--mc-s-4) var(--mc-s-5); margin-bottom: var(--mc-s-3); cursor: pointer; }
+.pr-faq__item summary {
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: var(--mc-text-hi);
+    cursor: pointer;
+}
+.pr-faq__item summary::-webkit-details-marker { display: none; }
+.pr-faq__item summary::after {
+    content: '+';
+    font-family: var(--mc-font-mono);
+    color: var(--mc-accent);
+    font-size: 1.3rem;
+    transition: transform var(--mc-dur-fast) var(--mc-ease);
+}
+.pr-faq__item[open] summary::after { transform: rotate(45deg); }
+.pr-faq__item p { color: var(--mc-text-md); margin: var(--mc-s-3) 0 0; font-size: var(--mc-fs-body-sm); }
+</style>
+{% endblock %}

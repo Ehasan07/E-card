@@ -36,6 +36,8 @@ from .models import (
     CardChangeLog,
     CardInteraction,
     LeadCapture,
+    CardTheme,
+    Payment,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
@@ -47,7 +49,7 @@ from django.urls import reverse
 import markdown
 import os
 from django.contrib import messages
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.contrib.auth.hashers import make_password, check_password
 from django.views.decorators.http import require_POST
@@ -436,6 +438,9 @@ def _handle_card_creation(request, card_type: str):
             card.user = request.user
             card.card_type = card_type
             card.card_data = _extract_card_form_payload(form)
+            theme_slug = (request.POST.get('theme_slug') or '').strip()[:60]
+            if theme_slug:
+                card.card_data['theme_slug'] = theme_slug
             card.save()
 
             messages.success(request, variant['success_message'])
@@ -449,6 +454,8 @@ def _handle_card_creation(request, card_type: str):
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
         'builder_variant': variant,
+        'themes': CardTheme.objects.filter(is_active=True),
+        'feature_ai': settings.FEATURE_AI,
     }
     return render(request, 'cards/create_card.html', context)
 
@@ -475,6 +482,9 @@ def edit_card(request, slug):
             previous_logo = card.logo.name if card.logo else ''
 
             _apply_card_form_updates(card, form)
+            theme_slug = (request.POST.get('theme_slug') or '').strip()[:60]
+            if theme_slug:
+                card.card_data['theme_slug'] = theme_slug
             saved_card = form.save()  # This re-triggers the model's save method, updating QR code etc.
 
             current_card_data = saved_card.card_data if isinstance(saved_card.card_data, dict) else {}
@@ -509,6 +519,8 @@ def edit_card(request, slug):
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
         'builder_variant': builder_variant,
+        'themes': CardTheme.objects.filter(is_active=True),
+        'feature_ai': settings.FEATURE_AI,
     }
     return render(request, 'cards/create_card.html', context)
 
@@ -614,6 +626,12 @@ def view_card(request, slug):
     phone_digits, phone_display = _normalize_phone_number(card.card_data.get('phone'))
     phone_tel = f"+{phone_digits}" if phone_digits else ''
 
+    # Resolve theme (if any) so the template can paint accent + text colors
+    theme = None
+    theme_slug = (card.card_data or {}).get('theme_slug')
+    if theme_slug:
+        theme = CardTheme.objects.filter(slug=theme_slug, is_active=True).first()
+
     context = {
         'card': card,
         'is_owner': is_owner,
@@ -627,6 +645,7 @@ def view_card(request, slug):
         'phone_tel': phone_tel,
         'profile_views': profile_views,
         'business_highlight': _resolve_business_highlight(card, phone_display, phone_tel),
+        'theme': theme,
     }
     return render(request, 'cards/view_card.html', context)
 
@@ -1395,3 +1414,209 @@ def card_analytics(request, slug):
         'top_clicks': top_clicks,
         'totals': totals,
     })
+
+
+# ============================================================================
+# Sprint 4: Payments (Stripe + bKash) — checkout scaffolds behind env flags
+# ============================================================================
+
+PLANS = [
+    dict(
+        slug='free',
+        name='Free',
+        price_bdt=0,
+        price_usd=0,
+        cards=1,
+        features=[
+            '1 personal card',
+            'QR + shareable link',
+            'Wallet pass + vCard',
+            '7-day analytics',
+            '5 leads / month',
+        ],
+        cta='Start free',
+        featured=False,
+    ),
+    dict(
+        slug='pro',
+        name='Pro',
+        price_bdt=499,
+        price_usd=4.99,
+        cards=5,
+        features=[
+            'Up to 5 cards',
+            'Full 90-day analytics',
+            'Unlimited leads',
+            'All themes + AI bio',
+            'Zero watermark',
+            'Priority support',
+        ],
+        cta='Upgrade to Pro',
+        featured=True,
+    ),
+    dict(
+        slug='team',
+        name='Team',
+        price_bdt=1999,
+        price_usd=19.99,
+        cards=25,
+        features=[
+            '25 cards, 5 seats',
+            'Team branding lock',
+            'CRM webhook',
+            'Analytics export',
+            'SSO (on request)',
+        ],
+        cta='Talk to sales',
+        featured=False,
+    ),
+]
+
+
+def pricing(request):
+    return render(request, 'cards/pricing.html', {
+        'plans': PLANS,
+        'feature_payments': settings.FEATURE_PAYMENTS,
+    })
+
+
+@login_required
+@require_POST
+def pricing_checkout(request, plan):
+    """Initiate a checkout for the given plan slug.
+
+    When Stripe/bKash are unconfigured we fall back to creating a manual
+    upgrade request that the admin can approve — this keeps the flow
+    working in dev without any external credentials.
+    """
+    valid_slugs = {p['slug'] for p in PLANS}
+    if plan not in valid_slugs or plan == 'free':
+        return redirect('pricing')
+
+    plan_info = next(p for p in PLANS if p['slug'] == plan)
+    country = (getattr(request.user.profile, 'phone_number', '') or '').lstrip('+')
+    prefers_bdt = country.startswith('880') or country.startswith('0')
+    amount = plan_info['price_bdt'] if prefers_bdt else plan_info['price_usd']
+    currency = 'BDT' if prefers_bdt else 'USD'
+
+    if settings.FEATURE_PAYMENTS and settings.STRIPE_SECRET_KEY and not prefers_bdt:
+        # Stripe checkout would go here — deferred until keys provisioned.
+        # For now we record a pending Payment and inform the user.
+        Payment.objects.create(
+            user=request.user,
+            gateway=Payment.GATEWAY_STRIPE,
+            amount=amount,
+            currency=currency,
+            status=Payment.STATUS_PENDING,
+            raw_payload={'plan': plan},
+        )
+        messages.info(request, 'Stripe checkout is coming shortly — we saved your intent and will email you.')
+        return redirect('dashboard')
+
+    if settings.FEATURE_PAYMENTS and settings.BKASH_APP_KEY and prefers_bdt:
+        Payment.objects.create(
+            user=request.user,
+            gateway=Payment.GATEWAY_BKASH,
+            amount=amount,
+            currency=currency,
+            status=Payment.STATUS_PENDING,
+            raw_payload={'plan': plan},
+        )
+        messages.info(request, 'bKash checkout is coming shortly — we saved your intent and will email you.')
+        return redirect('dashboard')
+
+    # Manual fallback: file an UpgradeRequest so the admin can approve
+    UpgradeRequest.objects.create(
+        user=request.user,
+        card=None,
+        requested_plan=f'plan:{plan}',
+        message=f'Requested {plan_info["name"]} tier via the pricing page.',
+    )
+    Payment.objects.create(
+        user=request.user,
+        gateway=Payment.GATEWAY_MANUAL,
+        amount=amount,
+        currency=currency,
+        status=Payment.STATUS_PENDING,
+        raw_payload={'plan': plan},
+    )
+    messages.success(
+        request,
+        f'Thanks — your {plan_info["name"]} upgrade request was received. An admin will confirm shortly.',
+    )
+    return redirect('user_messages')
+
+
+# ============================================================================
+# Sprint 4: AI bio assistant — feature-flagged behind AI_PROVIDER env var
+# ============================================================================
+
+@login_required
+@require_POST
+def ai_bio(request):
+    """Return AI-generated bio suggestions given a name / role / company.
+
+    When AI_PROVIDER + AI_API_KEY are not configured we return a graceful
+    503 so the UI can hide the button. When they are configured, we call
+    the provider (Anthropic by default) and return three variants.
+    """
+    if not settings.FEATURE_AI:
+        return JsonResponse(
+            {'error': 'AI is not configured on this server yet.'},
+            status=503,
+        )
+
+    try:
+        payload = json.loads(request.body.decode('utf-8') or '{}')
+    except (ValueError, UnicodeDecodeError):
+        return HttpResponse(status=400)
+
+    first = (payload.get('firstName') or '').strip()[:100]
+    last = (payload.get('lastName') or '').strip()[:100]
+    role = (payload.get('jobTitle') or '').strip()[:120]
+    company = (payload.get('company') or '').strip()[:120]
+
+    if not (first or last or role):
+        return JsonResponse({'error': 'Provide at least a name or role.'}, status=400)
+
+    prompt = (
+        "Write three distinct short professional bios (max 220 characters each) "
+        f"for a digital business card. Name: {first} {last}. Role: {role or 'Not specified'}. "
+        f"Company: {company or 'Independent'}. Return JSON with the shape "
+        '{"bios": ["...", "...", "..."]} and nothing else.'
+    )
+
+    try:
+        provider = settings.AI_PROVIDER.lower()
+        if provider == 'anthropic':
+            import urllib.request
+            req = urllib.request.Request(
+                'https://api.anthropic.com/v1/messages',
+                data=json.dumps({
+                    'model': settings.AI_MODEL,
+                    'max_tokens': 512,
+                    'messages': [{'role': 'user', 'content': prompt}],
+                }).encode('utf-8'),
+                headers={
+                    'x-api-key': settings.AI_API_KEY,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                },
+                method='POST',
+            )
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = json.loads(resp.read())
+            text = ''.join(block.get('text', '') for block in data.get('content', []))
+        else:
+            return JsonResponse({'error': f"Unsupported AI provider: {provider}"}, status=503)
+
+        # Try to extract JSON, tolerate small formatting noise
+        m = re.search(r'\{[\s\S]*\}', text)
+        if not m:
+            return JsonResponse({'bios': [text.strip()[:220]]})
+        parsed = json.loads(m.group(0))
+        bios = [str(b).strip()[:220] for b in parsed.get('bios', []) if str(b).strip()]
+        return JsonResponse({'bios': bios[:3]})
+    except Exception as exc:
+        logger.warning("AI bio failed: %s", exc)
+        return JsonResponse({'error': 'AI provider is unavailable right now.'}, status=502)

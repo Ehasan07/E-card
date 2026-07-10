@@ -278,6 +278,66 @@ class CardInteraction(models.Model):
         return f"{self.get_kind_display()} · {self.card} · {self.created_at:%Y-%m-%d %H:%M}"
 
 
+class CardTheme(models.Model):
+    """Curated visual themes card owners can pick in the editor."""
+    slug = models.SlugField(max_length=60, unique=True)
+    name = models.CharField(max_length=120)
+    description = models.CharField(max_length=255, blank=True)
+    background = models.CharField(max_length=500)         # CSS gradient / color
+    accent_color = models.CharField(max_length=20, default='#7CFFB2')
+    text_color = models.CharField(max_length=20, default='#FFFFFF')
+    is_premium = models.BooleanField(default=False)       # Pro-only themes
+    sort_order = models.PositiveSmallIntegerField(default=100)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ['sort_order', 'name']
+
+    def __str__(self):
+        return self.name
+
+
+class Payment(models.Model):
+    """Records both Stripe and bKash transactions in one uniform shape."""
+    GATEWAY_STRIPE = 'stripe'
+    GATEWAY_BKASH = 'bkash'
+    GATEWAY_MANUAL = 'manual'
+    GATEWAY_CHOICES = [
+        (GATEWAY_STRIPE, 'Stripe'),
+        (GATEWAY_BKASH, 'bKash'),
+        (GATEWAY_MANUAL, 'Manual'),
+    ]
+
+    STATUS_PENDING = 'pending'
+    STATUS_SUCCESS = 'success'
+    STATUS_FAILED = 'failed'
+    STATUS_REFUNDED = 'refunded'
+    STATUS_CHOICES = [
+        (STATUS_PENDING, 'Pending'),
+        (STATUS_SUCCESS, 'Success'),
+        (STATUS_FAILED, 'Failed'),
+        (STATUS_REFUNDED, 'Refunded'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
+    plan = models.ForeignKey(SubscriptionPlan, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
+    gateway = models.CharField(max_length=20, choices=GATEWAY_CHOICES, default=GATEWAY_MANUAL)
+    amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    currency = models.CharField(max_length=8, default='BDT')
+    txn_id = models.CharField(max_length=120, blank=True, db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    raw_payload = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [models.Index(fields=['user', 'status', 'created_at'])]
+
+    def __str__(self):
+        return f"{self.get_gateway_display()} · {self.amount} {self.currency} · {self.get_status_display()}"
+
+
 class LeadCapture(models.Model):
     STATUS_NEW      = 'new'
     STATUS_REPLIED  = 'replied'

@@ -1,0 +1,557 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: MY-Card v2\n"
+"Report-Msgid-Bugs-To: \n"
+"Language: bn\n"
+"Language-Team: Bengali\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+# ============ Navigation & general ============
+msgid "Dashboard"
+msgstr "ড্যাশবোর্ড"
+
+msgid "Messages"
+msgstr "মেসেজ"
+
+msgid "Leads"
+msgstr "লিড"
+
+msgid "Docs"
+msgstr "গাইড"
+
+msgid "Features"
+msgstr "ফিচার"
+
+msgid "Pricing"
+msgstr "মূল্য"
+
+msgid "Sign out"
+msgstr "লগ আউট"
+
+msgid "Log in"
+msgstr "লগ ইন"
+
+msgid "Start free"
+msgstr "ফ্রি শুরু করুন"
+
+msgid "Back"
+msgstr "ফিরে যান"
+
+msgid "Cancel"
+msgstr "বাতিল"
+
+msgid "Continue"
+msgstr "চালিয়ে যান"
+
+msgid "ago"
+msgstr "আগে"
+
+# ============ Auth ============
+msgid "Welcome back"
+msgstr "স্বাগত"
+
+msgid "Sign in"
+msgstr "সাইন ইন"
+
+msgid "Your cards are one login away."
+msgstr "লগইন করেই আপনার কার্ডগুলো আবার হাতে পান।"
+
+msgid "Update details, drop new socials, and share links your recipients will actually remember."
+msgstr "তথ্য আপডেট করুন, নতুন সোশ্যাল যোগ করুন, আর এমন লিঙ্ক শেয়ার করুন যা মানুষ মনে রাখবে।"
+
+msgid "Enter your details to access your dashboard."
+msgstr "ড্যাশবোর্ডে ঢুকতে আপনার তথ্য দিন।"
+
+msgid "Secure sessions with account recovery"
+msgstr "নিরাপদ সেশন — সহজ অ্যাকাউন্ট রিকভারি"
+
+msgid "See who's viewing your cards"
+msgstr "দেখুন কে আপনার কার্ড দেখছে"
+
+msgid "Share on any channel in one tap"
+msgstr "যেকোনো চ্যানেলে এক ট্যাপে শেয়ার"
+
+msgid "New here?"
+msgstr "নতুন এসেছেন?"
+
+msgid "Create an account"
+msgstr "অ্যাকাউন্ট তৈরি করুন"
+
+msgid "Forgot password?"
+msgstr "পাসওয়ার্ড ভুলে গেছেন?"
+
+msgid "Reset it"
+msgstr "রিসেট করুন"
+
+msgid "Back to home"
+msgstr "হোমে ফিরুন"
+
+# ============ Register ============
+msgid "Join free"
+msgstr "ফ্রি জয়েন করুন"
+
+msgid "Start crafting cards people remember."
+msgstr "এমন কার্ড বানান যা সবাই মনে রাখে।"
+
+msgid "Sign up in under a minute and get a shareable link, QR, and wallet pass — no credit card, no watermarks."
+msgstr "এক মিনিটে সাইন আপ করে পান শেয়ারযোগ্য লিঙ্ক, QR এবং ওয়ালেট পাস — কোনো ক্রেডিট কার্ড লাগবে না, কোনো ওয়াটারমার্ক থাকবে না।"
+
+msgid "Create your account"
+msgstr "আপনার অ্যাকাউন্ট তৈরি করুন"
+
+msgid "Just a phone number and email — you can add the design in the next step."
+msgstr "শুধু ফোন নম্বর আর ইমেইল — ডিজাইন পরে যোগ করবেন।"
+
+msgid "Username"
+msgstr "ইউজারনেম"
+
+msgid "Email"
+msgstr "ইমেইল"
+
+msgid "Password"
+msgstr "পাসওয়ার্ড"
+
+msgid "Phone number"
+msgstr "ফোন নম্বর"
+
+msgid "Create account"
+msgstr "অ্যাকাউন্ট তৈরি করুন"
+
+msgid "Already have an account?"
+msgstr "আগে থেকেই অ্যাকাউন্ট আছে?"
+
+msgid "Modern themes with dark & light modes"
+msgstr "ডার্ক এবং লাইট মোডসহ আধুনিক থিম"
+
+msgid "QR, link, Apple / Google Wallet share"
+msgstr "QR, লিঙ্ক, অ্যাপল / গুগল ওয়ালেট শেয়ার"
+
+msgid "Real-time view + lead analytics"
+msgstr "রিয়েল-টাইম ভিউ + লিড অ্যানালিটিক্স"
+
+# ============ Forgot / reset ============
+msgid "Account recovery"
+msgstr "অ্যাকাউন্ট রিকভারি"
+
+msgid "No email hoops. Just get back in."
+msgstr "কোনো ইমেইল ঝামেলা নেই। সোজা লগইন-এ ফিরে যান।"
+
+msgid "Enter the email or phone you signed up with. If we find a match, you'll set a new password on the next screen."
+msgstr "সাইন আপের সময় ব্যবহৃত ইমেইল বা ফোন লিখুন। মিল পেলে পরের স্ক্রিনে নতুন পাসওয়ার্ড সেট করবেন।"
+
+msgid "Reset your password"
+msgstr "পাসওয়ার্ড রিসেট করুন"
+
+msgid "Type the email or phone linked to your account."
+msgstr "আপনার অ্যাকাউন্টের সাথে যুক্ত ইমেইল বা ফোন লিখুন।"
+
+msgid "Email or phone"
+msgstr "ইমেইল বা ফোন"
+
+msgid "Secure &amp; direct"
+msgstr "নিরাপদ ও সরাসরি"
+
+msgid "Back to your account in seconds"
+msgstr "কয়েক সেকেন্ডে অ্যাকাউন্টে ফিরে যান"
+
+msgid "No OTP email required"
+msgstr "কোনো OTP ইমেইল লাগবে না"
+
+msgid "Back to login"
+msgstr "লগইনে ফিরুন"
+
+msgid "Final step"
+msgstr "শেষ ধাপ"
+
+msgid "One strong password. Ready to go."
+msgstr "একটি শক্তিশালী পাসওয়ার্ড। ব্যাস।"
+
+msgid "Pick something memorable but hard to guess — mix letters, digits, and a symbol."
+msgstr "এমন কিছু বেছে নিন যা মনে থাকবে কিন্তু কেউ ধরতে পারবে না — অক্ষর, সংখ্যা ও চিহ্ন মিশিয়ে দিন।"
+
+msgid "Set new password"
+msgstr "নতুন পাসওয়ার্ড দিন"
+
+msgid "Enter and confirm your new password."
+msgstr "নতুন পাসওয়ার্ড লিখে কনফার্ম করুন।"
+
+msgid "Your security is our priority"
+msgstr "আপনার নিরাপত্তা আমাদের অগ্রাধিকার"
+
+msgid "8+ characters recommended"
+msgstr "৮+ অক্ষর রাখুন"
+
+msgid "Never reused across accounts"
+msgstr "অন্য অ্যাকাউন্টে একই পাসওয়ার্ড ব্যবহার করবেন না"
+
+msgid "Save new password"
+msgstr "নতুন পাসওয়ার্ড সেভ করুন"
+
+# ============ Dashboard ============
+msgid "Your studio"
+msgstr "আপনার স্টুডিও"
+
+msgid "All your interactive cards in one place. Edit, share, and track engagement."
+msgstr "আপনার সব ইন্টারেক্টিভ কার্ড একই জায়গায়। এডিট করুন, শেয়ার করুন, ট্র্যাক করুন।"
+
+msgid "New personal card"
+msgstr "নতুন পার্সোনাল কার্ড"
+
+msgid "New business card"
+msgstr "নতুন বিজনেস কার্ড"
+
+msgid "Total views"
+msgstr "মোট ভিউ"
+
+msgid "contact saves"
+msgstr "কনট্যাক্ট সেভ"
+
+msgid "Card allowance"
+msgstr "কার্ড বরাদ্দ"
+
+msgid "Limit reached"
+msgstr "সীমা পূরণ"
+
+msgid "Latest update"
+msgstr "সাম্প্রতিক আপডেট"
+
+msgid "No updates yet"
+msgstr "এখনো কোনো আপডেট নেই"
+
+msgid "Edited details"
+msgstr "তথ্য এডিট করা হয়েছে"
+
+msgid "Leads inbox"
+msgstr "লিড ইনবক্স"
+
+msgid "new"
+msgstr "নতুন"
+
+msgid "from card visitors"
+msgstr "কার্ড ভিজিটরদের থেকে"
+
+msgid "You've hit your card limit."
+msgstr "আপনি কার্ড সীমায় পৌঁছেছেন।"
+
+msgid "Request upgrade"
+msgstr "আপগ্রেড রিকোয়েস্ট"
+
+msgid "Your cards"
+msgstr "আপনার কার্ড"
+
+msgid "Live"
+msgstr "লাইভ"
+
+msgid "Offline"
+msgstr "অফলাইন"
+
+msgid "Card"
+msgstr "কার্ড"
+
+msgid "No title set yet"
+msgstr "এখনো কোনো পদবী দেওয়া হয়নি"
+
+msgid "Recent changes"
+msgstr "সাম্প্রতিক পরিবর্তন"
+
+msgid "Updated card"
+msgstr "কার্ড আপডেট"
+
+msgid "View"
+msgstr "দেখুন"
+
+msgid "Preview"
+msgstr "প্রিভিউ"
+
+msgid "Edit"
+msgstr "এডিট"
+
+msgid "Analytics"
+msgstr "অ্যানালিটিক্স"
+
+msgid "Copy link"
+msgstr "লিঙ্ক কপি"
+
+msgid "Reactivate"
+msgstr "আবার চালু করুন"
+
+msgid "No cards yet"
+msgstr "এখনো কোনো কার্ড নেই"
+
+msgid "Create your first digital card and share it with anyone in under a minute."
+msgstr "এক মিনিটের মধ্যে আপনার প্রথম ডিজিটাল কার্ড তৈরি করে যেকারো সাথে শেয়ার করুন।"
+
+msgid "Personal card"
+msgstr "পার্সোনাল কার্ড"
+
+msgid "Business card"
+msgstr "বিজনেস কার্ড"
+
+# ============ Editor ============
+msgid "Edit card"
+msgstr "কার্ড এডিট"
+
+msgid "Create card"
+msgstr "কার্ড তৈরি"
+
+msgid "New card"
+msgstr "নতুন কার্ড"
+
+msgid "Builder mode"
+msgstr "বিল্ডার মোড"
+
+msgid "Craft your interactive identity"
+msgstr "আপনার ইন্টারেক্টিভ পরিচয় তৈরি করুন"
+
+msgid "Fill in the details on the left. The preview on the right updates as you type."
+msgstr "বাম পাশে তথ্য দিন। ডান পাশের প্রিভিউ টাইপ করার সাথে সাথে আপডেট হবে।"
+
+msgid "Personal details"
+msgstr "ব্যক্তিগত তথ্য"
+
+msgid "Job title"
+msgstr "পদবী"
+
+msgid "Company"
+msgstr "প্রতিষ্ঠান"
+
+msgid "Phone"
+msgstr "ফোন"
+
+msgid "Digits only — the country code is added automatically."
+msgstr "শুধু সংখ্যা — কান্ট্রি কোড স্বয়ংক্রিয়ভাবে যোগ হবে।"
+
+msgid "Address"
+msgstr "ঠিকানা"
+
+msgid "Website"
+msgstr "ওয়েবসাইট"
+
+msgid "Birthday"
+msgstr "জন্মদিন"
+
+msgid "Business spotlight"
+msgstr "বিজনেস স্পটলাইট"
+
+msgid "Highlight one contact detail on your business card."
+msgstr "আপনার বিজনেস কার্ডে একটি কন্ট্যাক্ট হাইলাইট করুন।"
+
+msgid "Spotlight detail"
+msgstr "স্পটলাইট বিস্তারিত"
+
+msgid "Provide the exact information for the spotlight."
+msgstr "স্পটলাইটের জন্য সঠিক তথ্য দিন।"
+
+msgid "Digits only — we'll format it for you."
+msgstr "শুধু সংখ্যা — আমরা ফরম্যাট করে দেবো।"
+
+msgid "Notes / bio"
+msgstr "নোট / বায়ো"
+
+msgid "Notes"
+msgstr "নোট"
+
+msgid "Avatar &amp; brand"
+msgstr "অ্যাভাটার ও ব্র্যান্ড"
+
+msgid "Avatar"
+msgstr "অ্যাভাটার"
+
+msgid "Current"
+msgstr "বর্তমান"
+
+msgid "Logo"
+msgstr "লোগো"
+
+msgid "Brand name"
+msgstr "ব্র্যান্ডের নাম"
+
+msgid "Curated themes"
+msgstr "কিউরেটেড থিম"
+
+msgid "Complete design in one click"
+msgstr "এক ক্লিকে সম্পূর্ণ ডিজাইন"
+
+msgid "Or pick a custom background"
+msgstr "অথবা কাস্টম ব্যাকগ্রাউন্ড নির্বাচন করুন"
+
+msgid "Tap or use the picker"
+msgstr "ট্যাপ করুন বা পিকার ব্যবহার করুন"
+
+msgid "Or pick a solid color"
+msgstr "অথবা এক রঙ বেছে নিন"
+
+msgid "Background style"
+msgstr "ব্যাকগ্রাউন্ড স্টাইল"
+
+msgid "Social connections"
+msgstr "সোশ্যাল কানেকশন"
+
+msgid "WhatsApp number only — link generated automatically."
+msgstr "শুধু হোয়াটসঅ্যাপ নম্বর — লিঙ্ক স্বয়ংক্রিয়ভাবে তৈরি হবে।"
+
+msgid "Save card"
+msgstr "কার্ড সেভ"
+
+msgid "Suggest with AI"
+msgstr "AI দিয়ে পরামর্শ"
+
+msgid "Thinking..."
+msgstr "ভাবছে..."
+
+msgid "Generating suggestions..."
+msgstr "পরামর্শ তৈরি হচ্ছে..."
+
+msgid "Something went wrong."
+msgstr "কিছু ভুল হয়েছে।"
+
+msgid "No suggestions right now — try again."
+msgstr "এখন কোনো পরামর্শ নেই — আবার চেষ্টা করুন।"
+
+msgid "Click to use"
+msgstr "ব্যবহার করতে ক্লিক করুন"
+
+msgid "Network error."
+msgstr "নেটওয়ার্ক এরর।"
+
+# ============ Live preview ============
+msgid "Live preview"
+msgstr "লাইভ প্রিভিউ"
+
+msgid "Your card, real-time"
+msgstr "আপনার কার্ড, রিয়েল-টাইমে"
+
+msgid "Your Name"
+msgstr "আপনার নাম"
+
+msgid "Your role"
+msgstr "আপনার পদবী"
+
+# ============ Leads inbox ============
+msgid "Inbox"
+msgstr "ইনবক্স"
+
+msgid "Your leads"
+msgstr "আপনার লিড"
+
+msgid "All"
+msgstr "সব"
+
+msgid "For"
+msgstr "যার জন্য"
+
+msgid "Reply"
+msgstr "রিপ্লাই"
+
+msgid "Mark replied"
+msgstr "রিপ্লাই দিয়েছেন"
+
+msgid "Archive"
+msgstr "আর্কাইভ"
+
+msgid "Reopen"
+msgstr "আবার খুলুন"
+
+msgid "No leads yet"
+msgstr "এখনো কোনো লিড নেই"
+
+msgid "When a visitor submits the contact form on any of your cards, they'll show up here. Share your card link to start getting leads."
+msgstr "কেউ আপনার কার্ডের কনট্যাক্ট ফর্ম জমা দিলে এখানে দেখাবে। লিড পেতে আপনার কার্ডের লিঙ্ক শেয়ার করুন।"
+
+msgid "Go to dashboard"
+msgstr "ড্যাশবোর্ডে যান"
+
+# ============ Analytics ============
+msgid "Last 30 days"
+msgstr "গত ৩০ দিন"
+
+msgid "How your card is performing."
+msgstr "আপনার কার্ড কেমন পারফর্ম করছে।"
+
+msgid "Views"
+msgstr "ভিউ"
+
+msgid "unique visitors"
+msgstr "ইউনিক ভিজিটর"
+
+msgid "Clicks"
+msgstr "ক্লিক"
+
+msgid "socials + contacts"
+msgstr "সোশ্যাল + কনট্যাক্ট"
+
+msgid "Contact saves"
+msgstr "কনট্যাক্ট সেভ"
+
+msgid "downloads"
+msgstr "ডাউনলোড"
+
+msgid "form submissions"
+msgstr "ফর্ম জমা"
+
+msgid "Views over time"
+msgstr "সময়ের সাথে ভিউ"
+
+msgid "Daily count · last 30 days"
+msgstr "দৈনিক গণনা · গত ৩০ দিন"
+
+msgid "Top clicked links"
+msgstr "সবচেয়ে বেশি ক্লিক পাওয়া লিঙ্ক"
+
+msgid "Which socials & contacts get the most taps"
+msgstr "কোন সোশ্যাল ও কনট্যাক্টে সবচেয়ে বেশি ট্যাপ পড়ছে"
+
+msgid "(untagged)"
+msgstr "(অজানা)"
+
+msgid "No clicks tracked yet — share your card to start collecting engagement data."
+msgstr "এখনো কোনো ক্লিক নেই — কার্ড শেয়ার করে ডেটা সংগ্রহ শুরু করুন।"
+
+msgid "Untitled"
+msgstr "শিরোনামহীন"
+
+msgid "View card"
+msgstr "কার্ড দেখুন"
+
+# ============ Pricing ============
+msgid "Simple pricing. No watermark on Pro."
+msgstr "সহজ মূল্য। Pro-তে কোনো ওয়াটারমার্ক নেই।"
+
+msgid "Priced in taka for BD users and USD via Stripe for the rest of the world."
+msgstr "বাংলাদেশি ইউজারদের জন্য টাকায়, বিদেশে Stripe-এ USD-তে।"
+
+msgid "Automatic payments coming soon — for now, upgrades go through admin approval."
+msgstr "স্বয়ংক্রিয় পেমেন্ট শীঘ্রই আসছে — এখনকার জন্য অ্যাডমিন অনুমোদনের মাধ্যমে আপগ্রেড হবে।"
+
+msgid "Most popular"
+msgstr "সবচেয়ে জনপ্রিয়"
+
+msgid "month"
+msgstr "মাস"
+
+msgid "billed monthly"
+msgstr "মাসিক বিলিং"
+
+msgid "Frequently asked"
+msgstr "সাধারণ প্রশ্ন"
+
+msgid "Can I upgrade or downgrade anytime?"
+msgstr "যেকোনো সময় আপগ্রেড বা ডাউনগ্রেড করা যাবে?"
+
+msgid "Yes — plan changes take effect at the start of the next billing cycle. Existing cards remain accessible even if you downgrade."
+msgstr "হ্যাঁ — পরবর্তী বিলিং সাইকেল থেকে প্ল্যান পরিবর্তন কার্যকর হবে। ডাউনগ্রেড করলেও পুরনো কার্ড অ্যাক্সেসযোগ্য থাকবে।"
+
+msgid "How does bKash payment work?"
+msgstr "বিকাশ পেমেন্ট কীভাবে কাজ করে?"
+
+msgid "We use bKash Merchant Checkout. You get a bKash prompt on your phone, confirm the payment, and your plan activates instantly."
+msgstr "আমরা বিকাশ মার্চেন্ট চেকআউট ব্যবহার করি। ফোনে বিকাশ প্রম্পট পাবেন, নিশ্চিত করলে সাথে সাথে প্ল্যান চালু হবে।"
+
+msgid "Do you offer a free trial?"
+msgstr "ফ্রি ট্রায়াল আছে?"
+
+msgid "The Free tier is essentially an infinite trial — no card required, no watermark on your first card. Upgrade whenever you're ready."
+msgstr "ফ্রি টিয়ারই অসীম ট্রায়াল — কোনো কার্ড লাগে না, প্রথম কার্ডে ওয়াটারমার্ক নেই। ইচ্ছেমতো আপগ্রেড করুন।"

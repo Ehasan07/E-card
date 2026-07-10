@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="vc-page">
+<div class="vc-page"{% if theme %} style="--mc-accent: {{ theme.accent_color }}; --mc-accent-halo: {{ theme.accent_color }}22; --mc-accent-glow: {{ theme.accent_color }}55; --vc-hero-bg: {{ theme.background }};"{% endif %}>
     {# ---------- Aurora backdrop ---------- #}
     <div class="vc-canvas" aria-hidden="true">
         <div class="mc-aurora mc-aurora--mint mc-hue-drift"  style="width:520px;height:520px;top:-140px;left:-160px;"></div>

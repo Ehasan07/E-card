@@ -153,3 +153,23 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=True, cast=bool)
 CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=True, cast=bool)
 SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+
+
+# Sprint 4 — payments, AI, wallet feature flags (empty = feature hidden / disabled)
+STRIPE_PUBLIC_KEY   = config('STRIPE_PUBLIC_KEY',   default='')
+STRIPE_SECRET_KEY   = config('STRIPE_SECRET_KEY',   default='')
+BKASH_MERCHANT_URL  = config('BKASH_MERCHANT_URL',  default='')
+BKASH_APP_KEY       = config('BKASH_APP_KEY',       default='')
+BKASH_APP_SECRET    = config('BKASH_APP_SECRET',    default='')
+
+AI_PROVIDER = config('AI_PROVIDER', default='')          # 'anthropic' | 'openai' | ''
+AI_API_KEY  = config('AI_API_KEY',  default='')
+AI_MODEL    = config('AI_MODEL',    default='claude-haiku-4-5-20251001')
+
+APPLE_WALLET_CERT_PATH = config('APPLE_WALLET_CERT_PATH', default='')
+GOOGLE_WALLET_SA_JSON  = config('GOOGLE_WALLET_SA_JSON',  default='')
+
+# Convenience feature flags
+FEATURE_PAYMENTS = bool(STRIPE_SECRET_KEY or BKASH_APP_KEY)
+FEATURE_AI       = bool(AI_PROVIDER and AI_API_KEY)
+FEATURE_WALLET   = bool(APPLE_WALLET_CERT_PATH or GOOGLE_WALLET_SA_JSON)
