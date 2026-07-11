@@ -346,13 +346,13 @@
   gap: var(--mc-s-2);
 }
 
-/* Nav logo mark — uses the same SVG as the favicon so the tab icon,
+/* Nav logo mark — uses the same PNG as the favicon so the tab icon,
    nav bar, footer, and physical card front are all the same mark. */
 .mc-nav__logo-mark {
   width: 32px; height: 32px;
   border-radius: var(--mc-r-sm);
   background-color: transparent;
-  background-image: url('../img/favicon.svg');
+  background-image: url('../img/new-logo-preview.png');
   background-size: contain;
   background-repeat: no-repeat;
   background-position: center;

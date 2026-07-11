@@ -13,22 +13,16 @@
     "dir": "ltr",
     "icons": [
         {
-            "src": "/static/cards/img/favicon.svg",
-            "sizes": "any",
-            "type": "image/svg+xml",
-            "purpose": "any"
-        },
-        {
-            "src": "/static/cards/img/favicon.svg",
-            "sizes": "192x192 512x512",
-            "type": "image/svg+xml",
-            "purpose": "maskable"
-        },
-        {
-            "src": "/static/cards/Favicon.png",
-            "sizes": "192x192",
+            "src": "/static/cards/img/new-logo-preview.png",
+            "sizes": "512x512",
             "type": "image/png",
             "purpose": "any"
+        },
+        {
+            "src": "/static/cards/img/new-logo-preview.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
         }
     ],
     "shortcuts": [

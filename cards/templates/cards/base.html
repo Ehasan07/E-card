@@ -7,11 +7,9 @@
     <meta name="theme-color" content="#05060B">
     <title>{% block title %}MY-Card — Digital Business Card{% endblock %}</title>
 
-    {# New MY-Card SVG favicon — sharp at every size, falls back to Favicon.png for very old browsers #}
-    <link rel="icon" type="image/svg+xml" href="{% static 'cards/img/favicon.svg' %}?v=1">
-    <link rel="icon" type="image/png" href="{% static 'cards/Favicon.png' %}?v=3" sizes="any">
-    <link rel="mask-icon" href="{% static 'cards/img/favicon.svg' %}?v=1" color="#7CFFB2">
-    <link rel="apple-touch-icon" href="{% static 'cards/Favicon.png' %}?v=3">
+    {# MY-Card favicon (new-logo-preview.png) — used everywhere the tab icon, nav mark and physical-card mark appear #}
+    <link rel="icon" type="image/png" href="{% static 'cards/img/new-logo-preview.png' %}?v=4" sizes="any">
+    <link rel="apple-touch-icon" href="{% static 'cards/img/new-logo-preview.png' %}?v=4">
 
     {# PWA: makes MY-Card installable as an app on Android / iOS home screens #}
     <link rel="manifest" href="{% static 'cards/manifest.webmanifest' %}?v=1">
