@@ -4,6 +4,7 @@ import logging
 import re
 import zipfile
 import random
+from functools import lru_cache
 from io import BytesIO, StringIO
 
 logger = logging.getLogger(__name__)
@@ -266,6 +267,7 @@ def _landing_demo_card_context(request):
 
     public_slug = getattr(settings, 'LANDING_DEMO_PUBLIC_SLUG', 'shiplu07')
     public_base = getattr(settings, 'LANDING_DEMO_PUBLIC_BASE', 'https://mycard.dupno.com')
+    demo_card_url = f'{public_base}/card/{public_slug}/'
 
     return {
         'demo_card': card,
@@ -275,9 +277,28 @@ def _landing_demo_card_context(request):
         'demo_top_socials': top_socials,
         'demo_theme': theme,
         'demo_public_slug': public_slug,
-        'demo_card_url': f'{public_base}/card/{public_slug}/',
+        'demo_card_url': demo_card_url,
         'demo_physical_url': f'{public_base}/card/{public_slug}/physical/',
+        'demo_public_qr_data_uri': _landing_demo_qr_data_uri(demo_card_url),
     }
+
+
+@lru_cache(maxsize=8)
+def _landing_demo_qr_data_uri(target_url: str) -> str:
+    """PNG QR for the landing demo, encoded as a data URI so the template
+    doesn't depend on any Card.qr_code file. Cached per URL."""
+    try:
+        import qrcode
+        import base64
+        from io import BytesIO
+
+        img = qrcode.make(target_url, box_size=10, border=2)
+        buf = BytesIO()
+        img.save(buf, format='PNG')
+        return 'data:image/png;base64,' + base64.b64encode(buf.getvalue()).decode('ascii')
+    except Exception as exc:
+        logger.warning("Landing QR generation failed for %s: %s", target_url, exc)
+        return ''
 
 
 @require_POST

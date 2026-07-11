@@ -116,9 +116,9 @@
                 </div>
             </div>
 
-            {% if demo_card.qr_code %}
+            {% if demo_public_qr_data_uri %}
                 <div class="lp-preview-orbit lp-preview-orbit--qr lp-preview-orbit--qr-real">
-                    <img src="{{ demo_card.qr_code.url }}" alt="QR code — {{ demo_card.card_data.firstName }}">
+                    <img src="{{ demo_public_qr_data_uri }}" alt="QR — mycard.dupno.com/card/{{ demo_public_slug }}">
                     <span>{% trans "Scan me" %}</span>
                 </div>
             {% else %}
@@ -403,8 +403,8 @@
                         </header>
                         <div class="lp-mini__back-body">
                             <div class="lp-mini__qr">
-                                {% if demo_card.qr_code %}
-                                    <img src="{{ demo_card.qr_code.url }}" alt="QR — {{ demo_card.card_data.firstName }}">
+                                {% if demo_public_qr_data_uri %}
+                                    <img src="{{ demo_public_qr_data_uri }}" alt="QR — mycard.dupno.com/card/{{ demo_public_slug }}">
                                 {% else %}
                                     <span>QR</span>
                                 {% endif %}
