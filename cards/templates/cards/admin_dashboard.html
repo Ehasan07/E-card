@@ -59,56 +59,60 @@
             </div>
         </header>
 
-        {# ============ Core metrics bento ============ #}
+        {# ============ Core metrics bento (all clickable) ============ #}
         <section class="ad-metrics mc-fade-up mc-fade-up--d1">
-            <div class="mc-metric">
+            <a href="#ad-users-panel" class="mc-metric ad-metric-link" data-scroll>
                 <span class="mc-metric__label"><i data-lucide="users"></i> Total users</span>
                 <span class="mc-metric__value mc-mono">{{ total_users }}</span>
                 <span class="mc-metric__delta">
                     <i data-lucide="user-plus"></i> {{ users_this_week }} this week
                 </span>
-            </div>
-            <div class="mc-metric">
+                <span class="ad-metric-link__hint">Open users table <i data-lucide="arrow-right"></i></span>
+            </a>
+            <a href="#ad-two-col" class="mc-metric ad-metric-link" data-scroll>
                 <span class="mc-metric__label"><i data-lucide="id-card"></i> Total cards</span>
                 <span class="mc-metric__value mc-mono">{{ total_cards }}</span>
                 <span class="mc-metric__delta">
                     <i data-lucide="user"></i> {{ personal_cards }} personal · <i data-lucide="briefcase"></i> {{ business_cards }} business
                 </span>
-            </div>
-            <div class="mc-metric">
+                <span class="ad-metric-link__hint">See top cards <i data-lucide="arrow-right"></i></span>
+            </a>
+            <a href="#ad-two-col" class="mc-metric ad-metric-link" data-scroll>
                 <span class="mc-metric__label"><i data-lucide="eye"></i> Platform views</span>
                 <span class="mc-metric__value mc-mono">{{ total_views }}</span>
                 <span class="mc-metric__delta">
                     <i data-lucide="plus-circle"></i> {{ cards_this_week }} new cards this week
                 </span>
-            </div>
-            <div class="mc-metric">
+                <span class="ad-metric-link__hint">View activity <i data-lucide="arrow-right"></i></span>
+            </a>
+            <a href="#ad-two-col" class="mc-metric ad-metric-link" data-scroll>
                 <span class="mc-metric__label"><i data-lucide="inbox"></i> Leads captured</span>
                 <span class="mc-metric__value mc-mono">{{ total_leads }}</span>
                 <span class="mc-metric__delta">
                     <i data-lucide="mail"></i> {{ new_leads }} unread
                 </span>
-            </div>
-            <div class="mc-metric">
+                <span class="ad-metric-link__hint">See lead activity <i data-lucide="arrow-right"></i></span>
+            </a>
+            <a href="{% url 'admin_messages' %}" class="mc-metric ad-metric-link">
                 <span class="mc-metric__label"><i data-lucide="rocket"></i> Pending upgrades</span>
-                <a href="{% url 'admin_messages' %}" class="mc-metric__value mc-mono" style="text-decoration:none;">
-                    {{ pending_request_count }}
-                </a>
+                <span class="mc-metric__value mc-mono">{{ pending_request_count }}</span>
                 <span class="mc-metric__delta">
                     <i data-lucide="arrow-right"></i> Review in messages
                 </span>
-            </div>
-            <div class="mc-metric">
+                <span class="ad-metric-link__hint">Open inbox <i data-lucide="arrow-right"></i></span>
+            </a>
+            <a href="#ad-feedback-panel" class="mc-metric ad-metric-link" data-scroll>
                 <span class="mc-metric__label"><i data-lucide="message-square"></i> Feedback</span>
                 <span class="mc-metric__value mc-mono">{{ feedback_count }}</span>
                 <span class="mc-metric__delta">
                     <i data-lucide="thumbs-up"></i> Latest below
                 </span>
-            </div>
+                <span class="ad-metric-link__hint">Read feedback <i data-lucide="arrow-right"></i></span>
+            </a>
         </section>
 
         {# ============ Two column: top cards + recent activity ============ #}
-        <section class="ad-two-col mc-fade-up mc-fade-up--d2">
+        <section id="ad-two-col" class="ad-two-col mc-fade-up mc-fade-up--d2">
             <div class="mc-card ad-col">
                 <header class="ad-col__head">
                     <div>
@@ -172,7 +176,7 @@
         </section>
 
         {# ============ Users table with search ============ #}
-        <section class="mc-card ad-users mc-fade-up mc-fade-up--d3">
+        <section id="ad-users-panel" class="mc-card ad-users mc-fade-up mc-fade-up--d3">
             <header class="ad-col__head">
                 <div>
                     <h2>All users</h2>
@@ -311,7 +315,7 @@
 
         {# ============ Feedback panel ============ #}
         {% if feedback_entries %}
-            <section class="mc-card ad-feedback mc-fade-up mc-fade-up--d4">
+            <section id="ad-feedback-panel" class="mc-card ad-feedback mc-fade-up mc-fade-up--d4">
                 <header class="ad-col__head">
                     <div>
                         <h2>Recent feedback</h2>
@@ -390,6 +394,58 @@
 @media (min-width: 640px)  { .ad-metrics { grid-template-columns: repeat(2, 1fr); } }
 @media (min-width: 900px)  { .ad-metrics { grid-template-columns: repeat(3, 1fr); } }
 @media (min-width: 1200px) { .ad-metrics { grid-template-columns: repeat(6, 1fr); } }
+
+/* Clickable metric tiles */
+.ad-metric-link {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    transition:
+        transform var(--mc-dur-fast) var(--mc-ease),
+        border-color var(--mc-dur-fast) var(--mc-ease),
+        box-shadow var(--mc-dur-fast) var(--mc-ease);
+    position: relative;
+    overflow: hidden;
+}
+.ad-metric-link:hover {
+    transform: translateY(-4px);
+    border-color: var(--admin-accent);
+    box-shadow: 0 12px 32px -12px var(--admin-accent-glow);
+}
+.ad-metric-link__hint {
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    right: 0;
+    padding: 6px var(--mc-s-4);
+    background: linear-gradient(0deg, var(--admin-accent-halo), transparent);
+    color: var(--admin-accent);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    transition: bottom var(--mc-dur-med) var(--mc-ease);
+}
+.ad-metric-link__hint i { width: 0.8rem; height: 0.8rem; }
+.ad-metric-link:hover .ad-metric-link__hint { bottom: 0; }
+
+html { scroll-behavior: smooth; }
+
+/* Flash highlight when scrolled to */
+.ad-flash {
+    animation: ad-flash-pulse 1.2s var(--mc-ease);
+}
+@keyframes ad-flash-pulse {
+    0%   { box-shadow: 0 0 0 0 var(--admin-accent-glow); }
+    30%  { box-shadow: 0 0 0 12px var(--admin-accent-halo); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
 
 /* Two column (top cards + activity) */
 .ad-two-col {
@@ -706,6 +762,23 @@
     }
     if (search) search.addEventListener('input', applyFilters);
     if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+
+    // ------- Smooth scroll with sticky nav offset -------
+    document.querySelectorAll('[data-scroll]').forEach(function(link) {
+        link.addEventListener('click', function(e) {
+            var href = link.getAttribute('href') || '';
+            if (href.charAt(0) !== '#') return;
+            var target = document.querySelector(href);
+            if (!target) return;
+            e.preventDefault();
+            var navHeight = 90;
+            var y = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+            window.scrollTo({ top: y, behavior: 'smooth' });
+            // Highlight briefly
+            target.classList.add('ad-flash');
+            setTimeout(function() { target.classList.remove('ad-flash'); }, 1200);
+        });
+    });
 })();
 </script>
 {% endblock %}
