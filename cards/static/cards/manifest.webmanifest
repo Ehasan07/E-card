@@ -1,0 +1,54 @@
+{
+    "name": "MY-Card — Digital Business Card",
+    "short_name": "MY-Card",
+    "description": "Your digital business card, reimagined. Share via QR, WhatsApp, Wallet pass, or print a physical card.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#05060B",
+    "theme_color": "#05060B",
+    "categories": ["business", "productivity", "social"],
+    "lang": "en",
+    "dir": "ltr",
+    "icons": [
+        {
+            "src": "/static/cards/img/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/cards/img/favicon.svg",
+            "sizes": "192x192 512x512",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        },
+        {
+            "src": "/static/cards/Favicon.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Dashboard",
+            "url": "/dashboard/",
+            "description": "Manage your cards"
+        },
+        {
+            "name": "New card",
+            "short_name": "New card",
+            "url": "/create/",
+            "description": "Create a new personal card"
+        },
+        {
+            "name": "Leads inbox",
+            "short_name": "Leads",
+            "url": "/leads/",
+            "description": "See visitor leads"
+        }
+    ]
+}

@@ -217,7 +217,7 @@
                                 data-phone="{{ u.phone|lower }}"
                                 data-personal="{{ u.personal_count }}"
                                 data-business="{{ u.business_count }}">
-                                <td>
+                                <td data-label="User">
                                     <div class="ad-user-cell">
                                         <span class="ad-user-avatar">{{ u.name|slice:':1'|upper }}</span>
                                         <div>
@@ -226,13 +226,13 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Contact">
                                     <div class="ad-cell-stack">
                                         <span>{{ u.email|default:'—' }}</span>
                                         <span class="mc-caption mc-mono">{{ u.phone|default:'—' }}</span>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Cards">
                                     {% if u.cards %}
                                         <div class="ad-card-list">
                                             {% for c in u.cards %}
@@ -254,7 +254,7 @@
                                         <span class="mc-text-dim">no cards</span>
                                     {% endif %}
                                 </td>
-                                <td>
+                                <td data-label="Type mix">
                                     <div class="ad-type-mix">
                                         {% if u.personal_count %}
                                             <span class="mc-badge mc-badge--info" title="Personal">
@@ -271,7 +271,7 @@
                                         {% endif %}
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="Allowance">
                                     <form action="{% url 'admin_set_card_limit' u.id %}" method="post" class="ad-limit-form">
                                         {% csrf_token %}
                                         {{ u.card_limit_form.card_limit }}
@@ -280,16 +280,16 @@
                                         </button>
                                     </form>
                                 </td>
-                                <td>
+                                <td data-label="Joined">
                                     <span class="mc-mono mc-caption">{{ u.registered|date:"M d, Y" }}</span>
                                 </td>
-                                <td>
+                                <td data-label="Status">
                                     <span class="mc-badge {% if u.is_active %}mc-badge--success{% else %}mc-badge--error{% endif %}">
                                         <span class="mc-badge__dot"></span>
                                         {{ u.status_label }}
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="Actions">
                                     <div class="ad-actions">
                                         {% if u.primary_card_slug %}
                                             <a href="{% url 'admin_edit_card' u.primary_card_slug %}" class="ad-mini-btn" title="Edit card">
@@ -570,6 +570,48 @@ html { scroll-behavior: smooth; }
 .ad-filter:focus { border-color: var(--admin-accent); box-shadow: 0 0 0 3px var(--admin-accent-halo); }
 
 .ad-table-wrap { overflow-x: auto; }
+
+/* Below 900px: collapse the users table into stacked cards.
+   Each td becomes a row inside a card, prefixed with its data-label. */
+@media (max-width: 900px) {
+    .ad-table-wrap { overflow-x: visible; }
+    .ad-table, .ad-table thead, .ad-table tbody, .ad-table tr, .ad-table td { display: block; width: 100%; }
+    .ad-table thead { position: absolute; left: -9999px; }
+    .ad-table tbody tr.ad-row {
+        display: grid;
+        gap: var(--mc-s-2);
+        padding: var(--mc-s-4);
+        margin-bottom: var(--mc-s-3);
+        background: var(--mc-bg-2);
+        border: 1px solid var(--mc-border);
+        border-radius: var(--mc-r-lg);
+    }
+    .ad-table tbody td {
+        padding: 0;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--mc-s-3);
+        min-height: 32px;
+    }
+    .ad-table tbody td::before {
+        content: attr(data-label);
+        font-family: var(--mc-font-mono);
+        font-size: var(--mc-fs-caption);
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mc-text-md);
+        flex-shrink: 0;
+    }
+    .ad-table tbody td > * { text-align: right; }
+    .ad-table tbody td:first-child::before { display: none; }
+    .ad-table tbody td:first-child > * { text-align: left; }
+    .ad-table tbody td:first-child { padding-bottom: var(--mc-s-2); border-bottom: 1px solid var(--mc-border); }
+    .ad-card-list, .ad-actions { align-items: flex-end; flex-direction: column; }
+}
+
 .ad-table {
     width: 100%;
     border-collapse: separate;

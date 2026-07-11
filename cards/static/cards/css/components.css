@@ -366,6 +366,99 @@
   box-shadow: 0 0 20px rgba(183, 139, 255, 0.35);
 }
 
+/* --------------------------------------------------------------------------
+   Country picker (phone + WhatsApp dropdowns) — used in register.html and
+   create_card.html. Kept global so both pages inherit the mobile cap.
+   -------------------------------------------------------------------------- */
+.mc-phone-picker { display: flex; gap: var(--mc-s-2); align-items: stretch; }
+.mc-country-selector { position: relative; }
+.mc-country-selector input[type="hidden"] { display: none; }
+.mc-country-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--mc-s-2);
+  padding: 0.85rem 1rem;
+  border-radius: var(--mc-r-md);
+  background: var(--mc-bg-2);
+  border: 1px solid var(--mc-border-hi);
+  color: var(--mc-text-hi);
+  font-weight: 600;
+  font-size: var(--mc-fs-body-sm);
+  min-width: 128px;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.mc-country-trigger:hover,
+.mc-country-trigger:focus {
+  outline: none;
+  border-color: var(--mc-accent);
+  box-shadow: 0 0 0 4px var(--mc-accent-halo);
+}
+.mc-country-flag { font-size: 1.2rem; line-height: 1; }
+.mc-country-dial { font-family: var(--mc-font-mono); font-variant-numeric: tabular-nums; }
+.mc-country-trigger i { width: 1rem; height: 1rem; color: var(--mc-text-md); }
+.mc-country-dropdown {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.5rem);
+  left: 0;
+  width: 280px;
+  max-width: calc(100vw - 2rem);
+  background: var(--mc-bg-2);
+  border: 1px solid var(--mc-border-hi);
+  border-radius: var(--mc-r-md);
+  box-shadow: var(--mc-shadow-3);
+  overflow: hidden;
+}
+.mc-country-dropdown.hidden { display: none; }
+.mc-country-search { padding: var(--mc-s-3); border-bottom: 1px solid var(--mc-border); }
+.mc-country-search input {
+  width: 100%;
+  background: var(--mc-bg-3);
+  border: 1px solid var(--mc-border-hi);
+  border-radius: var(--mc-r-sm);
+  color: var(--mc-text-hi);
+  padding: 0.5rem 0.75rem;
+  font-size: var(--mc-fs-body-sm);
+  outline: none;
+  transition: border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.mc-country-search input:focus { border-color: var(--mc-accent); box-shadow: 0 0 0 3px var(--mc-accent-halo); }
+[data-country-list] {
+  list-style: none;
+  padding: 0.4rem 0;
+  margin: 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+[data-country-item] {
+  display: flex;
+  align-items: center;
+  gap: var(--mc-s-3);
+  padding: 0.55rem 0.9rem;
+  font-size: var(--mc-fs-body-sm);
+  cursor: pointer;
+  color: var(--mc-text-hi);
+  transition: background var(--mc-dur-fast) var(--mc-ease);
+}
+[data-country-item]:hover,
+[data-country-item].active { background: var(--mc-accent-halo); color: var(--mc-accent); }
+[data-country-item] .flag { font-size: 1.15rem; }
+[data-country-item] .label { display: flex; flex-direction: column; line-height: 1.15; }
+[data-country-item] .label small { color: var(--mc-text-md); font-family: var(--mc-font-mono); }
+.mc-country-empty {
+  padding: 0.9rem;
+  font-size: var(--mc-fs-body-sm);
+  color: var(--mc-text-lo);
+  text-align: center;
+}
+.mc-country-empty.hidden { display: none; }
+@media (max-width: 480px) {
+  .mc-country-dropdown { width: calc(100vw - 2rem); left: 0; }
+  .mc-country-trigger { min-width: 96px; padding: 0.75rem 0.75rem; }
+}
+
 .mc-nav__links {
   display: flex;
   align-items: center;

@@ -13,6 +13,13 @@
     <link rel="mask-icon" href="{% static 'cards/img/favicon.svg' %}?v=1" color="#7CFFB2">
     <link rel="apple-touch-icon" href="{% static 'cards/Favicon.png' %}?v=3">
 
+    {# PWA: makes MY-Card installable as an app on Android / iOS home screens #}
+    <link rel="manifest" href="{% static 'cards/manifest.webmanifest' %}?v=1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="MY-Card">
+
     {# Fonts: Inter (body) + Space Grotesk (display) + JetBrains Mono (mono) #}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

@@ -629,8 +629,16 @@
     .pc-page-wrap { width: calc(var(--pc-card-w) * 1.6); }
 }
 @media screen and (max-width: 640px) {
-    .pc-card-holder { zoom: 1.2; }
-    .pc-page-wrap { width: calc(var(--pc-card-w) * 1.2); }
+    /* Card actual width (85.6mm ≈ 324px) already fits a 375px phone.
+       Drop zoom to 1x so we never blow past the viewport edge. */
+    .pc-card-holder { zoom: 1; }
+    .pc-page-wrap { width: var(--pc-card-w); }
+    .pc-stage { gap: var(--mc-s-4); padding: 0 var(--mc-s-3); }
+}
+@media screen and (max-width: 380px) {
+    /* Sub-380px phones — scale down slightly so 85.6mm fits with padding */
+    .pc-card-holder { zoom: 0.92; }
+    .pc-page-wrap { width: calc(var(--pc-card-w) * 0.92); }
 }
 
 /* Print rules — one card per page, actual mm size, no chrome */
