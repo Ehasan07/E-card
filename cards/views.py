@@ -265,6 +265,12 @@ def register(request):
                         profile.card_limit = DEFAULT_CARD_LIMIT
                     profile.save()
 
+                # Fire-and-forget welcome email — never block registration on it
+                try:
+                    _send_welcome_email(user)
+                except Exception as exc:
+                    logger.warning("Welcome email dispatch failed: %s", exc)
+
                 login(request, user)
                 messages.success(request, 'Welcome aboard! Your studio is ready for its first card.')
                 return redirect('dashboard')
@@ -1247,6 +1253,100 @@ def _make_otp() -> str:
     return f'{random.randint(0, 999999):06d}'
 
 
+def _send_zepto_html(*, to_email: str, to_name: str, subject: str, html_body: str) -> tuple[bool, str]:
+    """Generic ZeptoMail HTML sender used by welcome / receipts / OTP."""
+    import urllib.request
+    import urllib.error
+
+    if not settings.ZEPTOMAIL_TOKEN:
+        return False, 'Email service not configured on this server.'
+
+    payload = json.dumps({
+        'from': {'address': settings.ZEPTOMAIL_FROM_ADDRESS, 'name': settings.ZEPTOMAIL_FROM_NAME},
+        'to': [{'email_address': {'address': to_email, 'name': to_name or ''}}],
+        'subject': subject,
+        'htmlbody': html_body,
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        settings.ZEPTOMAIL_URL,
+        data=payload,
+        headers={
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'authorization': settings.ZEPTOMAIL_TOKEN,
+        },
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            resp.read()
+            return True, 'sent'
+    except urllib.error.HTTPError as e:
+        try:
+            err_body = e.read().decode('utf-8', errors='replace')
+        except Exception:
+            err_body = str(e)
+        logger.warning("ZeptoMail HTTPError %s: %s", e.code, err_body[:200])
+        return False, f'Email service returned {e.code}'
+    except Exception as exc:
+        logger.warning("ZeptoMail send failed: %s", exc)
+        return False, 'Email service unavailable'
+
+
+def _send_welcome_email(user):
+    """Fire off a welcome email when a user completes registration."""
+    email = (user.email or '').strip()
+    if not email:
+        return
+    name = user.get_full_name() or user.username
+
+    html_body = f"""
+    <div style="font-family: 'Bai Jamjuree', 'Inter', system-ui, sans-serif; background:#05060B; padding:32px; color:#F2F4F8;">
+      <div style="max-width:520px; margin:0 auto; background:#0B0D14; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:32px 28px;">
+        <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#7CFFB2,#38E1FF);"></div>
+          <span style="font-weight:700; color:#F2F4F8; font-size:1.1rem;">MY-Card</span>
+        </div>
+        <h1 style="font-size:1.4rem; margin:0 0 12px; color:#F2F4F8;">Welcome, {name}! 🎉</h1>
+        <p style="color:#A6ADBB; line-height:1.6; margin:0 0 20px;">
+          Your MY-Card account is live. You can now build a stunning digital business card,
+          share it via QR, print a physical version, and track who's engaging in real time.
+        </p>
+        <div style="text-align:center; margin: 24px 0;">
+          <a href="https://mycard.dupno.com/dashboard/" style="display:inline-block; padding:12px 28px; background:linear-gradient(135deg,#7CFFB2,#38E1FF); color:#05060B; text-decoration:none; border-radius:99px; font-weight:700;">
+            Build your first card →
+          </a>
+        </div>
+        <div style="background:#12141C; border-radius:12px; padding:16px; margin: 20px 0;">
+          <p style="margin:0 0 8px; color:#F2F4F8; font-weight:600;">What you can do next:</p>
+          <ul style="margin:0; padding-left:20px; color:#A6ADBB; line-height:1.7;">
+            <li>Pick a curated theme (14 designs, 10 premium)</li>
+            <li>Add your socials, contact, and bio</li>
+            <li>Share via QR, WhatsApp, or a printed physical card</li>
+            <li>Track views, clicks, and lead form submissions</li>
+          </ul>
+        </div>
+        <hr style="border:none; border-top:1px solid rgba(255,255,255,0.06); margin:24px 0;">
+        <p style="color:#6B7280; font-size:0.75rem; margin:0;">
+          Sent by MY-Card · Digital identity, done right.<br>
+          Questions? Just reply to this email — a real person reads it.
+        </p>
+      </div>
+    </div>
+    """
+
+    try:
+        _send_zepto_html(
+            to_email=email,
+            to_name=name,
+            subject='Welcome to MY-Card 🎉',
+            html_body=html_body,
+        )
+    except Exception as exc:
+        logger.warning("Welcome email failed for %s: %s", email, exc)
+
+
 def forgot_password(request):
     if request.method == 'POST':
         form = ForgotPasswordForm(request.POST)
@@ -1275,11 +1375,26 @@ def forgot_password(request):
 
             user = User.objects.filter(query).distinct().first()
 
+            # Rate limit: max PW_RESET_MAX_PER_DAY resets per user per rolling day
             if user and user.email:
-                _start_password_reset_otp(request, user)
-                return redirect('verify_otp')
+                profile = getattr(user, 'profile', None)
+                today = timezone.now().date()
+                if profile and profile.password_reset_day == today and \
+                        profile.password_reset_count >= settings.PW_RESET_MAX_PER_DAY:
+                    form.add_error(None,
+                        f"You've already requested a password reset {settings.PW_RESET_MAX_PER_DAY} times today. "
+                        "Please try again tomorrow, or contact support if you're locked out.")
+                else:
+                    if profile:
+                        if profile.password_reset_day != today:
+                            profile.password_reset_day = today
+                            profile.password_reset_count = 0
+                        profile.password_reset_count += 1
+                        profile.save(update_fields=['password_reset_day', 'password_reset_count'])
+                    _start_password_reset_otp(request, user)
+                    return redirect('verify_otp')
 
-            if user and not user.email:
+            elif user and not user.email:
                 form.add_error(None, "This account has no email on file. Please contact support to reset your password.")
             else:
                 form.add_error(None, "If this email or phone number exists in our system, we've sent a code.")
@@ -1415,7 +1530,12 @@ def reset_password(request):
     else:
         form = SetPasswordForm(user)
 
-    return render(request, 'cards/reset_password.html', {'form': form})
+    return render(request, 'cards/reset_password.html', {
+        'form': form,
+        # Passed to the template so a hidden username field can hint the
+        # browser's credential manager to remember it against the right account
+        'reset_username': user.username,
+    })
 
 
 # ============================================================================

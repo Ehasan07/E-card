@@ -999,3 +999,30 @@ msgid ""
 "Share your details and a quick note. %(name)s will get an email right away."
 msgstr ""
 "আপনার তথ্য ও একটা ছোট বার্তা শেয়ার করুন। %(name)s সাথে সাথেই ইমেইল পাবেন।"
+
+# ============ Landing page — new features ============
+msgid "Print physical card"
+msgstr "প্রিন্টেবল কার্ড"
+
+msgid ""
+"One click prints a real business-card-size PDF — front and back, with your "
+"QR."
+msgstr "এক ক্লিকে আসল বিজনেস কার্ড সাইজের PDF — সামনে-পিছনে, আপনার QR সহ।"
+
+msgid "Front + back"
+msgstr "সামনে + পিছনে"
+
+msgid "14 curated themes"
+msgstr "১৪টি কিউরেটেড থিম"
+
+msgid "Aurora Dark, Cyber Neon, Molten Gold, Deep Ocean and 10 more."
+msgstr "Aurora Dark, Cyber Neon, Molten Gold, Deep Ocean আরো ১০টি।"
+
+msgid "Email OTP security"
+msgstr "ইমেইল OTP নিরাপত্তা"
+
+msgid ""
+"6-digit code by email, auto sign-in after reset. Google-style credential "
+"save."
+msgstr ""
+"ইমেইলে ৬-সংখ্যার কোড, রিসেটের পর অটো লগইন। গুগল-স্টাইলে পাসওয়ার্ড সেভ।"

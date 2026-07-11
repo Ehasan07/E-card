@@ -178,7 +178,7 @@ FEATURE_WALLET   = bool(APPLE_WALLET_CERT_PATH or GOOGLE_WALLET_SA_JSON)
 # ZeptoMail — transactional email for OTP password reset
 ZEPTOMAIL_URL          = config('ZEPTOMAIL_URL',          default='https://api.zeptomail.com/v1.1/email')
 ZEPTOMAIL_TOKEN        = config('ZEPTOMAIL_TOKEN',        default='')
-ZEPTOMAIL_FROM_ADDRESS = config('ZEPTOMAIL_FROM_ADDRESS', default='noreply@dupno.com')
+ZEPTOMAIL_FROM_ADDRESS = config('ZEPTOMAIL_FROM_ADDRESS', default='mycard@dupno.com')
 ZEPTOMAIL_FROM_NAME    = config('ZEPTOMAIL_FROM_NAME',    default='MY-Card')
 
 FEATURE_EMAIL_OTP = bool(ZEPTOMAIL_TOKEN)
@@ -187,3 +187,4 @@ FEATURE_EMAIL_OTP = bool(ZEPTOMAIL_TOKEN)
 PW_RESET_OTP_TTL_SECONDS = 600         # 10 minutes
 PW_RESET_OTP_MAX_ATTEMPTS = 5
 PW_RESET_OTP_RESEND_COOLDOWN = 45      # seconds between resends
+PW_RESET_MAX_PER_DAY = 2               # per user (email/phone), rolling 24h day

@@ -18,6 +18,9 @@ class Profile(models.Model):
     otp_expires_at = models.DateTimeField(blank=True, null=True)
     otp_requested_at = models.DateTimeField(blank=True, null=True)
     otp_attempts = models.PositiveSmallIntegerField(default=0)
+    # Daily rate-limit for password reset requests
+    password_reset_count = models.PositiveSmallIntegerField(default=0)
+    password_reset_day = models.DateField(blank=True, null=True)
     card_limit = models.PositiveIntegerField(default=DEFAULT_CARD_LIMIT)
 
     def __str__(self):

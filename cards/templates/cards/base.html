@@ -7,8 +7,11 @@
     <meta name="theme-color" content="#05060B">
     <title>{% block title %}MY-Card — Digital Business Card{% endblock %}</title>
 
-    <link rel="icon" href="{% static 'cards/Favicon.png' %}?v=3" type="image/png">
-    <link rel="shortcut icon" href="{% static 'cards/Favicon.png' %}?v=3" type="image/png">
+    {# New MY-Card SVG favicon — sharp at every size, falls back to Favicon.png for very old browsers #}
+    <link rel="icon" type="image/svg+xml" href="{% static 'cards/img/favicon.svg' %}?v=1">
+    <link rel="icon" type="image/png" href="{% static 'cards/Favicon.png' %}?v=3" sizes="any">
+    <link rel="mask-icon" href="{% static 'cards/img/favicon.svg' %}?v=1" color="#7CFFB2">
+    <link rel="apple-touch-icon" href="{% static 'cards/Favicon.png' %}?v=3">
 
     {# Fonts: Inter (body) + Space Grotesk (display) + JetBrains Mono (mono) #}
     <link rel="preconnect" href="https://fonts.googleapis.com">

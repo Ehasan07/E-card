@@ -120,8 +120,8 @@
         </header>
 
         <div class="mc-bento">
-            <div class="mc-card mc-card--glow mc-bento__cell--hero lp-feat">
-                <div class="lp-feat__icon"><i data-lucide="scan-line"></i></div>
+            <div class="mc-card mc-card--glow mc-bento__cell--hero lp-feat lp-feat--hero">
+                <div class="lp-feat__icon lp-feat__icon--pulse"><i data-lucide="scan-line"></i></div>
                 <h3>{% trans "Instant sharing anywhere" %}</h3>
                 <p class="mc-text-muted">{% trans "QR, direct link, WhatsApp deep-link, Apple & Google Wallet passes. Recipients never need an app." %}</p>
                 <div class="lp-feat__badges">
@@ -133,31 +133,47 @@
             </div>
 
             <div class="mc-card mc-bento__cell--wide lp-feat">
-                <div class="lp-feat__icon"><i data-lucide="line-chart"></i></div>
+                <div class="lp-feat__icon lp-feat__icon--tilt"><i data-lucide="printer"></i></div>
+                <h3>{% trans "Print physical card" %}</h3>
+                <p class="mc-text-muted">{% trans "One click prints a real business-card-size PDF — front and back, with your QR." %}</p>
+                <div class="lp-feat__badges">
+                    <span class="mc-badge">85.6 × 54 mm</span>
+                    <span class="mc-badge">Front + back</span>
+                </div>
+            </div>
+
+            <div class="mc-card mc-bento__cell--wide lp-feat">
+                <div class="lp-feat__icon lp-feat__icon--tilt"><i data-lucide="line-chart"></i></div>
                 <h3>{% trans "Live analytics" %}</h3>
                 <p class="mc-text-muted">{% trans "See who's viewing, from where, and what they tap." %}</p>
             </div>
 
-            <div class="mc-card mc-bento__cell--wide lp-feat">
-                <div class="lp-feat__icon"><i data-lucide="user-check"></i></div>
+            <div class="mc-card mc-bento__cell lp-feat">
+                <div class="lp-feat__icon lp-feat__icon--tilt"><i data-lucide="user-check"></i></div>
                 <h3>{% trans "Lead capture" %}</h3>
                 <p class="mc-text-muted">{% trans "Built-in contact form — every view can become a lead." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell lp-feat">
-                <div class="lp-feat__icon"><i data-lucide="palette"></i></div>
-                <h3>{% trans "Themes for every vibe" %}</h3>
-                <p class="mc-text-muted">{% trans "5+ curated designs. Aurora Dark, Cyber Neon, Executive Slate." %}</p>
+                <div class="lp-feat__icon lp-feat__icon--spin"><i data-lucide="palette"></i></div>
+                <h3>{% trans "14 curated themes" %}</h3>
+                <p class="mc-text-muted">{% trans "Aurora Dark, Cyber Neon, Molten Gold, Deep Ocean and 10 more." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell lp-feat">
-                <div class="lp-feat__icon"><i data-lucide="languages"></i></div>
+                <div class="lp-feat__icon lp-feat__icon--tilt"><i data-lucide="mail-check"></i></div>
+                <h3>{% trans "Email OTP security" %}</h3>
+                <p class="mc-text-muted">{% trans "6-digit code by email, auto sign-in after reset. Google-style credential save." %}</p>
+            </div>
+
+            <div class="mc-card mc-bento__cell lp-feat">
+                <div class="lp-feat__icon lp-feat__icon--tilt"><i data-lucide="languages"></i></div>
                 <h3>{% trans "Bangla & English" %}</h3>
                 <p class="mc-text-muted">{% trans "Local-first UI. Works globally." %}</p>
             </div>
 
             <div class="mc-card mc-bento__cell lp-feat">
-                <div class="lp-feat__icon"><i data-lucide="sparkles"></i></div>
+                <div class="lp-feat__icon lp-feat__icon--pulse"><i data-lucide="sparkles"></i></div>
                 <h3>{% trans "AI-powered bio" %}</h3>
                 <p class="mc-text-muted">{% trans "One tap to generate a bio that actually sounds like you." %}</p>
             </div>
@@ -592,6 +608,29 @@
     margin-bottom: var(--mc-s-2);
 }
 .lp-feat__icon i, .lp-feat__icon svg { width: 1.3rem; height: 1.3rem; }
+.lp-feat__icon--pulse { animation: lp-pulse 2.4s ease-in-out infinite; }
+.lp-feat__icon--spin  i { animation: lp-spin 6s linear infinite; }
+.lp-feat__icon--tilt { transition: transform var(--mc-dur-med) var(--mc-ease); }
+.lp-feat:hover .lp-feat__icon--tilt { transform: rotate(-8deg) scale(1.1); }
+.lp-feat:hover .lp-feat__icon { box-shadow: 0 0 0 4px var(--mc-accent-halo); }
+.lp-feat__icon { transition: box-shadow var(--mc-dur-med) var(--mc-ease), transform var(--mc-dur-med) var(--mc-ease); }
+@keyframes lp-pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--mc-accent-halo); }
+    50%      { transform: scale(1.08); box-shadow: 0 0 0 8px transparent; }
+}
+@keyframes lp-spin {
+    to { transform: rotate(360deg); }
+}
+.lp-feat--hero { position: relative; overflow: hidden; }
+.lp-feat--hero::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(from 0deg, var(--mc-accent-halo), transparent 40%, transparent 60%, var(--mc-accent-halo));
+    animation: lp-spin 12s linear infinite;
+    z-index: -1;
+    opacity: 0.55;
+}
 .lp-feat h3 { font-size: 1.2rem; margin: 0; }
 .lp-feat p { color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); margin: 0; }
 .lp-feat__badges { display: flex; gap: var(--mc-s-2); flex-wrap: wrap; margin-top: auto; padding-top: var(--mc-s-3); }

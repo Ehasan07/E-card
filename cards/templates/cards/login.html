@@ -53,7 +53,7 @@
                 <p class="mc-auth__subtitle">{% trans "Enter your details to access your dashboard." %}</p>
             </header>
 
-            <form method="post" class="mc-auth__form" id="login-form">
+            <form method="post" class="mc-auth__form" id="login-form" autocomplete="on">
                 {% csrf_token %}
                 {% if form.non_field_errors %}
                     <div class="mc-auth__errors">
@@ -62,6 +62,8 @@
                 {% endif %}
 
                 {% for field in form.visible_fields %}
+                    {# Add proper autocomplete tokens so password managers offer the right credential #}
+                    {% if field.name == 'username' %}{% with _=field.field.widget.attrs.update|default:'' %}{% endwith %}{% endif %}
                     <label class="mc-label">
                         <span>
                             {% if field.name == 'username' %}<i data-lucide="user"></i>{% else %}<i data-lucide="lock"></i>{% endif %}
@@ -69,6 +71,7 @@
                         </span>
                         {% if field.field.widget.input_type == 'password' %}
                             <div class="mc-password-wrap">
+                                {# Django default widget lacks autocomplete; add it via JS below just in case #}
                                 {{ field }}
                                 <button type="button" class="mc-password-toggle" data-password-toggle data-visible="false" aria-label="Toggle password visibility">
                                     <i data-lucide="eye"     data-mc-eye="on"></i>
@@ -101,6 +104,15 @@
 
 <script>
     (function() {
+        // Make sure the form fields carry the right autocomplete hints even
+        // though Django's default widgets don't set them
+        var lf = document.getElementById('login-form');
+        if (lf) {
+            var un = lf.querySelector('input[name="username"]');
+            if (un) { un.setAttribute('autocomplete', 'username'); un.setAttribute('name', un.name); }
+            var pw = lf.querySelector('input[type="password"]');
+            if (pw) { pw.setAttribute('autocomplete', 'current-password'); }
+        }
         document.querySelectorAll('[data-password-toggle]').forEach(function(t) {
             var wrap = t.closest('.mc-password-wrap');
             if (!wrap) return;
