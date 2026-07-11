@@ -1163,6 +1163,90 @@ def documentation_view(request):
         html_content = "<h1>README.md not found</h1>"
     return render(request, 'cards/documentation.html', {'html_content': html_content})
 
+def _mask_email(email: str) -> str:
+    """Mask an email like Google does: 'sh•••••••3@gmail.com'."""
+    if not email or '@' not in email:
+        return ''
+    local, domain = email.rsplit('@', 1)
+    if len(local) <= 3:
+        masked_local = local[0] + '•' * max(len(local) - 1, 1)
+    else:
+        masked_local = local[:2] + '•' * (len(local) - 3) + local[-1]
+    return f'{masked_local}@{domain}'
+
+
+def _send_otp_email(*, to_email: str, to_name: str, otp: str) -> tuple[bool, str]:
+    """Fire off an OTP email via ZeptoMail. Returns (ok, message)."""
+    import urllib.request
+    import urllib.error
+
+    if not settings.ZEPTOMAIL_TOKEN:
+        return False, 'Email OTP not configured on this server.'
+
+    html_body = f"""
+    <div style="font-family: 'Bai Jamjuree', 'Inter', system-ui, sans-serif; background:#05060B; padding:32px; color:#F2F4F8;">
+      <div style="max-width:520px; margin:0 auto; background:#0B0D14; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:32px 28px;">
+        <div style="display:inline-flex; align-items:center; gap:8px; margin-bottom:16px;">
+          <div style="width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#7CFFB2,#38E1FF);"></div>
+          <span style="font-family:'Bai Jamjuree', sans-serif; font-weight:700; color:#F2F4F8; font-size:1.1rem;">MY-Card</span>
+        </div>
+        <h1 style="font-family:'Bai Jamjuree', sans-serif; font-size:1.4rem; margin:0 0 12px; color:#F2F4F8;">Password reset code</h1>
+        <p style="color:#A6ADBB; line-height:1.55; margin:0 0 24px;">
+          Hi {to_name or 'there'}, use the code below to reset your MY-Card password. It expires in 10 minutes.
+        </p>
+        <div style="text-align:center; padding:20px; background:#12141C; border:1px solid rgba(124,255,178,0.35); border-radius:14px; margin-bottom:24px;">
+          <div style="font-family:'JetBrains Mono', monospace; font-size:2.6rem; font-weight:700; letter-spacing:0.4em; color:#7CFFB2;">{otp}</div>
+        </div>
+        <p style="color:#6B7280; font-size:0.85rem; line-height:1.5; margin:0;">
+          Didn't request this? You can safely ignore this email — nothing will change until the code is used.
+        </p>
+        <hr style="border:none; border-top:1px solid rgba(255,255,255,0.06); margin:24px 0;">
+        <p style="color:#6B7280; font-size:0.75rem; margin:0;">
+          Sent by MY-Card · Digital identity, done right.
+        </p>
+      </div>
+    </div>
+    """
+
+    payload = json.dumps({
+        'from': {'address': settings.ZEPTOMAIL_FROM_ADDRESS, 'name': settings.ZEPTOMAIL_FROM_NAME},
+        'to': [{'email_address': {'address': to_email, 'name': to_name or ''}}],
+        'subject': f'{otp} is your MY-Card password reset code',
+        'htmlbody': html_body,
+    }).encode('utf-8')
+
+    req = urllib.request.Request(
+        settings.ZEPTOMAIL_URL,
+        data=payload,
+        headers={
+            'accept': 'application/json',
+            'content-type': 'application/json',
+            'authorization': settings.ZEPTOMAIL_TOKEN,
+        },
+        method='POST',
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            body = resp.read().decode('utf-8', errors='replace')
+            logger.info("ZeptoMail response: %s", body[:200])
+            return True, 'sent'
+    except urllib.error.HTTPError as e:
+        try:
+            err_body = e.read().decode('utf-8', errors='replace')
+        except Exception:
+            err_body = str(e)
+        logger.warning("ZeptoMail HTTPError: %s - %s", e.code, err_body[:200])
+        return False, f'Email service returned {e.code}'
+    except Exception as exc:
+        logger.warning("ZeptoMail send failed: %s", exc)
+        return False, 'Email service unavailable'
+
+
+def _make_otp() -> str:
+    """6-digit numeric OTP."""
+    return f'{random.randint(0, 999999):06d}'
+
+
 def forgot_password(request):
     if request.method == 'POST':
         form = ForgotPasswordForm(request.POST)
@@ -1191,21 +1275,124 @@ def forgot_password(request):
 
             user = User.objects.filter(query).distinct().first()
 
-            if user:
-                if request.user.is_authenticated:
-                    logout(request)
-                request.session['password_reset_user_id'] = user.id
-                return redirect('reset_password')
+            if user and user.email:
+                _start_password_reset_otp(request, user)
+                return redirect('verify_otp')
+
+            if user and not user.email:
+                form.add_error(None, "This account has no email on file. Please contact support to reset your password.")
             else:
-                form.add_error(None, "If this email or phone number exists in our system, you will be able to reset your password.")
+                form.add_error(None, "If this email or phone number exists in our system, we've sent a code.")
     else:
         form = ForgotPasswordForm()
     return render(request, 'cards/forgot_password.html', {'form': form})
+
+
+def _start_password_reset_otp(request, user):
+    """Generate + persist an OTP for this user, then email it. Sets up the session."""
+    otp = _make_otp()
+    profile = getattr(user, 'profile', None)
+    if profile is None:
+        return
+    profile.otp = make_password(otp)
+    profile.otp_expires_at = timezone.now() + timedelta(seconds=settings.PW_RESET_OTP_TTL_SECONDS)
+    profile.otp_requested_at = timezone.now()
+    profile.otp_attempts = 0
+    profile.save(update_fields=['otp', 'otp_expires_at', 'otp_requested_at', 'otp_attempts'])
+
+    if request.user.is_authenticated:
+        logout(request)
+
+    request.session['password_reset_user_id'] = user.id
+    request.session['otp_pending'] = True
+    request.session['otp_verified'] = False
+
+    ok, _msg = _send_otp_email(to_email=user.email, to_name=user.get_full_name() or user.username, otp=otp)
+    if not ok:
+        # Still let the flow continue — user can see the code in server logs when debugging
+        logger.warning("Failed to send OTP email to %s (user %s)", user.email, user.username)
+
+
+def verify_otp(request):
+    user_id = request.session.get('password_reset_user_id')
+    if not user_id or not request.session.get('otp_pending'):
+        return redirect('forgot_password')
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        request.session.pop('password_reset_user_id', None)
+        return redirect('forgot_password')
+
+    profile = getattr(user, 'profile', None)
+    if profile is None or not profile.otp:
+        request.session.pop('otp_pending', None)
+        return redirect('forgot_password')
+
+    masked_email = _mask_email(user.email)
+    resend_available_in = 0
+    if profile.otp_requested_at:
+        elapsed = (timezone.now() - profile.otp_requested_at).total_seconds()
+        resend_available_in = max(0, int(settings.PW_RESET_OTP_RESEND_COOLDOWN - elapsed))
+
+    if request.method == 'POST':
+        # Resend flow
+        if request.POST.get('resend') == '1':
+            if resend_available_in > 0:
+                messages.info(request, f'Please wait {resend_available_in}s before requesting a new code.')
+            else:
+                _start_password_reset_otp(request, user)
+                messages.success(request, f'A new code has been sent to {masked_email}.')
+            return redirect('verify_otp')
+
+        # Verify flow
+        entered = (request.POST.get('otp') or '').strip()
+        entered = re.sub(r'\D', '', entered)[:6]
+
+        if not entered or len(entered) != 6:
+            messages.error(request, 'Enter the 6-digit code from your email.')
+            return redirect('verify_otp')
+
+        if profile.otp_expires_at and profile.otp_expires_at < timezone.now():
+            messages.error(request, 'This code has expired. Request a new one.')
+            profile.otp = ''
+            profile.save(update_fields=['otp'])
+            return redirect('verify_otp')
+
+        if profile.otp_attempts >= settings.PW_RESET_OTP_MAX_ATTEMPTS:
+            messages.error(request, 'Too many attempts. Request a new code.')
+            profile.otp = ''
+            profile.save(update_fields=['otp'])
+            return redirect('verify_otp')
+
+        if check_password(entered, profile.otp):
+            profile.otp = ''
+            profile.otp_expires_at = None
+            profile.otp_attempts = 0
+            profile.save(update_fields=['otp', 'otp_expires_at', 'otp_attempts'])
+            request.session['otp_verified'] = True
+            request.session.pop('otp_pending', None)
+            return redirect('reset_password')
+        else:
+            profile.otp_attempts += 1
+            profile.save(update_fields=['otp_attempts'])
+            remaining = max(0, settings.PW_RESET_OTP_MAX_ATTEMPTS - profile.otp_attempts)
+            messages.error(request, f'Incorrect code. {remaining} attempt(s) left.')
+            return redirect('verify_otp')
+
+    return render(request, 'cards/verify_otp.html', {
+        'masked_email': masked_email,
+        'resend_available_in': resend_available_in,
+    })
 
 def reset_password(request):
     user_id = request.session.get('password_reset_user_id')
     if not user_id:
         return redirect('forgot_password')
+
+    # If email OTP is configured, block reset until the code has been verified
+    if settings.FEATURE_EMAIL_OTP and not request.session.get('otp_verified'):
+        return redirect('verify_otp')
 
     try:
         user = User.objects.get(id=user_id)
@@ -1218,8 +1405,13 @@ def reset_password(request):
         if form.is_valid():
             form.save()
             request.session.pop('password_reset_user_id', None)
-            messages.success(request, 'Your password has been reset successfully. Please log in with your new password.')
-            return redirect('login')
+            request.session.pop('otp_verified', None)
+            request.session.pop('otp_pending', None)
+            # Auto-login and send them straight to their dashboard
+            user.backend = 'django.contrib.auth.backends.ModelBackend'
+            login(request, user)
+            messages.success(request, 'Your password has been reset. Welcome back!')
+            return redirect('dashboard')
     else:
         form = SetPasswordForm(user)
 

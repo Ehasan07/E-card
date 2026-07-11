@@ -173,3 +173,17 @@ GOOGLE_WALLET_SA_JSON  = config('GOOGLE_WALLET_SA_JSON',  default='')
 FEATURE_PAYMENTS = bool(STRIPE_SECRET_KEY or BKASH_APP_KEY)
 FEATURE_AI       = bool(AI_PROVIDER and AI_API_KEY)
 FEATURE_WALLET   = bool(APPLE_WALLET_CERT_PATH or GOOGLE_WALLET_SA_JSON)
+
+
+# ZeptoMail — transactional email for OTP password reset
+ZEPTOMAIL_URL          = config('ZEPTOMAIL_URL',          default='https://api.zeptomail.com/v1.1/email')
+ZEPTOMAIL_TOKEN        = config('ZEPTOMAIL_TOKEN',        default='')
+ZEPTOMAIL_FROM_ADDRESS = config('ZEPTOMAIL_FROM_ADDRESS', default='noreply@dupno.com')
+ZEPTOMAIL_FROM_NAME    = config('ZEPTOMAIL_FROM_NAME',    default='MY-Card')
+
+FEATURE_EMAIL_OTP = bool(ZEPTOMAIL_TOKEN)
+
+# Password reset OTP config
+PW_RESET_OTP_TTL_SECONDS = 600         # 10 minutes
+PW_RESET_OTP_MAX_ATTEMPTS = 5
+PW_RESET_OTP_RESEND_COOLDOWN = 45      # seconds between resends

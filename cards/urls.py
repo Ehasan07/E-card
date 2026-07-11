@@ -35,6 +35,7 @@ urlpatterns = [
     path('my-admin/messages/<int:request_id>/<str:action>/', views.admin_handle_upgrade, name='admin_handle_upgrade'),
     path('documentation/', views.documentation_view, name='documentation'),
     path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('verify-otp/', views.verify_otp, name='verify_otp'),
     path('reset-password/', views.reset_password, name='reset_password'),
     path('export/csv/', views.export_cards_csv, name='export_cards_csv'),
     path('export/excel/', views.export_cards_excel, name='export_cards_excel'),
