@@ -82,14 +82,6 @@
                     {% endif %}
                 </div>
 
-                {# Giant transparent brand watermark bleeding off the top-right corner,
-                   only when the user uploaded a real logo — makes premium cards feel
-                   printed-and-embossed instead of digitally stuck. #}
-                {% if card.logo %}
-                    <span class="pc-watermark" aria-hidden="true">
-                        <img src="{{ card.logo.url }}" alt="">
-                    </span>
-                {% endif %}
                 <footer class="pc-card__foot">
                     {% if card.card_data.website %}
                         <span class="pc-website">
@@ -467,60 +459,26 @@
     padding-right: 2mm;
 }
 .pc-website i, .pc-website svg { width: 2mm; height: 2mm; color: var(--pc-accent); }
-/* Giant translucent brand watermark bleeding off the front-card corner.
-   Sits behind everything (z-index 0) so text still reads on top. */
-.pc-watermark {
-    position: absolute;
-    top: -6mm;
-    right: -8mm;
-    width: 34mm;
-    height: 34mm;
-    z-index: 0;
-    pointer-events: none;
-    display: grid;
-    place-items: center;
-    transform: rotate(12deg);
-}
-.pc-watermark img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    opacity: 0.08;
-    mix-blend-mode: screen;
-    filter: brightness(1.4) contrast(0.9);
-}
-
-/* Company / brand logo — transparent, blended into the card so it
-   feels embossed rather than pasted on. `mix-blend-mode: screen` on
-   dark themes lets the card colour show through the logo's dark
-   pixels; the fallback opacity + brightness keeps it visible on
-   light themes too. */
 .pc-card__logo {
-    width: 9mm;
-    height: 9mm;
-    background: transparent;
+    width: 8mm;
+    height: 8mm;
+    background: rgba(255,255,255,0.10);
+    border-radius: 1mm;
     display: grid;
     place-items: center;
     overflow: hidden;
+    padding: 0.6mm;
     flex-shrink: 0;
 }
-.pc-card__logo img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    opacity: 0.85;
-    mix-blend-mode: screen;
-    filter: brightness(1.15) contrast(0.95);
-}
+.pc-card__logo img { max-width: 100%; max-height: 100%; object-fit: contain; filter: brightness(1.05); }
 .pc-card__logo-text {
     font-family: var(--mc-font-display);
     font-weight: 700;
     font-size: 3mm;
     color: var(--pc-accent);
-    background: transparent;
-    padding: 0;
-    letter-spacing: 0.02em;
-    opacity: 0.85;
+    background: rgba(0,0,0,0.25);
+    padding: 1mm 2mm;
+    border-radius: 1mm;
 }
 
 /* ===== BACK ===== */
