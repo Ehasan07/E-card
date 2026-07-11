@@ -1,5 +1,5 @@
 {% extends 'cards/base.html' %}
-{% load static %}
+{% load static i18n %}
 
 {% block title %}{{ card.card_data.firstName }} {{ card.card_data.lastName }} — MY-Card{% endblock %}
 {% block page_icon %}scan-line{% endblock %}
@@ -32,12 +32,12 @@
                 {% if is_admin_viewer %}
                     <a href="{% url 'admin_dashboard' %}" class="mc-btn mc-btn--ghost mc-btn--sm">
                         <i data-lucide="arrow-left"></i>
-                        Admin dashboard
+                        {% trans "Admin dashboard" %}
                     </a>
                 {% endif %}
             </div>
             <div class="vc-top__right">
-                <span class="vc-view-chip" title="Views">
+                <span class="vc-view-chip" title="{% trans 'Views' %}">
                     <i data-lucide="eye"></i>
                     <span class="mc-mono">{{ profile_views }}</span>
                 </span>
@@ -61,7 +61,7 @@
                 </div>
                 <span class="mc-badge mc-badge--accent vc-type-chip">
                     <i data-lucide="{% if card.card_type == 'business' %}briefcase{% else %}user{% endif %}"></i>
-                    {{ card.get_card_type_display }}
+                    {% if card.card_type == 'business' %}{% trans "Business" %}{% else %}{% trans "Personal" %}{% endif %}
                 </span>
             </div>
 
@@ -103,7 +103,7 @@
                 {% if phone_tel %}
                     <a href="tel:{{ phone_tel }}" class="vc-quick-btn" data-track-kind="click" data-track-target="phone">
                         <i data-lucide="phone-call"></i>
-                        <span>Call</span>
+                        <span>{% trans "Call" %}</span>
                     </a>
                 {% endif %}
                 {% if whatsapp_link %}
@@ -115,7 +115,7 @@
                 {% if card.card_data.email %}
                     <a href="mailto:{{ card.card_data.email }}" class="vc-quick-btn" data-track-kind="click" data-track-target="email">
                         <i data-lucide="mail"></i>
-                        <span>Email</span>
+                        <span>{% trans "Email" %}</span>
                     </a>
                 {% endif %}
             </section>
@@ -124,7 +124,7 @@
         {# ================ ABOUT / BIO ================ #}
         {% if card.card_data.notes %}
             <section class="vc-module vc-about mc-fade-up mc-fade-up--d2">
-                <span class="vc-module__label">About</span>
+                <span class="vc-module__label">{% trans "About" %}</span>
                 <p class="vc-about__body">{{ card.card_data.notes|linebreaksbr }}</p>
             </section>
         {% endif %}
@@ -132,16 +132,16 @@
         {# ================ CONTACT MODULE ================ #}
         {% if card.card_data.email or phone_display or card.card_data.website or card.card_data.birthday or business_highlight %}
         <section class="vc-module mc-fade-up mc-fade-up--d3">
-            <span class="vc-module__label">Contact</span>
+            <span class="vc-module__label">{% trans "Contact" %}</span>
             <div class="vc-contact-list">
                 {% if card.card_data.email %}
                     <a href="mailto:{{ card.card_data.email }}" class="vc-contact-row" data-track-kind="click" data-track-target="email">
                         <span class="vc-contact-row__icon"><i data-lucide="mail"></i></span>
                         <span class="vc-contact-row__body">
-                            <span class="vc-contact-row__label">Email</span>
+                            <span class="vc-contact-row__label">{% trans "Email" %}</span>
                             <span class="vc-contact-row__value">{{ card.card_data.email }}</span>
                         </span>
-                        <button class="mc-icon-btn vc-contact-row__copy" data-copy="{{ card.card_data.email }}" data-copy-label="Email copied!" onclick="event.preventDefault();event.stopPropagation();" aria-label="Copy email">
+                        <button class="mc-icon-btn vc-contact-row__copy" data-copy="{{ card.card_data.email }}" data-copy-label="{% trans 'Email copied!' %}" onclick="event.preventDefault();event.stopPropagation();" aria-label="{% trans 'Copy email' %}">
                             <i data-lucide="copy"></i>
                         </button>
                     </a>
@@ -150,10 +150,10 @@
                     <div class="vc-contact-row">
                         <span class="vc-contact-row__icon"><i data-lucide="phone"></i></span>
                         <span class="vc-contact-row__body">
-                            <span class="vc-contact-row__label">Phone</span>
+                            <span class="vc-contact-row__label">{% trans "Phone" %}</span>
                             <span class="vc-contact-row__value mc-mono">{{ phone_display }}</span>
                         </span>
-                        <a href="tel:{{ phone_tel }}" class="mc-icon-btn" aria-label="Call">
+                        <a href="tel:{{ phone_tel }}" class="mc-icon-btn" aria-label="{% trans 'Call' %}">
                             <i data-lucide="phone-call"></i>
                         </a>
                     </div>
@@ -162,7 +162,7 @@
                     <a href="{{ card.card_data.website }}" target="_blank" rel="noopener" class="vc-contact-row" data-track-kind="click" data-track-target="website">
                         <span class="vc-contact-row__icon"><i data-lucide="globe"></i></span>
                         <span class="vc-contact-row__body">
-                            <span class="vc-contact-row__label">Website</span>
+                            <span class="vc-contact-row__label">{% trans "Website" %}</span>
                             <span class="vc-contact-row__value">{{ card.card_data.website }}</span>
                         </span>
                         <span class="mc-icon-btn"><i data-lucide="external-link"></i></span>
@@ -172,7 +172,7 @@
                     <div class="vc-contact-row">
                         <span class="vc-contact-row__icon"><i data-lucide="cake"></i></span>
                         <span class="vc-contact-row__body">
-                            <span class="vc-contact-row__label">Birthday</span>
+                            <span class="vc-contact-row__label">{% trans "Birthday" %}</span>
                             <span class="vc-contact-row__value mc-mono">{{ card.card_data.birthday }}</span>
                         </span>
                     </div>
@@ -201,7 +201,7 @@
         {# ================ SOCIAL GRID ================ #}
         {% if card.card_data.facebook or whatsapp_link or card.card_data.instagram or card.card_data.twitter or card.card_data.linkedin or card.card_data.youtube or card.card_data.github or card.card_data.tiktok or card.card_data.snapchat or card.card_data.likee or card.card_data.messenger or card.card_data.discord or card.card_data.parrale or card.card_data.pinterest or card.card_data.telegram or card.card_data.wechat or card.card_data.upwork or card.card_data.fiverr or card.card_data.threads or card.card_data.behance or card.card_data.dribbble %}
         <section class="vc-module mc-fade-up mc-fade-up--d4">
-            <span class="vc-module__label">Socials</span>
+            <span class="vc-module__label">{% trans "Socials" %}</span>
             <div class="vc-socials">
                 {% if card.card_data.facebook %}<a href="{{ card.card_data.facebook }}" target="_blank" rel="noopener" class="vc-social" data-net="facebook" data-track-kind="click" data-track-target="facebook"><svg class="vc-social__logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg><span>Facebook</span></a>{% endif %}
                 {% if whatsapp_link %}<a href="{{ whatsapp_link }}" target="_blank" rel="noopener" class="vc-social" data-net="whatsapp" data-track-kind="click" data-track-target="whatsapp"><svg class="vc-social__logo" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/></svg><span>WhatsApp</span></a>{% endif %}
@@ -230,45 +230,45 @@
 
         {# ================ QR + SHARE ================ #}
         <section class="vc-module vc-share mc-fade-up mc-fade-up--d5">
-            <span class="vc-module__label">Share this card</span>
+            <span class="vc-module__label">{% trans "Share this card" %}</span>
             <div class="vc-share-grid">
                 {% if card.qr_code %}
                     <div class="vc-qr">
                         <div class="vc-qr__inner">
-                            <img src="{{ card.qr_code.url }}" alt="QR code" id="qrCodeImg">
+                            <img src="{{ card.qr_code.url }}" alt="{% trans 'QR code' %}" id="qrCodeImg">
                         </div>
-                        <p class="mc-caption">Scan or point a camera</p>
+                        <p class="mc-caption">{% trans "Scan or point a camera" %}</p>
                     </div>
                 {% endif %}
                 <div class="vc-share-actions">
                     <button id="copyLink" type="button" class="mc-btn mc-btn--ghost mc-btn--block">
                         <i data-lucide="link"></i>
-                        Copy card link
+                        {% trans "Copy card link" %}
                     </button>
                     {% if card.qr_code %}
                         <button id="downloadQrCode" type="button" class="mc-btn mc-btn--ghost mc-btn--block">
                             <i data-lucide="arrow-down-to-line"></i>
-                            Download QR
+                            {% trans "Download QR" %}
                         </button>
                     {% endif %}
                     <a href="https://wa.me/?text={{ request.build_absolute_uri|urlencode }}" target="_blank" rel="noopener" class="mc-btn mc-btn--ghost mc-btn--block">
                         <i data-lucide="message-circle"></i>
-                        Share via WhatsApp
+                        {% trans "Share via WhatsApp" %}
                     </a>
                     {% if is_owner %}
                         <a href="{% url 'edit_card' card.slug %}" class="mc-btn mc-btn--outline mc-btn--block">
                             <i data-lucide="square-pen"></i>
-                            Edit
+                            {% trans "Edit" %}
                         </a>
                         <a href="{% url 'card_analytics' card.slug %}" class="mc-btn mc-btn--outline mc-btn--block">
                             <i data-lucide="line-chart"></i>
-                            Analytics
+                            {% trans "Analytics" %}
                         </a>
                     {% endif %}
                     {% if show_guest_cta %}
                         <a href="{% url 'index' %}" class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse">
                             <i data-lucide="sparkles"></i>
-                            Create my own MY-Card
+                            {% trans "Create my own MY-Card" %}
                         </a>
                     {% endif %}
                 </div>
@@ -280,25 +280,25 @@
                 <span class="mc-nav__logo-mark"></span>
                 <span>MY-Card</span>
             </a>
-            <span class="mc-caption">Digital identity, done right.</span>
+            <span class="mc-caption">{% trans "Digital identity, done right." %}</span>
         </footer>
     </div>
 
     {# ============ Sticky action bar ============ #}
-    <div class="vc-action-bar" role="toolbar" aria-label="Quick actions">
+    <div class="vc-action-bar" role="toolbar" aria-label="{% trans 'Quick actions' %}">
         <a href="{% url 'download_vcard' card.slug %}" class="mc-btn mc-btn--primary vc-action-bar__primary" id="saveContactBtn" data-track-kind="save" data-track-target="vcard">
             <i data-lucide="user-plus"></i>
-            <span>Save Contact</span>
+            <span>{% trans "Save Contact" %}</span>
         </a>
         {% if not is_owner and not is_admin_viewer %}
             <button type="button" class="mc-btn mc-btn--ghost" id="openLeadBtn">
                 <i data-lucide="message-square-plus"></i>
-                <span>Message</span>
+                <span>{% trans "Message" %}</span>
             </button>
         {% endif %}
         <button id="shareBtn" type="button" class="mc-btn mc-btn--ghost">
             <i data-lucide="share-2"></i>
-            <span>Share</span>
+            <span>{% trans "Share" %}</span>
         </button>
     </div>
 
@@ -313,34 +313,34 @@
                 <header class="vc-lead-modal__head">
                     <span class="mc-badge mc-badge--accent">
                         <span class="mc-badge__dot"></span>
-                        {% if card.card_data.firstName %}Message {{ card.card_data.firstName }}{% else %}Send a message{% endif %}
+                        {% if card.card_data.firstName %}{% blocktrans with name=card.card_data.firstName %}Message {{ name }}{% endblocktrans %}{% else %}{% trans "Send a message" %}{% endif %}
                     </span>
-                    <h3>Get in touch</h3>
-                    <p class="mc-text-muted">Share your details and a quick note. {{ card.card_data.firstName|default:"The card owner" }} will get an email right away.</p>
+                    <h3>{% trans "Get in touch" %}</h3>
+                    <p class="mc-text-muted">{% blocktrans with name=card.card_data.firstName|default:_("The card owner") %}Share your details and a quick note. {{ name }} will get an email right away.{% endblocktrans %}</p>
                 </header>
                 <form method="post" action="{% url 'submit_lead' card.slug %}" class="vc-lead-form">
                     {% csrf_token %}
                     <label class="mc-label">
-                        <span><i data-lucide="user"></i> Your name</span>
-                        <input class="mc-input" type="text" name="name" required maxlength="150" placeholder="Full name">
+                        <span><i data-lucide="user"></i> {% trans "Your name" %}</span>
+                        <input class="mc-input" type="text" name="name" required maxlength="150" placeholder="{% trans 'Full name' %}">
                     </label>
                     <div class="vc-lead-form__row">
                         <label class="mc-label">
-                            <span><i data-lucide="mail"></i> Email</span>
+                            <span><i data-lucide="mail"></i> {% trans "Email" %}</span>
                             <input class="mc-input" type="email" name="email" placeholder="you@example.com">
                         </label>
                         <label class="mc-label">
-                            <span><i data-lucide="phone"></i> Phone</span>
+                            <span><i data-lucide="phone"></i> {% trans "Phone" %}</span>
                             <input class="mc-input" type="tel" name="phone" placeholder="+880 …">
                         </label>
                     </div>
                     <label class="mc-label">
-                        <span><i data-lucide="edit-3"></i> Message</span>
-                        <textarea class="mc-textarea" name="message" rows="3" maxlength="2000" placeholder="How can I help?"></textarea>
+                        <span><i data-lucide="edit-3"></i> {% trans "Message" %}</span>
+                        <textarea class="mc-textarea" name="message" rows="3" maxlength="2000" placeholder="{% trans 'How can I help?' %}"></textarea>
                     </label>
                     <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg mc-btn--block">
                         <i data-lucide="send"></i>
-                        Send message
+                        {% trans "Send message" %}
                     </button>
                 </form>
             </div>

@@ -919,3 +919,83 @@ msgstr "যোগাযোগ"
 
 msgid "Made with focus in Dhaka."
 msgstr "ঢাকায় মনোযোগ দিয়ে তৈরি।"
+
+msgid "Business"
+msgstr "বিজনেস"
+
+msgid "Call"
+msgstr "কল"
+
+msgid "About"
+msgstr "সম্পর্কে"
+
+msgid "Copy email"
+msgstr "ইমেইল কপি"
+
+msgid "Email copied!"
+msgstr "ইমেইল কপি হয়েছে!"
+
+msgid "Socials"
+msgstr "সোশ্যাল"
+
+msgid "Share this card"
+msgstr "এই কার্ড শেয়ার করুন"
+
+msgid "QR code"
+msgstr "QR কোড"
+
+msgid "Scan or point a camera"
+msgstr "স্ক্যান করুন বা ক্যামেরা তাক করুন"
+
+msgid "Copy card link"
+msgstr "কার্ড লিঙ্ক কপি"
+
+msgid "Download QR"
+msgstr "QR ডাউনলোড"
+
+msgid "Share via WhatsApp"
+msgstr "হোয়াটসঅ্যাপে শেয়ার"
+
+msgid "Create my own MY-Card"
+msgstr "নিজের MY-Card তৈরি করি"
+
+msgid "Digital identity, done right."
+msgstr "ডিজিটাল পরিচয়, ঠিকমতো।"
+
+msgid "Quick actions"
+msgstr "দ্রুত অ্যাকশন"
+
+msgid "Save Contact"
+msgstr "কনট্যাক্ট সেভ"
+
+msgid "Share"
+msgstr "শেয়ার"
+
+msgid "Get in touch"
+msgstr "যোগাযোগ করুন"
+
+msgid "The card owner"
+msgstr "কার্ডের মালিক"
+
+msgid "Send a message"
+msgstr "বার্তা পাঠান"
+
+msgid "Your name"
+msgstr "আপনার নাম"
+
+msgid "Full name"
+msgstr "পুরো নাম"
+
+msgid "How can I help?"
+msgstr "কীভাবে সাহায্য করতে পারি?"
+
+msgid "Admin dashboard"
+msgstr "অ্যাডমিন ড্যাশবোর্ড"
+
+msgid "Message %(name)s"
+msgstr "%(name)s-কে বার্তা"
+
+msgid ""
+"Share your details and a quick note. %(name)s will get an email right away."
+msgstr ""
+"আপনার তথ্য ও একটা ছোট বার্তা শেয়ার করুন। %(name)s সাথে সাথেই ইমেইল পাবেন।"
