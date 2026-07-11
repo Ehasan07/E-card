@@ -226,9 +226,58 @@ def _normalize_phone_number(value: str, default_code: str = '880') -> tuple[str,
 
 
 def index(request):
-    return render(request, 'cards/index.html', {
-        'feedback_form': FeedbackForm()
-    })
+    ctx = {'feedback_form': FeedbackForm()}
+    ctx.update(_landing_demo_card_context(request))
+    return render(request, 'cards/index.html', ctx)
+
+
+def _landing_demo_card_context(request):
+    """Load a real card to show as a live preview on the landing page.
+
+    Slug is configurable via `LANDING_DEMO_CARD_SLUG`; falls back to the first
+    active card so local dev works even without the demo user seeded.
+    """
+    demo_slug = getattr(settings, 'LANDING_DEMO_CARD_SLUG', 'shiplu07')
+    card = (
+        Card.objects.filter(slug=demo_slug, is_active=True).select_related('user').first()
+        or Card.objects.filter(is_active=True).select_related('user').order_by('id').first()
+    )
+    if not card:
+        return {}
+
+    data = card.card_data or {}
+    whatsapp_link = _normalize_whatsapp_link(data.get('whatsapp'))
+    phone_digits, phone_display = _normalize_phone_number(data.get('phone'))
+    phone_tel = f"+{phone_digits}" if phone_digits else ''
+
+    social_priority = ['linkedin', 'instagram', 'twitter', 'facebook', 'youtube', 'github', 'tiktok', 'telegram']
+    top_socials = []
+    for key in social_priority:
+        val = data.get(key)
+        if val:
+            top_socials.append({'net': key, 'url': val})
+        if len(top_socials) == 5:
+            break
+
+    theme = None
+    theme_slug = data.get('theme_slug')
+    if theme_slug:
+        theme = CardTheme.objects.filter(slug=theme_slug, is_active=True).first()
+
+    public_slug = getattr(settings, 'LANDING_DEMO_PUBLIC_SLUG', 'shiplu07')
+    public_base = getattr(settings, 'LANDING_DEMO_PUBLIC_BASE', 'https://mycard.dupno.com')
+
+    return {
+        'demo_card': card,
+        'demo_whatsapp_link': whatsapp_link,
+        'demo_phone_display': phone_display,
+        'demo_phone_tel': phone_tel,
+        'demo_top_socials': top_socials,
+        'demo_theme': theme,
+        'demo_public_slug': public_slug,
+        'demo_card_url': f'{public_base}/card/{public_slug}/',
+        'demo_physical_url': f'{public_base}/card/{public_slug}/physical/',
+    }
 
 
 @require_POST
@@ -240,10 +289,9 @@ def submit_feedback(request):
         return redirect(f"{reverse('index')}#feedback")
     else:
         messages.error(request, 'Please fix the highlighted details before sending your feedback.')
-    return render(request, 'cards/index.html', {
-        'feedback_form': form,
-        'scroll_to_feedback': True,
-    }, status=400)
+    ctx = {'feedback_form': form, 'scroll_to_feedback': True}
+    ctx.update(_landing_demo_card_context(request))
+    return render(request, 'cards/index.html', ctx, status=400)
 
 
 def register(request):

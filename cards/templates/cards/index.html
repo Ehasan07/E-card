@@ -19,6 +19,7 @@
         </a>
         <ul class="mc-nav__links">
             <li><a href="#features" class="mc-nav-link">{% trans "Features" %}</a></li>
+            {% if demo_card %}<li><a href="#live" class="mc-nav-link">{% trans "Live demo" %}</a></li>{% endif %}
             <li><a href="#showcase" class="mc-nav-link">{% trans "Showcase" %}</a></li>
             <li><a href="#pricing" class="mc-nav-link">{% trans "Pricing" %}</a></li>
             <li><a href="#faq" class="mc-nav-link">{% trans "FAQ" %}</a></li>
@@ -72,12 +73,75 @@
         </div>
 
         <div class="lp-hero__preview mc-fade-up mc-fade-up--d2">
+            {% if demo_card %}
+            <div class="mc-tilt lp-preview-card lp-preview-card--live" data-mc-tilt data-mc-tilt-max="9">
+                <div class="mc-tilt__shine"></div>
+                <span class="lp-live-pill" aria-hidden="true">
+                    <span class="lp-live-pill__dot"></span>
+                    {% trans "LIVE" %}
+                </span>
+                <div class="lp-preview-card__inner">
+                    <div class="lp-preview-card__ring">
+                        {% if demo_card.avatar %}
+                            <img src="{{ demo_card.avatar.url }}" alt="{{ demo_card.card_data.firstName }} {{ demo_card.card_data.lastName }}">
+                        {% else %}
+                            <span>{{ demo_card.card_data.firstName|default:''|slice:':1' }}{{ demo_card.card_data.lastName|default:''|slice:':1' }}</span>
+                        {% endif %}
+                    </div>
+                    <h3 class="lp-preview-card__name">{{ demo_card.card_data.firstName|default:'' }} {{ demo_card.card_data.lastName|default:'' }}</h3>
+                    <p class="lp-preview-card__title">
+                        {{ demo_card.card_data.jobTitle|default:'' }}{% if demo_card.card_data.jobTitle and demo_card.card_data.company %} · {% endif %}{% if demo_card.card_data.company %}<span class="mc-text-accent">{{ demo_card.card_data.company }}</span>{% endif %}
+                    </p>
+                    <div class="lp-preview-card__chips">
+                        {% if demo_card.card_data.email %}
+                            <span class="mc-badge"><i data-lucide="mail"></i>{{ demo_card.card_data.email|truncatechars:24 }}</span>
+                        {% endif %}
+                        {% if demo_phone_display %}
+                            <span class="mc-badge"><i data-lucide="phone"></i>{{ demo_phone_display }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="lp-preview-card__socials">
+                        {% for s in demo_top_socials %}
+                            <a href="{{ s.url }}" target="_blank" rel="noopener" class="lp-preview-social" style="--c: {% if s.net == 'linkedin' %}#0A66C2{% elif s.net == 'instagram' %}#E1306C{% elif s.net == 'twitter' %}#0EA5E9{% elif s.net == 'facebook' %}#1877F2{% elif s.net == 'youtube' %}#FF0000{% elif s.net == 'github' %}#F2F4F8{% elif s.net == 'tiktok' %}#F2F4F8{% elif s.net == 'telegram' %}#26A5E4{% else %}var(--mc-text-md){% endif %};" aria-label="{{ s.net }}">
+                                {% include 'cards/_social_icon.svg' with net=s.net only %}
+                            </a>
+                        {% endfor %}
+                    </div>
+                    <div class="lp-preview-card__cta">
+                        <a href="{{ demo_card_url }}" target="_blank" rel="noopener" class="mc-btn mc-btn--primary mc-btn--sm mc-btn--block">
+                            <i data-lucide="external-link"></i>
+                            {% trans "Open live card" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            {% if demo_card.qr_code %}
+                <div class="lp-preview-orbit lp-preview-orbit--qr lp-preview-orbit--qr-real">
+                    <img src="{{ demo_card.qr_code.url }}" alt="QR code — {{ demo_card.card_data.firstName }}">
+                    <span>{% trans "Scan me" %}</span>
+                </div>
+            {% else %}
+                <div class="lp-preview-orbit lp-preview-orbit--qr">
+                    <i data-lucide="qr-code"></i>
+                    <span>{% trans "QR ready" %}</span>
+                </div>
+            {% endif %}
+            <div class="lp-preview-orbit lp-preview-orbit--wallet">
+                <i data-lucide="wallet"></i>
+                <span>{% trans "Add to Wallet" %}</span>
+            </div>
+            <div class="lp-preview-orbit lp-preview-orbit--nfc">
+                <i data-lucide="radio"></i>
+                <span>{% trans "NFC-ready" %}</span>
+            </div>
+
+            {% else %}
+            {# ---- Fallback demo (no card seeded) ---- #}
             <div class="mc-tilt lp-preview-card" data-mc-tilt data-mc-tilt-max="9">
                 <div class="mc-tilt__shine"></div>
                 <div class="lp-preview-card__inner">
-                    <div class="lp-preview-card__ring">
-                        <span>NB</span>
-                    </div>
+                    <div class="lp-preview-card__ring"><span>NB</span></div>
                     <h3 class="lp-preview-card__name">Naima Binte</h3>
                     <p class="lp-preview-card__title">Product Designer · <span class="mc-text-accent">Cloudloop</span></p>
                     <div class="lp-preview-card__chips">
@@ -105,6 +169,49 @@
             <div class="lp-preview-orbit lp-preview-orbit--wallet">
                 <i data-lucide="wallet"></i>
                 <span>Add to Wallet</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{# =====================  TRUST / STATS STRIP  ===================== #}
+<section class="lp-trust" aria-label="{% trans 'MY-Card at a glance' %}">
+    <div class="mc-container">
+        <div class="lp-trust__grid">
+            <div class="lp-trust__stat">
+                <span class="lp-trust__num mc-mono" data-count-to="12000">0</span>
+                <span class="lp-trust__label">{% trans "Cards created" %}</span>
+            </div>
+            <div class="lp-trust__stat">
+                <span class="lp-trust__num mc-mono"><span data-count-to="99.9">0</span>%</span>
+                <span class="lp-trust__label">{% trans "Uptime last 90 days" %}</span>
+            </div>
+            <div class="lp-trust__stat">
+                <span class="lp-trust__num mc-mono" data-count-to="40">0</span>
+                <span class="lp-trust__label">{% trans "Countries reached" %}</span>
+            </div>
+            <div class="lp-trust__stat">
+                <span class="lp-trust__num mc-mono"><span data-count-to="3">0</span> {% trans "min" %}</span>
+                <span class="lp-trust__label">{% trans "Median setup time" %}</span>
+            </div>
+        </div>
+
+        <div class="lp-marquee" aria-hidden="true">
+            <div class="lp-marquee__track">
+                <span><i data-lucide="check-circle-2"></i> {% trans "One card. Every channel." %}</span>
+                <span><i data-lucide="smartphone"></i> {% trans "Works on any phone — no app" %}</span>
+                <span><i data-lucide="wallet"></i> {% trans "Apple & Google Wallet passes" %}</span>
+                <span><i data-lucide="qr-code"></i> {% trans "Print-ready QR baked in" %}</span>
+                <span><i data-lucide="line-chart"></i> {% trans "Live analytics + lead capture" %}</span>
+                <span><i data-lucide="shield-check"></i> {% trans "You own your data" %}</span>
+                {# duplicated for seamless loop #}
+                <span><i data-lucide="check-circle-2"></i> {% trans "One card. Every channel." %}</span>
+                <span><i data-lucide="smartphone"></i> {% trans "Works on any phone — no app" %}</span>
+                <span><i data-lucide="wallet"></i> {% trans "Apple & Google Wallet passes" %}</span>
+                <span><i data-lucide="qr-code"></i> {% trans "Print-ready QR baked in" %}</span>
+                <span><i data-lucide="line-chart"></i> {% trans "Live analytics + lead capture" %}</span>
+                <span><i data-lucide="shield-check"></i> {% trans "You own your data" %}</span>
             </div>
         </div>
     </div>
@@ -207,6 +314,169 @@
         </div>
     </div>
 </section>
+
+{# =====================  LIVE PHYSICAL CARD SHOWCASE  ===================== #}
+{% if demo_card %}
+<section id="live" class="lp-section lp-section--live">
+    <div class="lp-live__bg" aria-hidden="true">
+        <div class="mc-aurora mc-aurora--mint" style="width:520px;height:520px;top:-140px;left:-8%;opacity:0.35;"></div>
+        <div class="mc-aurora mc-aurora--cyan" style="width:460px;height:460px;bottom:-180px;right:-6%;opacity:0.28;"></div>
+    </div>
+    <div class="mc-container">
+        <header class="lp-section__head">
+            <span class="mc-badge mc-badge--accent">
+                <span class="mc-badge__dot"></span>
+                {% trans "See it live" %}
+            </span>
+            <h2>{% trans "One tap. A whole identity." %}</h2>
+            <p class="mc-text-muted">{% trans "This isn't a mockup — it's a real, live MY-Card. Scan the QR to open the full profile on your phone, or click through to see the print-ready physical version." %}</p>
+        </header>
+
+        <div class="lp-live">
+            <div class="lp-live__stage">
+                {# ---- physical card front ---- #}
+                <article class="lp-mini lp-mini--front mc-fade-up"
+                         style="--pc-accent: {% if demo_theme %}{{ demo_theme.accent_color }}{% else %}#7CFFB2{% endif %}; --pc-bg: {% if demo_theme %}{{ demo_theme.background }}{% else %}linear-gradient(150deg, #05060B 0%, #0B0D14 40%, #124D33 100%){% endif %}; --pc-text: {% if demo_theme %}{{ demo_theme.text_color }}{% else %}#F2F4F8{% endif %};">
+                    <span class="lp-mini__label">FRONT</span>
+                    <div class="lp-mini__card">
+                        <div class="lp-mini__shine"></div>
+                        <header class="lp-mini__brand">
+                            <span class="lp-mini__logo"></span>
+                            <span>MY<span class="lp-mini__brand-dot">·</span>Card</span>
+                        </header>
+                        <span class="lp-mini__type">{% if demo_card.card_type == 'business' %}BUSINESS{% else %}PERSONAL{% endif %}</span>
+
+                        <div class="lp-mini__main">
+                            <div class="lp-mini__avatar">
+                                {% if demo_card.avatar %}
+                                    <img src="{{ demo_card.avatar.url }}" alt="">
+                                {% else %}
+                                    <span>{{ demo_card.card_data.firstName|default:''|slice:':1' }}{{ demo_card.card_data.lastName|default:''|slice:':1' }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="lp-mini__identity">
+                                <h3 class="lp-mini__name">
+                                    {{ demo_card.card_data.firstName|default:'' }} <span>{{ demo_card.card_data.lastName|default:'' }}</span>
+                                </h3>
+                                {% if demo_card.card_data.jobTitle or demo_card.card_data.company %}
+                                    <p class="lp-mini__role">
+                                        {{ demo_card.card_data.jobTitle|default:'' }}{% if demo_card.card_data.jobTitle and demo_card.card_data.company %} · {% endif %}<strong>{{ demo_card.card_data.company|default:'' }}</strong>
+                                    </p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="lp-mini__contacts">
+                            {% if demo_phone_display %}
+                                <span><i data-lucide="phone"></i>{{ demo_phone_display }}</span>
+                            {% endif %}
+                            {% if demo_card.card_data.email %}
+                                <span><i data-lucide="mail"></i>{{ demo_card.card_data.email|truncatechars:26 }}</span>
+                            {% endif %}
+                        </div>
+
+                        <footer class="lp-mini__foot">
+                            <span class="lp-mini__url">
+                                <i data-lucide="globe"></i>
+                                mycard.dupno.com/card/{{ demo_public_slug }}
+                            </span>
+                            {% if demo_card.logo %}
+                                <span class="lp-mini__brand-logo">
+                                    <img src="{{ demo_card.logo.url }}" alt="{{ demo_card.card_data.logo_name|default:'' }}">
+                                </span>
+                            {% elif demo_card.card_data.logo_name %}
+                                <span class="lp-mini__brand-logo lp-mini__brand-logo--text">{{ demo_card.card_data.logo_name|slice:':2'|upper }}</span>
+                            {% endif %}
+                        </footer>
+                    </div>
+                </article>
+
+                {# ---- physical card back ---- #}
+                <article class="lp-mini lp-mini--back mc-fade-up mc-fade-up--d2"
+                         style="--pc-accent: {% if demo_theme %}{{ demo_theme.accent_color }}{% else %}#7CFFB2{% endif %}; --pc-bg: {% if demo_theme %}{{ demo_theme.background }}{% else %}linear-gradient(150deg, #05060B 0%, #0B0D14 40%, #124D33 100%){% endif %}; --pc-text: {% if demo_theme %}{{ demo_theme.text_color }}{% else %}#F2F4F8{% endif %};">
+                    <span class="lp-mini__label">BACK</span>
+                    <div class="lp-mini__card">
+                        <div class="lp-mini__shine"></div>
+                        <header class="lp-mini__brand lp-mini__brand--right">
+                            <span>{% trans "Scan this code" %}</span>
+                            <span class="lp-mini__logo lp-mini__logo--sm"></span>
+                        </header>
+                        <div class="lp-mini__back-body">
+                            <div class="lp-mini__qr">
+                                {% if demo_card.qr_code %}
+                                    <img src="{{ demo_card.qr_code.url }}" alt="QR — {{ demo_card.card_data.firstName }}">
+                                {% else %}
+                                    <span>QR</span>
+                                {% endif %}
+                            </div>
+                            <div class="lp-mini__back-info">
+                                <span class="lp-mini__caption">{% trans "Save my digital card" %}</span>
+                                <p>{% trans "Point your camera at the QR — full profile, socials, and one-tap save to contacts." %}</p>
+                                {% if demo_top_socials %}
+                                    <div class="lp-mini__back-socials">
+                                        {% for s in demo_top_socials|slice:':4' %}
+                                            <span aria-label="{{ s.net }}">{% include 'cards/_social_icon.svg' with net=s.net only %}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <footer class="lp-mini__back-foot">
+                            <span class="lp-mini__mono">mycard.dupno.com/card/{{ demo_public_slug }}</span>
+                            <span class="lp-mini__slogan">{% trans "Digital identity, done right." %}</span>
+                        </footer>
+                    </div>
+                </article>
+            </div>
+
+            <aside class="lp-live__side mc-fade-up mc-fade-up--d1">
+                <span class="mc-caption mc-text-accent">{% trans "What every MY-Card ships with" %}</span>
+                <ul class="lp-live__list">
+                    <li>
+                        <span class="lp-live__ico"><i data-lucide="qr-code"></i></span>
+                        <div>
+                            <strong>{% trans "Auto-generated QR" %}</strong>
+                            <span>{% trans "Print-quality QR baked into every card — no third-party generator, no watermark." %}</span>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="lp-live__ico"><i data-lucide="printer"></i></span>
+                        <div>
+                            <strong>{% trans "Print-ready ID-1" %}</strong>
+                            <span>{% trans "Standard 85.6 × 54 mm business-card size. Save as PDF or send straight to a printer." %}</span>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="lp-live__ico"><i data-lucide="palette"></i></span>
+                        <div>
+                            <strong>{% trans "Physical + digital in sync" %}</strong>
+                            <span>{% trans "14 curated themes with custom accents. The printed card mirrors the online look, always." %}</span>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="lp-live__ico"><i data-lucide="shield-check"></i></span>
+                        <div>
+                            <strong>{% trans "You own the URL" %}</strong>
+                            <span>{% trans "Short, memorable link at mycard.dupno.com/card/&lt;you&gt;. Change it anytime, no re-print required." %}</span>
+                        </div>
+                    </li>
+                </ul>
+
+                <div class="lp-live__cta">
+                    <a href="{{ demo_card_url }}" target="_blank" rel="noopener" class="mc-btn mc-btn--primary">
+                        <i data-lucide="external-link"></i>
+                        {% trans "Open the live digital card" %}
+                    </a>
+                    <a href="{{ demo_physical_url }}" target="_blank" rel="noopener" class="mc-btn mc-btn--outline">
+                        <i data-lucide="printer"></i>
+                        {% trans "See the physical version" %}
+                    </a>
+                </div>
+            </aside>
+        </div>
+    </div>
+</section>
+{% endif %}
 
 {# =====================  SHOWCASE  ===================== #}
 <section id="showcase" class="lp-section">
@@ -351,44 +621,75 @@
 </section>
 
 {# =====================  FEEDBACK  ===================== #}
-<section id="feedback" class="lp-section">
-    <div class="mc-container lp-faq-container">
-        <header class="lp-section__head lp-section__head--left">
-            <span class="mc-badge"><i data-lucide="message-square"></i> {% trans "Feedback" %}</span>
-            <h2>{% trans "Tell us how MY-Card can improve." %}</h2>
-            <p class="mc-text-muted">{% trans "Drop a note for the team — feature ideas, bugs, or wins. We read every message." %}</p>
+<section id="feedback" class="lp-section lp-fb-section">
+    <div class="lp-fb-section__bg" aria-hidden="true">
+        <div class="mc-aurora mc-aurora--mint" style="width:460px;height:460px;top:-140px;left:-6%;opacity:0.28;"></div>
+        <div class="mc-aurora mc-aurora--cyan" style="width:420px;height:420px;bottom:-160px;right:-4%;opacity:0.22;"></div>
+    </div>
+
+    <div class="mc-container">
+        <header class="lp-section__head">
+            <span class="mc-badge mc-badge--accent">
+                <span class="mc-badge__dot"></span>
+                {% trans "Signal us" %}
+            </span>
+            <h2>{% trans "Every great card starts with a note." %}</h2>
+            <p class="mc-text-muted">{% trans "Feature ideas, bug reports, or a quick win to share — drop a signed note. The MY-Card team reads every single one, no auto-replies." %}</p>
         </header>
 
-        <form method="post" action="{% url 'submit_feedback' %}" class="mc-card lp-feedback">
-            {% csrf_token %}
-            <div class="lp-feedback__grid">
-                <label class="mc-label">
-                    <span>{% trans "Name" %}</span>
-                    {{ feedback_form.name }}
-                    {% if feedback_form.name.errors %}
-                        <span class="mc-field-error">{{ feedback_form.name.errors|join:', ' }}</span>
-                    {% endif %}
-                </label>
-                <label class="mc-label">
-                    <span>{% trans "Email" %} <small class="mc-text-dim">{% trans "(optional)" %}</small></span>
-                    {{ feedback_form.email }}
-                    {% if feedback_form.email.errors %}
-                        <span class="mc-field-error">{{ feedback_form.email.errors|join:', ' }}</span>
-                    {% endif %}
-                </label>
-            </div>
-            <label class="mc-label">
-                <span>{% trans "Message" %}</span>
-                {{ feedback_form.message }}
-                {% if feedback_form.message.errors %}
-                    <span class="mc-field-error">{{ feedback_form.message.errors|join:', ' }}</span>
-                {% endif %}
-            </label>
-            <button type="submit" class="mc-btn mc-btn--primary">
-                <i data-lucide="send"></i>
-                {% trans "Send message" %}
-            </button>
-        </form>
+        <div class="lp-fb-shell">
+            <span class="lp-fb-shell__ring" aria-hidden="true"></span>
+            <form method="post" action="{% url 'submit_feedback' %}" class="lp-fb-card">
+                {% csrf_token %}
+
+                <header class="lp-fb-card__brand">
+                    <span class="lp-fb-card__logo"></span>
+                    <span class="lp-fb-card__title">MY<span class="lp-fb-card__dot">·</span>Card <span class="lp-fb-card__sub">{% trans "Feedback note" %}</span></span>
+                    <span class="lp-fb-card__stamp">
+                        <span class="lp-fb-card__stamp-dot"></span>
+                        {% trans "READ BY HUMANS" %}
+                    </span>
+                </header>
+
+                <div class="lp-fb-card__body">
+                    <div class="lp-fb-card__grid">
+                        <label class="mc-label lp-fb-label">
+                            <span><i data-lucide="user"></i> {% trans "From" %}</span>
+                            {{ feedback_form.name }}
+                            {% if feedback_form.name.errors %}
+                                <span class="mc-field-error">{{ feedback_form.name.errors|join:', ' }}</span>
+                            {% endif %}
+                        </label>
+                        <label class="mc-label lp-fb-label">
+                            <span><i data-lucide="at-sign"></i> {% trans "Reply to" %} <small class="mc-text-dim">{% trans "(optional)" %}</small></span>
+                            {{ feedback_form.email }}
+                            {% if feedback_form.email.errors %}
+                                <span class="mc-field-error">{{ feedback_form.email.errors|join:', ' }}</span>
+                            {% endif %}
+                        </label>
+                    </div>
+
+                    <label class="mc-label lp-fb-label">
+                        <span><i data-lucide="message-square"></i> {% trans "Message" %}</span>
+                        {{ feedback_form.message }}
+                        {% if feedback_form.message.errors %}
+                            <span class="mc-field-error">{{ feedback_form.message.errors|join:', ' }}</span>
+                        {% endif %}
+                    </label>
+                </div>
+
+                <footer class="lp-fb-card__foot">
+                    <span class="lp-fb-card__signed">
+                        <i data-lucide="shield-check"></i>
+                        {% trans "Signed & delivered privately to the team" %}
+                    </span>
+                    <button type="submit" class="mc-btn mc-btn--primary lp-fb-card__send">
+                        <i data-lucide="send"></i>
+                        {% trans "Send note" %}
+                    </button>
+                </footer>
+            </form>
+        </div>
     </div>
 </section>
 
@@ -521,8 +822,9 @@
     height: 108px;
     border-radius: 50%;
     margin: 0 auto var(--mc-s-4);
-    display: grid;
-    place-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: var(--mc-bg-3);
     border: 3px solid var(--mc-accent);
     box-shadow: 0 0 0 6px var(--mc-accent-halo);
@@ -530,6 +832,15 @@
     font-size: 1.9rem;
     font-weight: 700;
     color: var(--mc-text-hi);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.lp-preview-card__ring img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
 }
 .lp-preview-card__name { font-size: 1.6rem; margin-bottom: 0.4rem; }
 .lp-preview-card__title { color: var(--mc-text-md); font-size: 0.95rem; margin-bottom: var(--mc-s-5); }
@@ -768,35 +1079,806 @@
 }
 .lp-cta-inner h2 { margin: var(--mc-s-3) 0 var(--mc-s-2); }
 
-/* ============  Feedback  ============ */
-.lp-feedback { padding: var(--mc-s-6); }
-.lp-feedback__grid {
+/* ============================================================
+   FEEDBACK — MY-Card themed "signed note" with rotating border
+   ============================================================ */
+.lp-fb-section {
+    position: relative;
+    overflow: hidden;
+}
+.lp-fb-section__bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+.lp-fb-section .mc-container { position: relative; z-index: 1; }
+
+/* Shell = padded wrapper that holds the rotating conic-gradient border */
+.lp-fb-shell {
+    position: relative;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2px;
+    border-radius: var(--mc-r-xl);
+    isolation: isolate;
+}
+.lp-fb-shell__ring {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    border-radius: inherit;
+    background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        var(--mc-accent) 60deg,
+        transparent 140deg,
+        var(--mc-accent) 220deg,
+        transparent 320deg,
+        var(--mc-accent) 360deg
+    );
+    filter: drop-shadow(0 0 12px var(--mc-accent-halo));
+    animation: lp-fb-spin 7s linear infinite;
+    pointer-events: none;
+}
+.lp-fb-shell__ring::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--mc-bg-0);
+    border-radius: inherit;
+}
+@keyframes lp-fb-spin {
+    to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-fb-shell__ring { animation: none; }
+}
+
+.lp-fb-card {
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(160deg, var(--mc-bg-1) 0%, var(--mc-bg-2) 100%);
+    border-radius: calc(var(--mc-r-xl) - 2px);
+    padding: var(--mc-s-6);
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,0.45);
+}
+/* Left accent stripe evoking the physical card's foil edge */
+.lp-fb-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, var(--mc-accent) 0%, transparent 70%);
+    opacity: 0.85;
+}
+/* Subtle dot grid backdrop */
+.lp-fb-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 100% 0%, var(--mc-accent-halo), transparent 45%),
+        radial-gradient(circle at 0% 100%, rgba(56, 225, 255, 0.08), transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+}
+.lp-fb-card > * { position: relative; z-index: 1; }
+
+/* Header — brand row like the physical card */
+.lp-fb-card__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    margin-bottom: var(--mc-s-5);
+    padding-left: var(--mc-s-2);
+    flex-wrap: wrap;
+}
+.lp-fb-card__logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background-image: url("{% static 'cards/img/favicon.svg' %}");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: 0 0 10px var(--mc-accent-halo);
+    flex-shrink: 0;
+}
+.lp-fb-card__title {
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    color: var(--mc-text-hi);
+    letter-spacing: 0.02em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.lp-fb-card__dot { color: var(--mc-accent); }
+.lp-fb-card__sub {
+    font-family: var(--mc-font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    color: var(--mc-text-md);
+    text-transform: uppercase;
+    font-weight: 500;
+}
+.lp-fb-card__stamp {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.24em;
+    color: var(--mc-accent);
+    padding: 4px 12px;
+    border: 1px dashed var(--mc-accent);
+    border-radius: 999px;
+    text-transform: uppercase;
+    transform: rotate(-2deg);
+    background: color-mix(in srgb, var(--mc-accent) 10%, transparent);
+}
+.lp-fb-card__stamp-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--mc-accent);
+    box-shadow: 0 0 6px var(--mc-accent);
+    animation: lp-fb-blink 1.6s ease-in-out infinite;
+}
+@keyframes lp-fb-blink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0.3; }
+}
+
+/* Body */
+.lp-fb-card__body { margin-bottom: var(--mc-s-4); }
+.lp-fb-card__grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--mc-s-4);
     margin-bottom: var(--mc-s-4);
 }
-@media (min-width: 640px) { .lp-feedback__grid { grid-template-columns: 1fr 1fr; } }
-.lp-feedback input,
-.lp-feedback textarea {
+@media (min-width: 640px) { .lp-fb-card__grid { grid-template-columns: 1fr 1fr; } }
+
+.lp-fb-label > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mc-text-md);
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+.lp-fb-label > span i { color: var(--mc-accent); width: 14px; height: 14px; }
+
+.lp-fb-card input,
+.lp-fb-card textarea {
     width: 100%;
     font-family: var(--mc-font-body);
     font-size: var(--mc-fs-body);
     color: var(--mc-text-hi);
-    background: var(--mc-bg-2);
-    border: 1px solid var(--mc-border-hi);
-    border-radius: var(--mc-r-md);
-    padding: 0.85rem 1rem;
-    transition: border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--mc-border-hi);
+    border-radius: 0;
+    padding: 0.55rem 0.15rem;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease), background var(--mc-dur-fast) var(--mc-ease);
     outline: none;
 }
-.lp-feedback input:focus,
-.lp-feedback textarea:focus {
+.lp-fb-card input:focus,
+.lp-fb-card textarea:focus {
     border-color: var(--mc-accent);
+    box-shadow: 0 2px 0 0 var(--mc-accent);
+    background: color-mix(in srgb, var(--mc-accent) 5%, transparent);
+}
+.lp-fb-card textarea {
+    min-height: 8rem;
+    resize: vertical;
+    border: 1px dashed var(--mc-border-hi);
+    border-radius: var(--mc-r-md);
+    padding: 0.9rem 1rem;
+    line-height: var(--mc-lh-normal);
+    background:
+        repeating-linear-gradient(
+            transparent 0,
+            transparent 1.55rem,
+            color-mix(in srgb, var(--mc-border) 60%, transparent) 1.55rem,
+            color-mix(in srgb, var(--mc-border) 60%, transparent) 1.6rem
+        );
+}
+.lp-fb-card textarea:focus {
+    border: 1px solid var(--mc-accent);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo);
+    background:
+        repeating-linear-gradient(
+            transparent 0,
+            transparent 1.55rem,
+            color-mix(in srgb, var(--mc-accent) 22%, transparent) 1.55rem,
+            color-mix(in srgb, var(--mc-accent) 22%, transparent) 1.6rem
+        );
+}
+
+/* Footer — signed line + send button */
+.lp-fb-card__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--mc-s-4);
+    flex-wrap: wrap;
+    padding-top: var(--mc-s-4);
+    border-top: 1px dashed var(--mc-border);
+}
+.lp-fb-card__signed {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+}
+.lp-fb-card__signed i { color: var(--mc-accent); width: 1rem; height: 1rem; }
+
+.lp-fb-card__send {
+    position: relative;
+    overflow: hidden;
+}
+.lp-fb-card__send::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 40%;
+    left: -50%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    animation: lp-fb-shine 3.2s ease-in-out infinite;
+    pointer-events: none;
+}
+@keyframes lp-fb-shine {
+    0%       { left: -50%; }
+    55%,100% { left: 130%; }
+}
+.lp-fb-card__send i {
+    transition: transform var(--mc-dur-fast) var(--mc-ease);
+}
+.lp-fb-card__send:hover i {
+    transform: translateX(3px) rotate(-15deg);
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-fb-card__send::after,
+    .lp-fb-card__stamp-dot { animation: none; }
+}
+
+/* ============================================================
+   LIVE PREVIEW — hero card enhancements
+   ============================================================ */
+.lp-preview-card--live { box-shadow: var(--mc-shadow-3), 0 0 0 1px var(--mc-accent-halo), 0 20px 60px -20px var(--mc-accent-halo); }
+.lp-preview-card__socials a.lp-preview-social {
+    text-decoration: none;
+    color: var(--c, var(--mc-text-md));
+    transition: transform var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.lp-preview-social svg {
+    width: 18px;
+    height: 18px;
+    fill: currentColor;
+}
+.lp-preview-social:hover {
+    transform: translateY(-3px) scale(1.08);
+    color: var(--c, var(--mc-accent));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--c, var(--mc-accent)) 20%, transparent);
+}
+
+/* LIVE pill on the hero card */
+.lp-live-pill {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: rgba(11,13,20,0.72);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--mc-accent);
+    border-radius: 999px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--mc-accent);
+    letter-spacing: 0.18em;
+    box-shadow: 0 0 12px var(--mc-accent-halo);
+}
+.lp-live-pill__dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--mc-accent);
+    box-shadow: 0 0 8px var(--mc-accent);
+    animation: lp-blink 1.4s ease-in-out infinite;
+}
+@keyframes lp-blink {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.35; transform: scale(0.85); }
+}
+
+/* Real QR orbit — embed actual QR image */
+.lp-preview-orbit--qr-real {
+    padding: 6px 10px 6px 6px;
+}
+.lp-preview-orbit--qr-real img {
+    width: 40px; height: 40px;
+    background: #FFF;
+    border-radius: 6px;
+    padding: 3px;
+    display: block;
+}
+.lp-preview-orbit--nfc {
+    top: 42%;
+    left: -8%;
+    animation-delay: 1s;
+}
+@media (max-width: 720px) {
+    .lp-preview-orbit--nfc { left: 0; top: 46%; }
+}
+
+/* ============================================================
+   TRUST / STATS STRIP  +  MARQUEE
+   ============================================================ */
+.lp-trust {
+    padding: var(--mc-s-6) 0 var(--mc-s-8);
+    border-top: 1px solid var(--mc-border);
+    border-bottom: 1px solid var(--mc-border);
+    background: linear-gradient(180deg, transparent, var(--mc-bg-1) 40%, transparent);
+    overflow: hidden;
+}
+.lp-trust__grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--mc-s-4);
+    margin-bottom: var(--mc-s-6);
+}
+@media (min-width: 720px) { .lp-trust__grid { grid-template-columns: repeat(4, 1fr); } }
+.lp-trust__stat {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--mc-s-3) var(--mc-s-2);
+}
+.lp-trust__num {
+    font-family: var(--mc-font-display);
+    font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+    font-weight: 700;
+    color: var(--mc-text-hi);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    background: linear-gradient(120deg, var(--mc-text-hi) 20%, var(--mc-accent) 60%, var(--mc-text-hi) 90%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: lp-shimmer 5s linear infinite;
+}
+@keyframes lp-shimmer {
+    from { background-position: 0% 0; }
+    to   { background-position: 200% 0; }
+}
+.lp-trust__label {
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-caption);
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+}
+
+.lp-marquee {
+    position: relative;
+    overflow: hidden;
+    padding: var(--mc-s-3) 0;
+    border-top: 1px dashed var(--mc-border);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+            mask-image: linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
+}
+.lp-marquee__track {
+    display: flex;
+    gap: var(--mc-s-6);
+    width: max-content;
+    animation: lp-marquee 38s linear infinite;
+}
+.lp-marquee__track span {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+    white-space: nowrap;
+}
+.lp-marquee__track i { color: var(--mc-accent); width: 1rem; height: 1rem; }
+@keyframes lp-marquee {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-marquee__track { animation: none; }
+    .lp-trust__num { animation: none; background: none; -webkit-text-fill-color: initial; color: var(--mc-text-hi); }
+}
+
+/* ============================================================
+   LIVE SECTION — physical card front + back preview
+   ============================================================ */
+.lp-section--live { position: relative; overflow: hidden; }
+.lp-live__bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.lp-section--live .mc-container { position: relative; z-index: 1; }
+
+.lp-live {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(2rem, 5vw, 3.5rem);
+    align-items: center;
+}
+@media (min-width: 1000px) {
+    .lp-live { grid-template-columns: 1.15fr 0.85fr; }
+}
+
+.lp-live__stage {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mc-s-5);
+    justify-content: center;
+    perspective: 1400px;
+}
+
+/* Mini card — scaled to fit the landing page (not print).
+   Approx 2.2x smaller than the print zoom, uses px units so it responds. */
+.lp-mini {
+    --card-w: 340px;
+    --card-h: 214px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--mc-s-2);
+}
+@media (max-width: 480px) {
+    .lp-mini { --card-w: 280px; --card-h: 176px; }
+}
+
+.lp-mini__label {
+    font-family: var(--mc-font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: var(--mc-text-md);
+    padding: 3px 12px;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+}
+
+.lp-mini__card {
+    width: var(--card-w);
+    height: var(--card-h);
+    background: var(--pc-bg);
+    color: var(--pc-text);
+    border-radius: 14px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    font-family: var(--mc-font-display);
+    box-shadow:
+        0 22px 60px -12px rgba(0,0,0,0.55),
+        0 0 0 1px rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+    transition: transform 0.6s var(--mc-ease), box-shadow 0.6s var(--mc-ease);
+}
+.lp-mini__card::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 15% -5%, rgba(255,255,255,0.16), transparent 55%);
+    pointer-events: none; z-index: 0;
+}
+.lp-mini__card > * { position: relative; z-index: 1; }
+.lp-mini:hover .lp-mini__card {
+    transform: translateY(-6px) rotateX(4deg) rotateY(-3deg);
+    box-shadow: 0 30px 80px -12px rgba(0,0,0,0.6), 0 0 0 1px var(--pc-accent);
+}
+
+.lp-mini__shine {
+    position: absolute; inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.14) 50%, transparent 65%);
+    background-size: 300% 100%;
+    animation: lp-shine 6s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: 0;
+}
+@keyframes lp-shine {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+}
+
+.lp-mini__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--pc-text);
+}
+.lp-mini__brand--right { justify-content: space-between; width: 100%; }
+.lp-mini__brand-dot { color: var(--pc-accent); }
+.lp-mini__logo {
+    width: 16px; height: 16px;
+    border-radius: 3px;
+    background-image: url("{% static 'cards/img/favicon.svg' %}");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    box-shadow: 0 0 8px var(--pc-accent);
+}
+.lp-mini__logo--sm { width: 13px; height: 13px; }
+
+.lp-mini__type {
+    position: absolute;
+    top: 16px; right: 18px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.55rem;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    padding: 2px 8px;
+    border: 1px solid var(--pc-accent);
+    color: var(--pc-accent);
+    border-radius: 999px;
+    z-index: 2;
+}
+
+.lp-mini__main {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 10px;
+    flex: 1;
+}
+.lp-mini__avatar {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid var(--pc-accent);
+    box-shadow: 0 0 10px var(--pc-accent);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-weight: 700;
+    color: var(--pc-text);
+    font-size: 1.05rem;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+.lp-mini__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.lp-mini__identity { min-width: 0; }
+.lp-mini__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.05;
+    margin: 0 0 3px;
+    letter-spacing: -0.01em;
+    color: var(--pc-text);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.lp-mini__name span { color: var(--pc-accent); }
+.lp-mini__role {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.75);
+    margin: 0;
+    line-height: 1.25;
+}
+.lp-mini__role strong { color: var(--pc-text); }
+
+.lp-mini__contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.85);
+    margin-top: 4px;
+}
+.lp-mini__contacts span { display: inline-flex; align-items: center; gap: 4px; }
+.lp-mini__contacts i { width: 12px; height: 12px; color: var(--pc-accent); }
+
+.lp-mini__foot {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.65rem;
+    color: rgba(255,255,255,0.72);
+}
+.lp-mini__url { display: inline-flex; align-items: center; gap: 4px; font-family: var(--mc-font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lp-mini__url i { width: 11px; height: 11px; color: var(--pc-accent); }
+.lp-mini__brand-logo {
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.08);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+.lp-mini__brand-logo img { width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+.lp-mini__brand-logo--text { font-size: 0.7rem; font-weight: 700; color: var(--pc-accent); }
+
+/* ---- Back face ---- */
+.lp-mini__back-body {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+    flex: 1;
+    align-items: center;
+}
+.lp-mini__qr {
+    width: 90px; height: 90px;
+    background: #FFF;
+    border-radius: 6px;
+    padding: 5px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px var(--pc-accent);
+}
+.lp-mini__qr img { width: 100%; height: 100%; object-fit: contain; }
+.lp-mini__qr span { color: #000; font-weight: 700; font-family: var(--mc-font-mono); }
+.lp-mini__back-info { min-width: 0; }
+.lp-mini__caption {
+    font-family: var(--mc-font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--pc-accent);
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+.lp-mini__back-info p {
+    font-size: 0.68rem;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.35;
+    margin: 0 0 6px;
+    font-weight: 500;
+}
+.lp-mini__back-socials {
+    display: flex;
+    gap: 5px;
+}
+.lp-mini__back-socials span {
+    width: 20px; height: 20px;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,0.08);
+    border-radius: 5px;
+    color: var(--pc-accent);
+}
+.lp-mini__back-socials svg { width: 11px; height: 11px; fill: currentColor; }
+
+.lp-mini__back-foot {
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding-top: 6px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    font-size: 0.6rem;
+    color: rgba(255,255,255,0.65);
+}
+.lp-mini__mono { font-family: var(--mc-font-mono); }
+.lp-mini__slogan { color: var(--pc-accent); font-weight: 600; font-style: italic; }
+
+/* ---- Right-side feature list ---- */
+.lp-live__side {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-4);
+}
+.lp-live__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: var(--mc-s-4);
+}
+.lp-live__list li {
+    display: flex;
+    gap: var(--mc-s-3);
+    align-items: flex-start;
+}
+.lp-live__ico {
+    width: 40px; height: 40px;
+    border-radius: var(--mc-r-md);
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    transition: transform var(--mc-dur-med) var(--mc-ease), box-shadow var(--mc-dur-med) var(--mc-ease);
+}
+.lp-live__ico i { width: 1.15rem; height: 1.15rem; }
+.lp-live__list li:hover .lp-live__ico {
+    transform: rotate(-8deg) scale(1.08);
     box-shadow: 0 0 0 4px var(--mc-accent-halo);
 }
-.lp-feedback textarea { min-height: 7rem; resize: vertical; margin-bottom: var(--mc-s-4); }
+.lp-live__list strong {
+    display: block;
+    color: var(--mc-text-hi);
+    font-size: 1rem;
+    margin-bottom: 3px;
+    font-weight: 600;
+}
+.lp-live__list span {
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+    line-height: var(--mc-lh-normal);
+}
+.lp-live__cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--mc-s-3);
+    padding-top: var(--mc-s-3);
+}
 </style>
+
+{# ---- Landing-page micro-animations: count-up on scroll ---- #}
+<script>
+(function () {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var nodes = document.querySelectorAll('[data-count-to]');
+    if (!nodes.length || !('IntersectionObserver' in window)) {
+        nodes.forEach(function (n) { n.textContent = n.dataset.countTo; });
+        return;
+    }
+
+    function ease(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function animate(node) {
+        var target = parseFloat(node.dataset.countTo);
+        if (isNaN(target)) return;
+        var isFloat = String(node.dataset.countTo).indexOf('.') !== -1;
+        var start = performance.now();
+        var duration = 1600;
+
+        function tick(now) {
+            var p = Math.min((now - start) / duration, 1);
+            var v = target * ease(p);
+            node.textContent = isFloat ? v.toFixed(1) : Math.round(v).toLocaleString();
+            if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+    }
+
+    var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+            if (e.isIntersecting) {
+                animate(e.target);
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.4 });
+
+    nodes.forEach(function (n) { io.observe(n); });
+})();
+</script>
 
 {% if scroll_to_feedback %}
 <script>
