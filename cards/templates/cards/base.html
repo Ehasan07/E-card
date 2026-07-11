@@ -146,6 +146,16 @@
             .mc-back-btn, .mc-page-mark { width: 30px; height: 30px; }
             body:has(.mc-page-bar) .mc-nav .mc-nav__inner { padding-left: 84px; }
         }
+
+        /* Kill every floating overlay when printing — the printer / PDF only
+           gets clean page content. Applies to the back-button pill, the
+           language switcher, plus any element marked .no-print. */
+        @media print {
+            .mc-page-bar,
+            .mc-lang-pill,
+            .no-print { display: none !important; }
+            body:has(.mc-page-bar) .mc-nav .mc-nav__inner { padding-left: 0 !important; }
+        }
     </style>
 
     <script src="{% static 'cards/js/theme.js' %}?v=1"></script>
