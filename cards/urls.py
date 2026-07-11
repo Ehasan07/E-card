@@ -16,6 +16,7 @@ urlpatterns = [
     path('card/<slug:slug>/edit/', views.edit_card, name='edit_card'),
     path('card/<slug:slug>/request-upgrade/', views.request_upgrade, name='request_upgrade'),
     path('card/<slug:slug>/vcard/', views.download_vcard, name='download_vcard'),
+    path('card/<slug:slug>/physical/', views.physical_card, name='physical_card'),
     path('card/<slug:slug>/lead/', views.submit_lead, name='submit_lead'),
     path('card/<slug:slug>/analytics/', views.card_analytics, name='card_analytics'),
     path('leads/', views.leads_inbox, name='leads_inbox'),

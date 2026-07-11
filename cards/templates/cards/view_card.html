@@ -255,6 +255,10 @@
                         <i data-lucide="message-circle"></i>
                         {% trans "Share via WhatsApp" %}
                     </a>
+                    <a href="{% url 'physical_card' card.slug %}" class="mc-btn mc-btn--primary mc-btn--block">
+                        <i data-lucide="printer"></i>
+                        {% trans "Print physical card" %}
+                    </a>
                     {% if is_owner %}
                         <a href="{% url 'edit_card' card.slug %}" class="mc-btn mc-btn--outline mc-btn--block">
                             <i data-lucide="square-pen"></i>

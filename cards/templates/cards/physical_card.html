@@ -1,0 +1,631 @@
+{% extends 'cards/base.html' %}
+{% load static %}
+
+{% block title %}Print card — {{ card.card_data.firstName }} {{ card.card_data.lastName }}{% endblock %}
+{% block page_icon %}printer{% endblock %}
+{% block page_label %}Print{% endblock %}
+
+{% block content %}
+<div class="pc-page" {% if theme %}style="--pc-bg: {{ theme.background }}; --pc-accent: {{ theme.accent_color }}; --pc-text: {{ theme.text_color }};"{% endif %}>
+
+    {# ================ TOOLBAR (hidden when printing) ================ #}
+    <header class="pc-toolbar no-print">
+        <div class="pc-toolbar__intro">
+            <span class="mc-badge mc-badge--accent">
+                <i data-lucide="printer"></i>
+                Print-ready · ID-1 size (85.6 × 54 mm)
+            </span>
+            <h1>Your physical card</h1>
+            <p class="mc-text-muted">Front + back, standard business card size. Use "Print" to save as PDF or send straight to your printer. Colors and QR are preserved.</p>
+        </div>
+        <div class="pc-toolbar__actions">
+            <a href="{% url 'view_card' card.slug %}" class="mc-btn mc-btn--ghost">
+                <i data-lucide="arrow-left"></i>
+                Back to digital card
+            </a>
+            <button type="button" id="printBtn" class="mc-btn mc-btn--primary">
+                <i data-lucide="printer"></i>
+                Print / Save as PDF
+            </button>
+        </div>
+    </header>
+
+    {# ================ ATMOSPHERIC BACKDROP ================ #}
+    <div class="pc-bg no-print" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+        <div class="mc-aurora mc-aurora--cyan"              style="width:460px;height:460px;bottom:-180px;right:-160px;opacity:0.28;"></div>
+    </div>
+
+    {# ================ CARD DISPLAY ================ #}
+    <div class="pc-stage">
+
+        {# --------- FRONT --------- #}
+        <div class="pc-page-wrap pc-page-front">
+            <span class="pc-label no-print">FRONT</span>
+            <article class="pc-card pc-card--front">
+                <div class="pc-shine" aria-hidden="true"></div>
+
+                <header class="pc-card__brand">
+                    <span class="pc-logo-mark"></span>
+                    <span class="pc-brand-text">MY<span class="pc-brand-dot">·</span>Card</span>
+                </header>
+
+                <div class="pc-card__type">
+                    {% if card.card_type == 'business' %}BUSINESS{% else %}PERSONAL{% endif %}
+                </div>
+
+                <div class="pc-card__main">
+                    <div class="pc-card__avatar">
+                        {% if card.avatar %}
+                            <img src="{{ card.avatar.url }}" alt="">
+                        {% else %}
+                            <span>{{ card.card_data.firstName|default:''|slice:':1' }}{{ card.card_data.lastName|default:''|slice:':1' }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="pc-card__identity">
+                        <h2 class="pc-name">
+                            {{ card.card_data.firstName|default:'' }}
+                            <span class="pc-name-last">{{ card.card_data.lastName|default:'' }}</span>
+                        </h2>
+                        {% if card.card_data.jobTitle or card.card_data.company %}
+                            <p class="pc-role">
+                                {{ card.card_data.jobTitle|default:'' }}{% if card.card_data.jobTitle and card.card_data.company %} · {% endif %}<strong>{{ card.card_data.company|default:'' }}</strong>
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="pc-card__contacts">
+                    {% if phone_display %}
+                        <span class="pc-contact"><i data-lucide="phone"></i>{{ phone_display }}</span>
+                    {% endif %}
+                    {% if card.card_data.email %}
+                        <span class="pc-contact"><i data-lucide="mail"></i>{{ card.card_data.email }}</span>
+                    {% endif %}
+                </div>
+
+                <footer class="pc-card__foot">
+                    {% if card.card_data.website %}
+                        <span class="pc-website">
+                            <i data-lucide="globe"></i>
+                            {{ card.card_data.website|cut:'https://'|cut:'http://'|truncatechars:36 }}
+                        </span>
+                    {% else %}
+                        <span class="pc-website"><i data-lucide="globe"></i>mycard.dupno.com/card/{{ card.slug }}</span>
+                    {% endif %}
+                    {% if card.logo %}
+                        <span class="pc-card__logo">
+                            <img src="{{ card.logo.url }}" alt="{{ card.card_data.logo_name|default:'' }}">
+                        </span>
+                    {% elif card.card_data.logo_name %}
+                        <span class="pc-card__logo-text">{{ card.card_data.logo_name|slice:':2'|upper }}</span>
+                    {% endif %}
+                </footer>
+            </article>
+        </div>
+
+        {# --------- BACK --------- #}
+        <div class="pc-page-wrap pc-page-back">
+            <span class="pc-label no-print">BACK</span>
+            <article class="pc-card pc-card--back">
+                <div class="pc-shine" aria-hidden="true"></div>
+
+                <header class="pc-back__head">
+                    <div>
+                        <span class="pc-caption">Scan this code</span>
+                        <h3>Save my digital card</h3>
+                        <p class="pc-back__lede">Point your camera at the QR to open the full profile — contacts, socials, and one-tap save.</p>
+                    </div>
+                    <span class="pc-logo-mark pc-logo-mark--small"></span>
+                </header>
+
+                <div class="pc-back__body">
+                    <div class="pc-qr">
+                        {% if card.qr_code %}
+                            <img src="{{ card.qr_code.url }}" alt="QR code">
+                        {% else %}
+                            <div class="pc-qr__placeholder">QR</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pc-back__info">
+                        {% if card.card_data.address %}
+                            <div class="pc-info-row">
+                                <i data-lucide="map-pin"></i>
+                                <span>{{ card.card_data.address|truncatechars:60 }}</span>
+                            </div>
+                        {% endif %}
+                        {% if top_socials %}
+                            <div class="pc-back__socials">
+                                {% for s in top_socials %}
+                                    <span class="pc-social" data-net="{{ s.net }}">
+                                        {% if s.net == 'facebook' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
+                                        {% elif s.net == 'instagram' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                                        {% elif s.net == 'linkedin' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.063 2.063 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                                        {% elif s.net == 'twitter' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                                        {% elif s.net == 'youtube' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                                        {% elif s.net == 'github' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                                        {% elif s.net == 'tiktok' %}<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.53.02C13.84 0 15.14.01 16.44 0c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                                        {% endif %}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <footer class="pc-back__foot">
+                    <span class="pc-back__mono">mycard.dupno.com/card/{{ card.slug }}</span>
+                    <span class="pc-back__brand">Digital identity, done right.</span>
+                </footer>
+            </article>
+        </div>
+    </div>
+
+    <div class="pc-hint no-print">
+        <i data-lucide="info"></i>
+        In your browser's print dialog, choose <strong>85.6mm × 54mm</strong> (or "actual size") for a card-perfect result. Enable <strong>background graphics</strong> to keep the theme colours.
+    </div>
+</div>
+
+<style>
+/* ==========================================================================
+   Physical card — ID-1 standard size (85.6mm × 54mm, ISO/IEC 7810)
+   ========================================================================== */
+
+/* Page defaults (for printer + PDF export) */
+@page {
+    size: 85.6mm 54mm;
+    margin: 0;
+}
+
+.pc-page {
+    --pc-bg: linear-gradient(150deg, #05060B 0%, #0B0D14 40%, #124D33 100%);
+    --pc-accent: #7CFFB2;
+    --pc-text: #F2F4F8;
+    --pc-card-w: 85.6mm;
+    --pc-card-h: 54mm;
+
+    position: relative;
+    min-height: 100vh;
+    padding: var(--mc-s-6) 0 var(--mc-s-9);
+    overflow: hidden;
+    background: var(--mc-bg-0);
+}
+.pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+/* Toolbar */
+.pc-toolbar {
+    max-width: 1000px;
+    margin: 0 auto var(--mc-s-6);
+    padding: 0 var(--mc-s-5);
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: var(--mc-s-5);
+    flex-wrap: wrap;
+}
+.pc-toolbar__intro { flex: 1; min-width: 260px; }
+.pc-toolbar__intro h1 {
+    font-family: var(--mc-font-display);
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    margin: var(--mc-s-3) 0 var(--mc-s-2);
+}
+.pc-toolbar__intro p { margin: 0; max-width: 600px; }
+.pc-toolbar__actions { display: flex; gap: var(--mc-s-2); flex-wrap: wrap; }
+
+/* Stage — 2 cards side by side (front + back) */
+.pc-stage {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    gap: var(--mc-s-6);
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 0 var(--mc-s-4);
+}
+.pc-page-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-3);
+    align-items: center;
+}
+.pc-label {
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: var(--mc-text-md);
+    text-transform: uppercase;
+    padding: 3px 12px;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+}
+
+/* Card base */
+.pc-card {
+    width: var(--pc-card-w);
+    height: var(--pc-card-h);
+    background: var(--pc-bg);
+    color: var(--pc-text);
+    border-radius: 3mm;
+    padding: 4mm 4.5mm;
+    position: relative;
+    overflow: hidden;
+    font-family: var(--mc-font-display);
+    box-shadow:
+        0 12px 40px -8px rgba(0,0,0,0.4),
+        0 0 0 1px rgba(255,255,255,0.06),
+        0 0 0 6px var(--mc-accent-halo);
+    display: flex;
+    flex-direction: column;
+    isolation: isolate;
+    /* Preserve exact colours when printing */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+}
+.pc-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 0%, rgba(255,255,255,0.14), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+.pc-card > * { position: relative; z-index: 1; }
+
+/* Foil / shine */
+.pc-shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 65%);
+    background-size: 300% 100%;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: 0;
+}
+
+/* ===== FRONT ===== */
+.pc-card__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.4mm;
+    font-family: var(--mc-font-display);
+    font-size: 2.6mm;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: var(--pc-text);
+}
+.pc-logo-mark {
+    width: 3.6mm;
+    height: 3.6mm;
+    border-radius: 0.8mm;
+    background: linear-gradient(135deg, var(--pc-accent), #38E1FF);
+    box-shadow: 0 0 3mm var(--pc-accent);
+}
+.pc-logo-mark--small { width: 3mm; height: 3mm; }
+.pc-brand-text { font-family: var(--mc-font-display); }
+.pc-brand-dot { color: var(--pc-accent); }
+
+.pc-card__type {
+    position: absolute;
+    top: 4mm;
+    right: 4.5mm;
+    font-family: var(--mc-font-mono);
+    font-size: 1.7mm;
+    font-weight: 700;
+    letter-spacing: 0.24em;
+    padding: 0.6mm 2mm;
+    border: 0.3mm solid var(--pc-accent);
+    color: var(--pc-accent);
+    border-radius: 999px;
+    z-index: 2;
+}
+
+.pc-card__main {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+    margin-top: 2.2mm;
+    flex: 1;
+}
+.pc-card__avatar {
+    width: 14mm;
+    height: 14mm;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 0.4mm solid var(--pc-accent);
+    box-shadow: 0 0 2mm var(--pc-accent);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    color: var(--pc-text);
+    font-size: 4mm;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+.pc-card__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pc-card__identity { min-width: 0; }
+
+.pc-name {
+    font-family: var(--mc-font-display);
+    font-size: 4.6mm;
+    font-weight: 700;
+    line-height: 1.05;
+    margin: 0 0 0.8mm;
+    letter-spacing: -0.01em;
+    color: var(--pc-text);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.pc-name-last {
+    color: var(--pc-accent);
+    font-weight: 700;
+}
+.pc-role {
+    font-family: var(--mc-font-body);
+    font-size: 2.3mm;
+    color: rgba(255,255,255,0.75);
+    margin: 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+.pc-role strong { color: var(--pc-text); font-weight: 700; }
+
+.pc-card__contacts {
+    display: flex;
+    gap: 3mm;
+    margin: 2mm 0;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.pc-contact {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.2mm;
+    font-family: var(--mc-font-mono);
+    font-size: 2.1mm;
+    color: var(--pc-text);
+    white-space: nowrap;
+}
+.pc-contact i, .pc-contact svg { width: 2.4mm; height: 2.4mm; color: var(--pc-accent); }
+
+.pc-card__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5mm;
+    border-top: 0.15mm solid rgba(255,255,255,0.15);
+    margin-top: auto;
+}
+.pc-website {
+    display: inline-flex;
+    align-items: center;
+    gap: 1mm;
+    font-family: var(--mc-font-mono);
+    font-size: 1.9mm;
+    color: rgba(255,255,255,0.72);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    padding-right: 2mm;
+}
+.pc-website i, .pc-website svg { width: 2mm; height: 2mm; color: var(--pc-accent); }
+.pc-card__logo {
+    width: 8mm;
+    height: 8mm;
+    background: rgba(255,255,255,0.10);
+    border-radius: 1mm;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 0.6mm;
+    flex-shrink: 0;
+}
+.pc-card__logo img { max-width: 100%; max-height: 100%; object-fit: contain; filter: brightness(1.05); }
+.pc-card__logo-text {
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 3mm;
+    color: var(--pc-accent);
+    background: rgba(0,0,0,0.25);
+    padding: 1mm 2mm;
+    border-radius: 1mm;
+}
+
+/* ===== BACK ===== */
+.pc-back__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2mm;
+}
+.pc-caption {
+    font-family: var(--mc-font-mono);
+    font-size: 1.6mm;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--pc-accent);
+    display: block;
+    margin-bottom: 0.8mm;
+}
+.pc-back__head h3 {
+    font-family: var(--mc-font-display);
+    font-size: 3.6mm;
+    font-weight: 700;
+    margin: 0 0 1mm;
+    color: var(--pc-text);
+    line-height: 1.1;
+}
+.pc-back__lede {
+    font-family: var(--mc-font-body);
+    font-size: 1.9mm;
+    color: rgba(255,255,255,0.7);
+    margin: 0;
+    line-height: 1.35;
+    max-width: 34mm;
+}
+
+.pc-back__body {
+    display: flex;
+    gap: 3mm;
+    margin: 2mm 0;
+    align-items: center;
+    flex: 1;
+}
+.pc-qr {
+    width: 22mm;
+    height: 22mm;
+    background: #fff;
+    border-radius: 1.5mm;
+    padding: 1mm;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 0.3mm rgba(255,255,255,0.15);
+}
+.pc-qr img { width: 100%; height: 100%; object-fit: contain; }
+.pc-qr__placeholder {
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 6mm;
+    color: #05060B;
+}
+
+.pc-back__info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.4mm;
+    align-self: stretch;
+    justify-content: center;
+}
+.pc-info-row {
+    display: flex;
+    gap: 1.4mm;
+    align-items: flex-start;
+    font-family: var(--mc-font-body);
+    font-size: 1.9mm;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.3;
+}
+.pc-info-row i, .pc-info-row svg { width: 2.2mm; height: 2.2mm; color: var(--pc-accent); flex-shrink: 0; margin-top: 0.1mm; }
+
+.pc-back__socials {
+    display: flex;
+    gap: 1.4mm;
+    margin-top: 0.4mm;
+}
+.pc-social {
+    width: 4.2mm; height: 4.2mm;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.10);
+    display: grid;
+    place-items: center;
+    color: var(--pc-text);
+}
+.pc-social svg { width: 2.3mm; height: 2.3mm; }
+.pc-social[data-net="facebook"]  { color: #4B8BFF; }
+.pc-social[data-net="instagram"] { color: #FF6EA0; }
+.pc-social[data-net="linkedin"]  { color: #5CA5FF; }
+.pc-social[data-net="twitter"]   { color: #6ECBFF; }
+.pc-social[data-net="youtube"]   { color: #FF8484; }
+.pc-social[data-net="github"]    { color: #D0D8E0; }
+.pc-social[data-net="tiktok"]    { color: #6EF3FF; }
+
+.pc-back__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.4mm;
+    border-top: 0.15mm solid rgba(255,255,255,0.15);
+    margin-top: auto;
+}
+.pc-back__mono {
+    font-family: var(--mc-font-mono);
+    font-size: 1.8mm;
+    color: rgba(255,255,255,0.7);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pc-back__brand {
+    font-family: var(--mc-font-body);
+    font-size: 1.6mm;
+    font-style: italic;
+    color: rgba(255,255,255,0.55);
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 2mm;
+}
+
+/* Hint */
+.pc-hint {
+    max-width: 640px;
+    margin: var(--mc-s-8) auto 0;
+    padding: var(--mc-s-3) var(--mc-s-4);
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-body-sm);
+    display: flex;
+    gap: var(--mc-s-3);
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+.pc-hint i { color: var(--mc-accent); flex-shrink: 0; width: 1.1rem; height: 1.1rem; }
+.pc-hint strong { color: var(--mc-text-hi); }
+
+/* Screen scale — show cards at ~2× so they're visible without a magnifier */
+@media screen {
+    .pc-card {
+        transform: scale(2);
+        transform-origin: top center;
+        margin-bottom: 60mm;
+    }
+    .pc-page-wrap { margin-bottom: 20mm; }
+}
+
+/* Print rules */
+@media print {
+    body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+    .no-print { display: none !important; }
+    .pc-page { padding: 0 !important; background: #fff !important; min-height: auto; }
+    .pc-stage { display: block; padding: 0; gap: 0; }
+    .pc-page-wrap { margin: 0; padding: 0; display: block; }
+    .pc-page-front { page-break-after: always; }
+    .pc-card {
+        transform: none !important;
+        margin: 0 !important;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .pc-shine { display: none; }
+}
+</style>
+
+<script>
+document.getElementById('printBtn').addEventListener('click', function() {
+    window.print();
+});
+</script>
+{% endblock %}

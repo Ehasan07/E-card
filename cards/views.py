@@ -1564,6 +1564,39 @@ def lead_update_status(request, lead_id):
     return redirect('leads_inbox')
 
 
+def physical_card(request, slug):
+    """Printable ID-1 sized physical card (front + back) with QR."""
+    card = get_object_or_404(Card, slug=slug, is_active=True)
+
+    whatsapp_link = _normalize_whatsapp_link(card.card_data.get('whatsapp'))
+    phone_digits, phone_display = _normalize_phone_number(card.card_data.get('phone'))
+    phone_tel = f"+{phone_digits}" if phone_digits else ''
+
+    # Pick top 3 social handles for the back (in a fixed priority order)
+    social_priority = ['linkedin', 'instagram', 'twitter', 'facebook', 'youtube', 'github', 'tiktok']
+    top_socials = []
+    for key in social_priority:
+        val = (card.card_data or {}).get(key)
+        if val:
+            top_socials.append({'net': key, 'url': val})
+        if len(top_socials) == 3:
+            break
+
+    theme = None
+    theme_slug = (card.card_data or {}).get('theme_slug')
+    if theme_slug:
+        theme = CardTheme.objects.filter(slug=theme_slug, is_active=True).first()
+
+    return render(request, 'cards/physical_card.html', {
+        'card': card,
+        'whatsapp_link': whatsapp_link,
+        'phone_display': phone_display,
+        'phone_tel': phone_tel,
+        'top_socials': top_socials,
+        'theme': theme,
+    })
+
+
 def download_vcard(request, slug):
     """Serve a .vcf file so any contacts app can save the details."""
     card = get_object_or_404(Card, slug=slug, is_active=True)
