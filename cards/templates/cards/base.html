@@ -99,23 +99,24 @@
         }
 
         /* ---- Page bar: back button + page identity marker ---- */
+        /* z-index MUST beat mc-nav (100) so pages with a nav still show it */
         .mc-page-bar {
             position: fixed;
-            top: 1rem;
-            left: 1rem;
-            z-index: 95;
+            top: 0.85rem;
+            left: 0.85rem;
+            z-index: 200;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.4rem;
             padding: 3px;
-            background: color-mix(in oklab, var(--mc-bg-1) 90%, transparent);
+            background: color-mix(in oklab, var(--mc-bg-1) 92%, transparent);
             border: 1px solid var(--mc-border-hi);
             border-radius: var(--mc-r-full);
             backdrop-filter: blur(14px);
             box-shadow: var(--mc-shadow-2);
         }
         .mc-back-btn, .mc-page-mark {
-            width: 36px; height: 36px;
+            width: 34px; height: 34px;
             border-radius: 50%;
             display: inline-flex;
             align-items: center;
@@ -129,16 +130,21 @@
         .mc-back-btn:hover {
             background: var(--mc-accent);
             color: var(--mc-text-inv);
+            transform: translateX(-2px);
         }
-        .mc-back-btn i, .mc-page-mark i { width: 1rem; height: 1rem; }
+        .mc-back-btn i, .mc-page-mark i { width: 0.95rem; height: 0.95rem; }
         .mc-page-mark {
             background: var(--mc-accent-halo);
             color: var(--mc-accent);
             cursor: default;
         }
+        /* Push mc-nav content right so it doesn't visually collide with the page-bar */
+        .mc-page-bar ~ .mc-nav .mc-nav__inner,
+        body:has(.mc-page-bar) .mc-nav .mc-nav__inner { padding-left: 100px; }
         @media (max-width: 640px) {
             .mc-page-bar { top: 0.5rem; left: 0.5rem; }
-            .mc-back-btn, .mc-page-mark { width: 32px; height: 32px; }
+            .mc-back-btn, .mc-page-mark { width: 30px; height: 30px; }
+            body:has(.mc-page-bar) .mc-nav .mc-nav__inner { padding-left: 84px; }
         }
     </style>
 

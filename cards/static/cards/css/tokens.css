@@ -4,6 +4,31 @@
    Loaded first in base.html so every other stylesheet can consume vars.
    ========================================================================== */
 
+/* Custom self-hosted fonts — served locally, no network fetch */
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('../fonts/BaiJamjuree-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Bai Jamjuree';
+    src: url('../fonts/BaiJamjuree-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+    font-family: 'Anek Bangla';
+    src: url('../fonts/AnekBangla-Regular.ttf') format('truetype');
+    font-weight: 400 700;
+    font-style: normal;
+    font-display: swap;
+    /* Restrict to Bengali script so browser only pulls it when needed */
+    unicode-range: U+0980-09FF, U+200C-200D, U+25CC;
+}
+
 :root {
   color-scheme: dark light;
 
@@ -69,8 +94,12 @@
   --mc-s-9: 96px;
 
   /* ---- Typography ---- */
-  --mc-font-display: 'Space Grotesk', 'Poppins', system-ui, sans-serif;
-  --mc-font-body:    'Inter', system-ui, -apple-system, sans-serif;
+  /* Bai Jamjuree = English display + body (the user's chosen brand face),
+     Anek Bangla = Bengali script fallback. When a page renders Bangla
+     characters, the browser picks Anek Bangla via unicode-range fallback
+     while English chars stay on Bai Jamjuree — no locale switching needed. */
+  --mc-font-display: 'Bai Jamjuree', 'Anek Bangla', 'Space Grotesk', 'Poppins', system-ui, sans-serif;
+  --mc-font-body:    'Bai Jamjuree', 'Anek Bangla', 'Inter', system-ui, -apple-system, sans-serif;
   --mc-font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
 
   --mc-fs-display-xl: clamp(3rem, 6vw, 5.5rem);
