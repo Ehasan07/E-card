@@ -328,14 +328,21 @@
     letter-spacing: 0.05em;
     color: var(--pc-text);
 }
+/* Same favicon SVG used in the browser tab, nav, footer and now the
+   physical card — one consistent MY-Card mark everywhere. */
 .pc-logo-mark {
-    width: 3.6mm;
-    height: 3.6mm;
+    width: 4mm;
+    height: 4mm;
     border-radius: 0.8mm;
-    background: linear-gradient(135deg, var(--pc-accent), #38E1FF);
+    background-color: transparent;
+    background-image: url("{% static 'cards/img/favicon.svg' %}");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
     box-shadow: 0 0 3mm var(--pc-accent);
+    flex-shrink: 0;
 }
-.pc-logo-mark--small { width: 3mm; height: 3mm; }
+.pc-logo-mark--small { width: 3.2mm; height: 3.2mm; }
 .pc-brand-text { font-family: var(--mc-font-display); }
 .pc-brand-dot { color: var(--pc-accent); }
 
