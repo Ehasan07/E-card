@@ -289,18 +289,39 @@
                 </form>
             </section>
 
-            {# ===== RIGHT: Live preview ===== #}
+            {# ===== RIGHT: Live preview — inside a phone frame ===== #}
             <aside class="ed-preview-shell" aria-label="Live card preview">
                 <div class="ed-preview-sticky" id="previewScroll">
                     <div class="ed-preview-head">
-                        <span class="mc-caption">{% trans "Live preview" %}</span>
-                        <h2>{% trans "Your card, real-time" %}</h2>
+                        <div>
+                            <span class="mc-caption">{% trans "Live preview" %}</span>
+                            <h2>{% trans "Your card, real-time" %}</h2>
+                        </div>
+                        <span class="ed-live-pill">
+                            <span class="ed-live-pill__pulse"></span>
+                            LIVE
+                        </span>
                     </div>
 
-                    <article class="mc-tilt ed-preview-card" id="previewCard" data-mc-tilt data-mc-tilt-max="5"
-                             style="--vc-hero-bg: linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%);">
-                        <div class="mc-tilt__shine"></div>
-                        <div class="ed-preview-card__inner">
+                    <div class="ed-device">
+                        <div class="ed-device__notch">
+                            <span class="ed-device__cam"></span>
+                        </div>
+                        <div class="ed-device__screen">
+                            <div class="ed-device__statusbar">
+                                <span class="ed-device__time mc-mono">9:41</span>
+                                <div class="ed-device__icons">
+                                    <i data-lucide="signal-high"></i>
+                                    <i data-lucide="wifi"></i>
+                                    <i data-lucide="battery-full"></i>
+                                </div>
+                            </div>
+
+                            <article class="mc-tilt ed-preview-card" id="previewCard" data-mc-tilt data-mc-tilt-max="4"
+                                     style="--vc-hero-bg: linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%);">
+                                <div class="mc-tilt__shine"></div>
+                                <span class="ed-preview-card__glare" aria-hidden="true"></span>
+                                <div class="ed-preview-card__inner">
                             <div class="ed-preview-avatar">
                                 <img id="previewAvatarImg" alt="" class="hidden">
                                 <span id="previewAvatarFallback" class="ed-preview-avatar__init">You</span>
@@ -370,6 +391,14 @@
                             </div>
                         </div>
                     </article>
+                        </div>
+                        <div class="ed-device__homebar"></div>
+                    </div>
+
+                    <div class="ed-preview-hint">
+                        <i data-lucide="hand-metal"></i>
+                        <span>Hover koro — 3D tilt, live like a real card</span>
+                    </div>
                 </div>
             </aside>
         </div>
@@ -523,63 +552,113 @@
 .ed-ai-suggestion:hover { transform: translateY(-2px); }
 .ed-ai-suggestion__hint { display: block; margin-top: 4px; font-size: var(--mc-fs-caption); color: var(--mc-text-md); }
 
-/* Curated theme picker */
+/* Curated theme picker — designer showcase style */
 .ed-themes {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: var(--mc-s-3);
 }
 .ed-theme {
     display: flex;
     flex-direction: column;
-    gap: var(--mc-s-3);
+    gap: 0;
     padding: 0;
     background: var(--mc-bg-2);
     border: 2px solid transparent;
-    border-radius: var(--mc-r-md);
+    border-radius: var(--mc-r-lg);
     overflow: hidden;
     cursor: pointer;
     text-align: left;
     transition:
-        transform var(--mc-dur-fast) var(--mc-ease),
-        border-color var(--mc-dur-fast) var(--mc-ease),
-        box-shadow var(--mc-dur-fast) var(--mc-ease);
+        transform var(--mc-dur-med) var(--mc-ease),
+        border-color var(--mc-dur-med) var(--mc-ease),
+        box-shadow var(--mc-dur-med) var(--mc-ease);
+    position: relative;
+    isolation: isolate;
 }
-.ed-theme:hover { transform: translateY(-3px); }
+.ed-theme::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    padding: 2px;
+    background: conic-gradient(from 0deg, var(--taccent), transparent 45deg, transparent 315deg, var(--taccent));
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    animation: mc-spin 4s linear infinite;
+    z-index: -1;
+    transition: opacity var(--mc-dur-med) var(--mc-ease);
+}
+.ed-theme:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px -14px rgba(0,0,0,0.5);
+}
+.ed-theme:hover::before { opacity: 0.7; }
 .ed-theme.is-selected {
     border-color: var(--taccent, var(--mc-accent));
     box-shadow: 0 0 0 4px var(--mc-accent-halo), var(--mc-shadow-2);
 }
+.ed-theme.is-selected::before { opacity: 1; }
+
 .ed-theme__swatch {
-    height: 88px;
+    height: 108px;
     background: var(--tbg);
     position: relative;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--mc-s-3);
 }
+/* Mini "card" mockup inside the swatch */
+.ed-theme__swatch::before {
+    content: '';
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: var(--ttext);
+    opacity: 0.12;
+    box-shadow: 0 0 0 3px var(--taccent), 0 0 20px var(--taccent);
+    transition: transform var(--mc-dur-med) var(--mc-ease);
+}
+.ed-theme:hover .ed-theme__swatch::before { transform: scale(1.08); }
 .ed-theme__swatch::after {
     content: '';
     position: absolute;
-    inset: 10% 15%;
-    border-radius: 8px;
-    background: var(--ttext);
-    opacity: 0.15;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 15%, rgba(255,255,255,0.18), transparent 40%),
+        radial-gradient(circle at 80% 85%, rgba(0,0,0,0.25),   transparent 45%);
+    pointer-events: none;
 }
+
 .ed-theme__meta {
-    padding: var(--mc-s-2) var(--mc-s-3) var(--mc-s-3);
+    padding: var(--mc-s-3) var(--mc-s-3);
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: var(--mc-s-2);
+    background: var(--mc-bg-1);
+    border-top: 1px solid var(--mc-border);
 }
 .ed-theme__name { font-weight: 600; font-size: var(--mc-fs-body-sm); color: var(--mc-text-hi); }
 .ed-theme__pro {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    padding: 2px 6px;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    padding: 3px 8px;
     border-radius: var(--mc-r-sm);
     background: linear-gradient(135deg, #F471FF, #7CFFB2);
     color: var(--mc-text-inv);
+    box-shadow: 0 4px 12px -4px rgba(244,113,255,0.5);
+    animation: ed-pro-shine 3s ease-in-out infinite;
+}
+@keyframes ed-pro-shine {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.2); }
 }
 
 /* Background option grid */
@@ -640,19 +719,196 @@
 
 /* ===== Preview shell (sticky, right side) ===== */
 .ed-preview-shell { position: relative; }
-.ed-preview-sticky { position: sticky; top: calc(72px + var(--mc-s-5)); display: flex; flex-direction: column; gap: var(--mc-s-4); }
-.ed-preview-head { display: flex; flex-direction: column; gap: 4px; }
+.ed-preview-sticky {
+    position: sticky;
+    top: calc(72px + var(--mc-s-5));
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-4);
+    align-items: center;
+    perspective: 1600px;
+}
+.ed-preview-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    gap: var(--mc-s-2);
+}
 .ed-preview-head h2 { font-size: 1.15rem; margin: 0; }
+
+/* ===== LIVE pulse pill ===== */
+.ed-live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    border: 1px solid var(--mc-border-glow);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo);
+}
+.ed-live-pill__pulse {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--mc-accent);
+    box-shadow: 0 0 10px var(--mc-accent);
+    animation: ed-pulse 1.6s ease-in-out infinite;
+}
+@keyframes ed-pulse {
+    0%, 100% { opacity: 1;   transform: scale(1); }
+    50%      { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ===== iPhone-style device frame ===== */
+.ed-device {
+    width: 100%;
+    max-width: 360px;
+    aspect-ratio: 9 / 18;
+    border-radius: 44px;
+    padding: 12px 10px;
+    background: linear-gradient(160deg, #14151E 0%, #05060B 50%, #14151E 100%);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow:
+        0 30px 80px -30px rgba(0,0,0,0.7),
+        inset 0 0 0 3px #000,
+        inset 0 0 0 4px rgba(255,255,255,0.05),
+        0 0 0 1px var(--mc-accent-halo);
+    position: relative;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    animation: ed-device-in 0.9s var(--mc-ease) both;
+}
+@keyframes ed-device-in {
+    from { opacity: 0; transform: perspective(1600px) rotateY(-6deg) translateY(24px); }
+    to   { opacity: 1; transform: perspective(1600px) rotateY(0deg) translateY(0); }
+}
+.ed-device__notch {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    width: 92px; height: 22px;
+    background: #000;
+    border-radius: 16px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-right: 8px;
+}
+.ed-device__cam {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #2a2a3a, #050505 70%);
+    box-shadow: inset 0 0 2px rgba(124,255,178,0.4);
+}
+.ed-device__screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 34px;
+    overflow: hidden;
+    background: var(--mc-bg-0);
+    padding: 34px 12px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+}
+.ed-device__statusbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 8px 4px;
+    color: var(--mc-text-hi);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.ed-device__icons {
+    display: flex;
+    gap: 4px;
+    color: var(--mc-text-hi);
+}
+.ed-device__icons i { width: 12px; height: 12px; }
+.ed-device__homebar {
+    position: absolute;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: 92px; height: 4px;
+    background: rgba(255,255,255,0.35);
+    border-radius: 4px;
+    z-index: 3;
+}
+
+/* ===== Preview card inside device ===== */
+.ed-preview-card__glare {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.18) 50%, transparent 60%);
+    background-size: 300% 100%;
+    background-position: -100% 0;
+    animation: ed-glare 5s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    border-radius: inherit;
+    z-index: 1;
+}
+@keyframes ed-glare {
+    0%, 100% { background-position: -100% 0; }
+    50%      { background-position: 200% 0; }
+}
+
+/* Hint below device */
+.ed-preview-hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: var(--mc-r-full);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    font-size: var(--mc-fs-caption);
+    color: var(--mc-text-md);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+.ed-preview-hint i { width: 0.9rem; height: 0.9rem; color: var(--mc-accent); }
+
+/* Focus glow effect — when user types in a form field, preview area pulses */
+.ed-preview-card.is-glow {
+    animation: ed-glow 0.9s var(--mc-ease);
+}
+@keyframes ed-glow {
+    0%   { box-shadow: 0 0 0 0 var(--mc-accent-glow); }
+    50%  { box-shadow: 0 0 0 6px var(--mc-accent-halo); }
+    100% { box-shadow: 0 0 0 0 transparent; }
+}
+.ed-preview-focus-flash {
+    position: relative;
+    animation: ed-focus-flash 1s ease;
+}
+@keyframes ed-focus-flash {
+    0%   { background: transparent; }
+    30%  { background: var(--mc-accent-halo); }
+    100% { background: transparent; }
+}
 
 .ed-preview-card {
     background: var(--vc-hero-bg);
-    border: 1px solid var(--mc-border-hi);
-    border-radius: var(--mc-r-2xl);
-    padding: clamp(1.5rem, 3vw, 2rem);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 1.1rem 0.9rem;
     text-align: center;
     color: var(--mc-text-hi);
-    box-shadow: var(--mc-shadow-3), 0 0 0 1px var(--mc-accent-halo);
+    box-shadow: 0 8px 24px -8px rgba(0,0,0,0.4);
     position: relative;
+    flex: 1;
+    overflow: hidden;
     overflow: hidden;
     isolation: isolate;
 }
@@ -983,6 +1239,23 @@
         if (e) e.addEventListener('input', syncName);
     });
     syncName();
+
+    /* Focus glow: when a form field is typed into, the preview card pulses */
+    var previewCardEl = document.getElementById('previewCard');
+    var glowTimer = null;
+    function triggerGlow() {
+        if (!previewCardEl) return;
+        previewCardEl.classList.remove('is-glow');
+        // Force reflow so animation restarts
+        void previewCardEl.offsetWidth;
+        previewCardEl.classList.add('is-glow');
+        if (glowTimer) clearTimeout(glowTimer);
+        glowTimer = setTimeout(function() { previewCardEl.classList.remove('is-glow'); }, 900);
+    }
+    document.querySelectorAll('.ed-form input:not([type="file"]):not([type="hidden"]), .ed-form textarea, .ed-form select').forEach(function(input) {
+        input.addEventListener('input', triggerGlow);
+        input.addEventListener('change', triggerGlow);
+    });
 
     /* Avatar preview from file upload */
     var avatarInput = document.getElementById('id_avatar');
