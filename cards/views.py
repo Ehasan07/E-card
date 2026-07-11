@@ -693,9 +693,8 @@ def admin_dashboard(request):
         profile = getattr(user, 'profile', None)
         card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
         card_limit_form = AdminCardLimitForm(initial={'card_limit': card_limit}, auto_id=f'id_user_{user.id}_%s')
-        primary_card_slug = (
-            user.card_set.order_by('created_at').values_list('slug', flat=True).first()
-        )
+        user_cards = list(user.card_set.order_by('created_at'))
+        primary_card_slug = user_cards[0].slug if user_cards else None
         user_records.append({
             'instance': user,
             'id': user.id,
@@ -711,6 +710,9 @@ def admin_dashboard(request):
             'business_count': user.business_count,
             'card_limit_form': card_limit_form,
             'primary_card_slug': primary_card_slug,
+            'cards': user_cards,
+            'has_live_card':    any(c.is_active for c in user_cards),
+            'has_offline_card': any(not c.is_active for c in user_cards),
         })
 
     pending_requests = UpgradeRequest.objects.filter(status=UpgradeRequest.STATUS_PENDING)

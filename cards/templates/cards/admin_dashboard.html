@@ -229,11 +229,25 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="mc-mono">{{ u.card_count }}</span>
-                                    {% if u.primary_card_slug %}
-                                        <a href="{% url 'view_card' u.primary_card_slug %}" target="_blank" title="View primary card" class="ad-mini-btn">
-                                            <i data-lucide="external-link"></i>
-                                        </a>
+                                    {% if u.cards %}
+                                        <div class="ad-card-list">
+                                            {% for c in u.cards %}
+                                                <form action="{% url 'admin_toggle_card_status' c.slug %}" method="post" class="ad-card-toggle">
+                                                    {% csrf_token %}
+                                                    <a href="{% url 'view_card' c.slug %}" target="_blank" class="ad-card-toggle__slug" title="View card">
+                                                        <i data-lucide="{% if c.card_type == 'business' %}briefcase{% else %}user{% endif %}"></i>
+                                                        {{ c.slug }}
+                                                    </a>
+                                                    <button type="submit" class="ad-toggle {% if c.is_active %}is-on{% else %}is-off{% endif %}"
+                                                            title="{% if c.is_active %}Currently LIVE — click to take offline{% else %}Currently OFFLINE — click to bring back online{% endif %}">
+                                                        <span class="ad-toggle__dot"></span>
+                                                        <span class="ad-toggle__label">{% if c.is_active %}LIVE{% else %}OFFLINE{% endif %}</span>
+                                                    </button>
+                                                </form>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <span class="mc-text-dim">no cards</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -571,6 +585,80 @@
     outline: none;
 }
 .ad-limit-form input[type="number"]:focus { border-color: var(--admin-accent); }
+
+/* Card list + toggle in user row */
+.ad-card-list { display: grid; gap: 6px; }
+.ad-card-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-sm);
+    justify-content: space-between;
+    max-width: 260px;
+}
+.ad-card-toggle__slug {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-caption);
+    text-decoration: none;
+    max-width: 130px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.ad-card-toggle__slug i { width: 0.85rem; height: 0.85rem; color: var(--mc-accent); flex-shrink: 0; }
+.ad-card-toggle__slug:hover { color: var(--mc-accent); }
+.ad-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--mc-r-full);
+    font-family: var(--mc-font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all var(--mc-dur-fast) var(--mc-ease);
+}
+.ad-toggle__dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 6px currentColor;
+}
+.ad-toggle.is-on {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: var(--mc-success);
+}
+.ad-toggle.is-on:hover {
+    background: rgba(248, 113, 113, 0.15);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: var(--mc-error);
+}
+.ad-toggle.is-on:hover .ad-toggle__label::before { content: 'TAKE OFFLINE'; }
+.ad-toggle.is-on:hover .ad-toggle__label { visibility: hidden; position: relative; }
+.ad-toggle.is-on:hover .ad-toggle__label::before { visibility: visible; position: absolute; left: 0; top: 0; }
+.ad-toggle.is-off {
+    background: rgba(248, 113, 113, 0.15);
+    border-color: rgba(248, 113, 113, 0.4);
+    color: var(--mc-error);
+}
+.ad-toggle.is-off:hover {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: rgba(34, 197, 94, 0.4);
+    color: var(--mc-success);
+}
+.ad-toggle.is-off:hover .ad-toggle__label::before { content: 'BRING LIVE'; }
+.ad-toggle.is-off:hover .ad-toggle__label { visibility: hidden; position: relative; }
+.ad-toggle.is-off:hover .ad-toggle__label::before { visibility: visible; position: absolute; left: 0; top: 0; }
 
 /* Feedback */
 .ad-feedback { padding: var(--mc-s-5); }
