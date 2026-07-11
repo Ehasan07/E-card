@@ -1337,12 +1337,16 @@ def _send_welcome_email(user):
     """
 
     try:
-        _send_zepto_html(
+        ok, msg = _send_zepto_html(
             to_email=email,
             to_name=name,
             subject='Welcome to MY-Card 🎉',
             html_body=html_body,
         )
+        if ok:
+            logger.info("Welcome email SENT to %s", email)
+        else:
+            logger.warning("Welcome email NOT sent to %s: %s", email, msg)
     except Exception as exc:
         logger.warning("Welcome email failed for %s: %s", email, exc)
 

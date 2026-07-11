@@ -346,11 +346,24 @@
   gap: var(--mc-s-2);
 }
 
+/* Nav logo mark — uses the same SVG as the favicon so the tab icon,
+   nav bar, footer, and physical card front are all the same mark. */
 .mc-nav__logo-mark {
-  width: 30px; height: 30px;
+  width: 32px; height: 32px;
   border-radius: var(--mc-r-sm);
-  background: linear-gradient(135deg, var(--mc-accent), var(--mc-cyan));
+  background-color: transparent;
+  background-image: url('../img/favicon.svg');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
   box-shadow: var(--mc-shadow-glow);
+  flex-shrink: 0;
+}
+/* Admin surfaces tint the same mark violet so operators can tell they
+   are on the control interface — the SVG is unchanged. */
+.mc-nav__logo-mark--admin {
+  filter: hue-rotate(240deg) saturate(1.2);
+  box-shadow: 0 0 20px rgba(183, 139, 255, 0.35);
 }
 
 .mc-nav__links {
