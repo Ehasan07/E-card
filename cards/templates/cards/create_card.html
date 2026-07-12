@@ -65,6 +65,65 @@
                         </div>
                     {% endif %}
 
+                    {% if card %}
+                    {# ---- Section 0: Public URL — one-time customisation ---- #}
+                    <section class="ed-section ed-slug-section">
+                        <header class="ed-section__head">
+                            <span class="ed-step"><i data-lucide="link-2"></i></span>
+                            <h2>{% trans "Public URL" %}</h2>
+                            {% if card.slug_customized %}
+                                <span class="ed-slug-lock" title="{% trans 'Already customised — cannot change again' %}">
+                                    <i data-lucide="lock"></i> {% trans "Locked" %}
+                                </span>
+                            {% else %}
+                                <span class="ed-slug-pill">
+                                    <i data-lucide="sparkles"></i> {% trans "One-time change" %}
+                                </span>
+                            {% endif %}
+                        </header>
+
+                        <div class="ed-slug-body">
+                            <p class="mc-text-muted ed-slug-lede">
+                                {% if card.slug_customized %}
+                                    {% trans "You've already used your one-time URL change. Contact support if you need it changed again." %}
+                                {% else %}
+                                    {% trans "This is the shareable link people scan and open. Pick something short and memorable — you can only change it once, so choose carefully." %}
+                                {% endif %}
+                            </p>
+
+                            <label class="mc-label ed-slug-label">
+                                <span><i data-lucide="globe"></i> {% trans "Your card URL" %}</span>
+                                <div class="ed-slug-input">
+                                    <span class="ed-slug-input__prefix mc-mono">mycard.dupno.com/card/</span>
+                                    <input type="text"
+                                           name="custom_slug"
+                                           id="ed-custom-slug"
+                                           value="{{ card.slug }}"
+                                           maxlength="60"
+                                           pattern="[a-z0-9-]{3,60}"
+                                           autocomplete="off"
+                                           spellcheck="false"
+                                           {% if card.slug_customized %}readonly aria-readonly="true"{% endif %}>
+                                </div>
+                                {% if slug_error %}
+                                    <span class="mc-field-error">{{ slug_error }}</span>
+                                {% elif not card.slug_customized %}
+                                    <span class="mc-field-hint">
+                                        {% trans "Lowercase letters, numbers, and hyphens only. 3–60 characters. Once saved, this link is locked." %}
+                                    </span>
+                                {% endif %}
+                            </label>
+
+                            {% if not card.slug_customized %}
+                                <div class="ed-slug-preview" data-mc-slug-preview>
+                                    <span>{% trans "Preview:" %}</span>
+                                    <span class="mc-mono" data-mc-slug-preview-url>mycard.dupno.com/card/{{ card.slug }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </section>
+                    {% endif %}
+
                     {# ---- Section 1: Personal ---- #}
                     <section class="ed-section">
                         <header class="ed-section__head">
@@ -408,6 +467,149 @@
 {{ form.media }}
 
 <style>
+/* ============================================================
+   PUBLIC URL — one-time editable slug section
+   ============================================================ */
+.ed-slug-section {
+    position: relative;
+    background: linear-gradient(160deg, var(--mc-bg-2) 0%, var(--mc-bg-1) 100%);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-xl);
+    padding: var(--mc-s-5);
+    margin-bottom: var(--mc-s-5);
+    overflow: hidden;
+}
+.ed-slug-section::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--mc-accent), transparent 80%);
+}
+.ed-slug-section .ed-section__head {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    margin-bottom: var(--mc-s-4);
+}
+.ed-slug-section .ed-section__head h2 {
+    font-size: 1.1rem;
+    margin: 0;
+    flex: 1;
+}
+.ed-slug-pill,
+.ed-slug-lock {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.ed-slug-pill {
+    color: var(--mc-accent);
+    border: 1px dashed var(--mc-accent);
+    background: color-mix(in srgb, var(--mc-accent) 10%, transparent);
+}
+.ed-slug-lock {
+    color: var(--mc-text-md);
+    border: 1px solid var(--mc-border-hi);
+    background: var(--mc-bg-3);
+}
+.ed-slug-pill i,
+.ed-slug-lock i { width: 12px; height: 12px; }
+
+.ed-slug-lede { margin: 0 0 var(--mc-s-3); font-size: var(--mc-fs-body-sm); }
+
+.ed-slug-label > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mc-text-md);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+.ed-slug-label > span i { color: var(--mc-accent); width: 14px; height: 14px; }
+
+.ed-slug-input {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-2);
+    overflow: hidden;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.ed-slug-input:focus-within {
+    border-color: var(--mc-accent);
+    box-shadow: 0 0 0 4px var(--mc-accent-halo);
+}
+.ed-slug-input__prefix {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.85rem;
+    background: var(--mc-bg-3);
+    color: var(--mc-text-md);
+    font-size: 0.85rem;
+    border-right: 1px solid var(--mc-border);
+    user-select: all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 55%;
+}
+.ed-slug-input input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    border: none;
+    padding: 0.7rem 0.9rem;
+    color: var(--mc-text-hi);
+    font-family: var(--mc-font-mono);
+    font-size: 0.95rem;
+    outline: none;
+}
+.ed-slug-input input[readonly] {
+    color: var(--mc-text-md);
+    background: color-mix(in srgb, var(--mc-border) 30%, transparent);
+    cursor: not-allowed;
+}
+.ed-slug-preview {
+    margin-top: var(--mc-s-3);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: var(--mc-r-md);
+    background: var(--mc-accent-halo);
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+    max-width: 100%;
+    overflow: hidden;
+}
+.ed-slug-preview > span:first-child {
+    color: var(--mc-text-md);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.65rem;
+    font-family: var(--mc-font-mono);
+    flex-shrink: 0;
+}
+.ed-slug-preview [data-mc-slug-preview-url] {
+    color: var(--mc-accent);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 /* ===== Editor page ===== */
 .ed-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-6) 0 var(--mc-s-9); overflow: hidden; }
 .ed-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -1371,6 +1573,18 @@
                 if (window.lucide) lucide.createIcons();
                 aiResults.innerHTML = '<div class="mc-field-error">{% trans "Network error." %}</div>';
             });
+        });
+    }
+
+    /* Custom public URL — live sanitisation + preview */
+    var slugInput = document.getElementById('ed-custom-slug');
+    if (slugInput && !slugInput.hasAttribute('readonly')) {
+        var slugPreview = document.querySelector('[data-mc-slug-preview-url]');
+        slugInput.addEventListener('input', function() {
+            var raw = slugInput.value.toLowerCase();
+            var cleaned = raw.replace(/[^a-z0-9-]+/g, '-').replace(/-{2,}/g, '-').replace(/^-+/, '').slice(0, 60);
+            if (cleaned !== slugInput.value) slugInput.value = cleaned;
+            if (slugPreview) slugPreview.textContent = 'mycard.dupno.com/card/' + (cleaned || '…');
         });
     }
 

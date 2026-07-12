@@ -559,9 +559,20 @@ def edit_card(request, slug):
     form_class = CARD_FORM_BY_TYPE.get(card.card_type, CardForm)
     builder_variant = CARD_VARIANT_CONFIG.get(card.card_type, CARD_VARIANT_CONFIG[Card.TYPE_PERSONAL])
 
+    slug_error = None
+
     if request.method == 'POST':
         form = form_class(request.POST, request.FILES, instance=card)
-        if form.is_valid():
+
+        # One-time custom public URL. Applied before form.save() so the
+        # updated slug lands in the same DB write.
+        requested_slug = (request.POST.get('custom_slug') or '').strip().lower()
+        if requested_slug and requested_slug != card.slug:
+            slug_error = _apply_custom_slug(card, requested_slug)
+            if slug_error:
+                messages.error(request, slug_error)
+
+        if slug_error is None and form.is_valid():
             previous_card_data = _card_initial_data(card)
             previous_avatar = card.avatar.name if card.avatar else ''
             previous_logo = card.logo.name if card.logo else ''
@@ -606,8 +617,46 @@ def edit_card(request, slug):
         'builder_variant': builder_variant,
         'themes': CardTheme.objects.filter(is_active=True),
         'feature_ai': settings.FEATURE_AI,
+        'slug_error': slug_error,
     }
     return render(request, 'cards/create_card.html', context)
+
+
+# Slugs that must never be handed to a card because they collide with
+# existing top-level routes or generic words a scanner might mistake.
+_RESERVED_CARD_SLUGS = {
+    'admin', 'my-admin', 'api', 'card', 'cards', 'dashboard', 'edit',
+    'create', 'login', 'logout', 'register', 'signup', 'signin', 'reset',
+    'password', 'documentation', 'docs', 'faq', 'feedback', 'pricing',
+    'physical', 'analytics', 'leads', 'set-language', 'static', 'media',
+    'about', 'help', 'support', 'settings', 'account', 'privacy', 'terms',
+    'test', 'null', 'undefined', 'shiplu07',
+}
+
+
+def _apply_custom_slug(card, requested: str) -> str | None:
+    """Apply a user-requested public URL to *card*.
+
+    Returns None on success (card is mutated in-place) or a human-readable
+    error message the caller should surface to the user. The change is
+    one-shot: once `slug_customized` is True the user is locked out.
+    """
+    if card.slug_customized:
+        return 'This card URL was already customised once and cannot be changed again.'
+
+    cleaned = re.sub(r'[^a-z0-9-]+', '-', requested.lower()).strip('-')
+    cleaned = re.sub(r'-{2,}', '-', cleaned)[:60]
+
+    if len(cleaned) < 3:
+        return 'Public URL must be at least 3 characters — letters, numbers, or hyphens only.'
+    if cleaned in _RESERVED_CARD_SLUGS:
+        return f'"{cleaned}" is reserved. Please choose a different URL.'
+    if Card.objects.exclude(pk=card.pk).filter(slug=cleaned).exists():
+        return f'The URL "{cleaned}" is already taken by another card. Try a more unique variation.'
+
+    card.slug = cleaned
+    card.slug_customized = True
+    return None
 
 
 @user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')

@@ -46,6 +46,10 @@ class Card(models.Model):
     logo = models.ImageField(upload_to='logos/', blank=True, null=True)
     qr_code = models.ImageField(upload_to='qrcodes/', blank=True, null=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
+    slug_customized = models.BooleanField(
+        default=False,
+        help_text="Set to True after the owner uses their one-time public-URL change.",
+    )
     is_active = models.BooleanField(default=True)
     text_color = models.CharField(max_length=20, default='#FFFFFF')
     card_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default=TYPE_PERSONAL)
