@@ -1,26 +1,16 @@
 {% load i18n %}
-{# Shared app sidebar + mobile scrim + topbar.
-   Usage in an authenticated page:
+{% comment %}
+Shared app sidebar + mobile scrim + topbar. Used by every logged-in
+page. The `active` parameter ('dashboard' | 'leads' | 'messages' |
+'analytics' | 'my-cards' | 'plans') controls which item gets the
+highlight rail.
 
-       <div class="dash-shell" data-dash-shell>
-           {% include 'cards/_sidebar.html' with active='leads' %}
-           <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
-           <main class="dash-main">
-               <header class="dash-topbar">…</header>
-               {# page content #}
-           </main>
-       </div>
-
-   The `active` variable ('dashboard' | 'leads' | 'messages' | 'analytics' |
-   'my-cards' | 'plans') controls which item gets the highlight rail.
-
-   Context vars this partial expects (populated by the sidebar context
-   processor for every logged-in request):
-     - sidebar_first_card_slug   → analytics link target (blank ⇒ hidden)
-     - sidebar_new_leads         → integer badge count (0 ⇒ hidden)
-     - user_plan_tier            → 'free' | 'pro' | 'team' | 'admin'
-     - user_is_free              → bool (drives the upsell card)
-#}
+Context vars supplied by the `sidebar` context processor:
+  - sidebar_first_card_slug   analytics link target (blank => hidden)
+  - sidebar_new_leads         integer badge count (0 => hidden)
+  - user_plan_tier            'free' | 'pro' | 'team' | 'admin'
+  - user_is_free              bool (drives the upsell card)
+{% endcomment %}
 <aside class="dash-sidebar" data-dash-sidebar aria-label="{% trans 'Main navigation' %}">
     <a href="{% url 'index' %}" class="dash-sidebar__logo">
         <span class="mc-nav__logo-mark"></span>
