@@ -36,7 +36,7 @@
             <div>
                 <span class="mc-badge mc-badge--accent">
                     <i data-lucide="line-chart"></i>
-                    {% trans "Last 30 days" %}
+                    {% blocktrans with days=analytics_window_days %}Last {{ days }} days{% endblocktrans %}
                 </span>
                 <h1>{{ card.card_data.firstName|default:_("Untitled") }} {{ card.card_data.lastName }}</h1>
                 <p class="mc-text-muted">{% trans "How your card is performing." %}</p>
@@ -45,6 +45,19 @@
                 <i data-lucide="edit-3"></i> {% trans "Edit card" %}
             </a>
         </header>
+
+        {% if analytics_is_capped %}
+            <section class="an-cap mc-fade-up mc-fade-up--d1" role="status">
+                <div class="an-cap__icon"><i data-lucide="lock"></i></div>
+                <div class="an-cap__body">
+                    <h3>{% trans "You're viewing the 7-day window." %}</h3>
+                    <p class="mc-text-muted">{% trans "Free plan analytics are capped at 7 days. Upgrade to Pro for the full 90-day window, click-through breakdowns, and unlimited leads." %}</p>
+                </div>
+                <a href="{% url 'pricing' %}?locked=analytics_range" class="mc-btn mc-btn--primary">
+                    <i data-lucide="rocket"></i> {% trans "Upgrade to Pro" %}
+                </a>
+            </section>
+        {% endif %}
 
         <section class="an-metrics mc-fade-up mc-fade-up--d1">
             <div class="mc-metric">
@@ -146,6 +159,39 @@
 @media (max-width: 640px) {
     .an-clicks__row { grid-template-columns: 100px 1fr auto; }
 }
+
+/* Free-plan analytics-cap banner */
+.an-cap {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-4);
+    padding: var(--mc-s-4) var(--mc-s-5);
+    margin-bottom: var(--mc-s-5);
+    border-radius: var(--mc-r-xl);
+    background: linear-gradient(120deg, color-mix(in srgb, var(--mc-accent) 12%, var(--mc-bg-1)) 0%, var(--mc-bg-1) 60%);
+    border: 1px solid var(--mc-border-hi);
+    flex-wrap: wrap;
+    position: relative;
+    overflow: hidden;
+}
+.an-cap::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--mc-accent), transparent 80%);
+}
+.an-cap__icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+}
+.an-cap__body { flex: 1; min-width: 220px; }
+.an-cap__body h3 { margin: 0 0 4px; font-size: 1rem; }
+.an-cap__body p { margin: 0; font-size: var(--mc-fs-body-sm); }
 </style>
 
 <script>

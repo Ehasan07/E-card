@@ -210,9 +210,10 @@
                                 <span>
                                     <i data-lucide="sticky-note"></i> {% trans "Notes / bio" %}
                                     {% if feature_ai %}
-                                        <button type="button" id="aiBioBtn" class="ed-ai-btn" title="Generate 3 bio suggestions with AI">
-                                            <i data-lucide="sparkles"></i>
+                                        <button type="button" id="aiBioBtn" class="ed-ai-btn{% if user_is_free %} ed-ai-btn--locked{% endif %}" title="{% if user_is_free %}{% trans 'Pro feature — upgrade to unlock AI bio suggestions' %}{% else %}{% trans 'Generate 3 bio suggestions with AI' %}{% endif %}"{% if user_is_free %} data-locked="1"{% endif %}>
+                                            <i data-lucide="{% if user_is_free %}lock{% else %}sparkles{% endif %}"></i>
                                             {% trans "Suggest with AI" %}
+                                            {% if user_is_free %}<span class="ed-ai-btn__pro">PRO</span>{% endif %}
                                         </button>
                                     {% endif %}
                                 </span>
@@ -258,21 +259,31 @@
                         </header>
                         <div class="ed-themes">
                             {% for t in themes %}
-                                <button type="button" class="ed-theme"
+                                <button type="button" class="ed-theme{% if t.locked %} ed-theme--locked{% endif %}"
                                         data-theme-slug="{{ t.slug }}"
                                         data-theme-bg="{{ t.background }}"
                                         data-theme-accent="{{ t.accent_color }}"
                                         data-theme-text="{{ t.text_color }}"
+                                        {% if t.locked %}data-locked="1" data-lock-feature="premium_themes"{% endif %}
                                         style="--tbg: {{ t.background }}; --taccent: {{ t.accent_color }}; --ttext: {{ t.text_color }};"
-                                        title="{{ t.description }}">
-                                    <span class="ed-theme__swatch"></span>
+                                        title="{% if t.locked %}{% trans 'Pro theme — upgrade to unlock' %}{% else %}{{ t.description }}{% endif %}">
+                                    <span class="ed-theme__swatch">
+                                        {% if t.locked %}<i data-lucide="lock" class="ed-theme__lock"></i>{% endif %}
+                                    </span>
                                     <span class="ed-theme__meta">
                                         <span class="ed-theme__name">{{ t.name }}</span>
-                                        {% if t.is_premium %}<span class="ed-theme__pro">PRO</span>{% endif %}
+                                        {% if t.is_premium %}<span class="ed-theme__pro">{% if t.locked %}<i data-lucide="lock"></i> {% endif %}PRO</span>{% endif %}
                                     </span>
                                 </button>
                             {% endfor %}
                         </div>
+                        {% if user_is_free %}
+                            <p class="mc-text-muted ed-themes__hint">
+                                <i data-lucide="sparkles"></i>
+                                {% trans "Premium themes are Pro-only." %}
+                                <a href="{% url 'pricing' %}?locked=premium_themes" class="mc-text-accent">{% trans "Upgrade to unlock all 14" %}</a>.
+                            </p>
+                        {% endif %}
                     </section>
                     {% endif %}
 
@@ -467,6 +478,100 @@
 {{ form.media }}
 
 <style>
+/* ============================================================
+   PREMIUM GATE — locked states + inline upgrade hints
+   ============================================================ */
+.ed-theme--locked {
+    position: relative;
+    opacity: 0.55;
+    cursor: pointer;
+}
+.ed-theme--locked::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: repeating-linear-gradient(45deg, rgba(0,0,0,0.18) 0 6px, transparent 6px 12px);
+    border-radius: inherit;
+    pointer-events: none;
+}
+.ed-theme--locked:hover {
+    opacity: 0.85;
+    outline: 1px dashed var(--mc-accent);
+}
+.ed-theme__lock {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 14px; height: 14px;
+    color: #fff;
+    background: rgba(0,0,0,0.6);
+    padding: 3px;
+    border-radius: 6px;
+    box-shadow: 0 0 6px var(--mc-accent);
+    z-index: 1;
+}
+.ed-theme__swatch { position: relative; }
+.ed-theme__pro i { width: 10px; height: 10px; vertical-align: -1px; margin-right: 2px; }
+
+.ed-themes__hint {
+    margin: var(--mc-s-3) 0 0;
+    font-size: var(--mc-fs-body-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.ed-themes__hint i { color: var(--mc-accent); width: 14px; height: 14px; }
+
+.ed-ai-btn--locked {
+    opacity: 0.85;
+    border-color: var(--mc-accent) !important;
+    background: color-mix(in srgb, var(--mc-accent) 10%, transparent) !important;
+    cursor: pointer;
+}
+.ed-ai-btn__pro {
+    margin-left: 6px;
+    padding: 1px 6px;
+    background: var(--mc-accent);
+    color: var(--mc-bg-0);
+    font-family: var(--mc-font-mono);
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    border-radius: 999px;
+}
+
+/* Dashboard-style upgrade banner for free users */
+.dash-upgrade-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-4);
+    padding: var(--mc-s-4) var(--mc-s-5);
+    margin-bottom: var(--mc-s-5);
+    border-radius: var(--mc-r-xl);
+    background: linear-gradient(120deg, color-mix(in srgb, var(--mc-accent) 12%, var(--mc-bg-1)) 0%, var(--mc-bg-1) 60%);
+    border: 1px solid var(--mc-border-hi);
+    overflow: hidden;
+    flex-wrap: wrap;
+}
+.dash-upgrade-banner::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--mc-accent), transparent 80%);
+}
+.dash-upgrade-banner__icon {
+    width: 44px; height: 44px;
+    border-radius: var(--mc-r-md);
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+.dash-upgrade-banner__body { flex: 1; min-width: 200px; }
+.dash-upgrade-banner__body h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.dash-upgrade-banner__body p { margin: 0; font-size: var(--mc-fs-body-sm); color: var(--mc-text-md); }
+
 /* ============================================================
    PUBLIC URL — one-time editable slug section
    ============================================================ */
@@ -1389,7 +1494,13 @@
         if (slug) slugHidden.value = slug;
     }
     themeButtons.forEach(function(b) {
-        b.addEventListener('click', function() {
+        b.addEventListener('click', function(e) {
+            if (b.dataset.locked === '1') {
+                e.preventDefault();
+                var feat = b.dataset.lockFeature || 'premium_themes';
+                window.location.href = "{% url 'pricing' %}?locked=" + encodeURIComponent(feat);
+                return;
+            }
             applyTheme(b.dataset.themeBg, b.dataset.themeSlug);
         });
     });
@@ -1522,7 +1633,12 @@
     var aiBtn = document.getElementById('aiBioBtn');
     var aiResults = document.getElementById('aiBioResults');
     if (aiBtn && aiResults) {
-        aiBtn.addEventListener('click', function() {
+        aiBtn.addEventListener('click', function(e) {
+            if (aiBtn.dataset.locked === '1') {
+                e.preventDefault();
+                window.location.href = "{% url 'pricing' %}?locked=ai_bio";
+                return;
+            }
             var first = (document.getElementById('id_firstName') || {}).value || '';
             var last  = (document.getElementById('id_lastName')  || {}).value || '';
             var role  = (document.getElementById('id_jobTitle')  || {}).value || '';

@@ -26,6 +26,12 @@ from .forms import (
     AdminCardLimitForm,
     FeedbackForm,
 )
+from .permissions import (
+    is_premium,
+    premium_required,
+    themes_for_user,
+    user_plan_tier,
+)
 from .models import (
     Card,
     Profile,
@@ -509,6 +515,16 @@ def _handle_card_creation(request, card_type: str):
 
     if remaining_cards <= 0:
         first_card = Card.objects.filter(user=request.user).order_by('created_at').first()
+
+        # Free-plan users are locked to their single card. Route them to
+        # pricing so they can upgrade rather than to a dead-end.
+        if not is_premium(request.user):
+            messages.info(
+                request,
+                'Your free plan allows one card. Upgrade to Pro to create more.',
+            )
+            return redirect(reverse('pricing') + '?locked=extra_cards')
+
         if first_card and card_limit == DEFAULT_CARD_LIMIT:
             messages.info(request, 'Your plan allows one card. We opened the editor for your existing card.')
             return redirect('edit_card', slug=first_card.slug)
@@ -523,7 +539,7 @@ def _handle_card_creation(request, card_type: str):
             card.user = request.user
             card.card_type = card_type
             card.card_data = _extract_card_form_payload(form)
-            theme_slug = (request.POST.get('theme_slug') or '').strip()[:60]
+            theme_slug = _sanitize_theme_slug(request.user, (request.POST.get('theme_slug') or '').strip()[:60])
             if theme_slug:
                 card.card_data['theme_slug'] = theme_slug
             card.save()
@@ -539,7 +555,7 @@ def _handle_card_creation(request, card_type: str):
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
         'builder_variant': variant,
-        'themes': CardTheme.objects.filter(is_active=True),
+        'themes': themes_for_user(list(CardTheme.objects.filter(is_active=True)), request.user),
         'feature_ai': settings.FEATURE_AI,
     }
     return render(request, 'cards/create_card.html', context)
@@ -578,7 +594,7 @@ def edit_card(request, slug):
             previous_logo = card.logo.name if card.logo else ''
 
             _apply_card_form_updates(card, form)
-            theme_slug = (request.POST.get('theme_slug') or '').strip()[:60]
+            theme_slug = _sanitize_theme_slug(request.user, (request.POST.get('theme_slug') or '').strip()[:60])
             if theme_slug:
                 card.card_data['theme_slug'] = theme_slug
             saved_card = form.save()  # This re-triggers the model's save method, updating QR code etc.
@@ -615,7 +631,7 @@ def edit_card(request, slug):
         'card_limit': card_limit,
         'cards_remaining': remaining_cards,
         'builder_variant': builder_variant,
-        'themes': CardTheme.objects.filter(is_active=True),
+        'themes': themes_for_user(list(CardTheme.objects.filter(is_active=True)), request.user),
         'feature_ai': settings.FEATURE_AI,
         'slug_error': slug_error,
     }
@@ -632,6 +648,19 @@ _RESERVED_CARD_SLUGS = {
     'about', 'help', 'support', 'settings', 'account', 'privacy', 'terms',
     'test', 'null', 'undefined', 'shiplu07',
 }
+
+
+def _sanitize_theme_slug(user, theme_slug: str) -> str:
+    """Reject premium theme picks for free users. Silent — the picker
+    already renders a locked badge, so we don't need a flash message."""
+    if not theme_slug:
+        return ''
+    theme = CardTheme.objects.filter(slug=theme_slug, is_active=True).first()
+    if not theme:
+        return ''
+    if theme.is_premium and not is_premium(user):
+        return ''
+    return theme_slug
 
 
 def _apply_custom_slug(card, requested: str) -> str | None:
@@ -1892,21 +1921,25 @@ def card_analytics(request, slug):
     """Per-card analytics dashboard (owner only)."""
     card = get_object_or_404(Card, slug=slug, user=request.user)
     now = timezone.now()
-    since = now - timedelta(days=30)
+
+    # Free users see 7 days; premium users see the full 90-day window.
+    analytics_is_capped = not is_premium(request.user)
+    window_days = 7 if analytics_is_capped else 90
+    since = now - timedelta(days=window_days)
 
     qs = card.interactions.filter(created_at__gte=since)
 
-    # Daily view sparkline for the last 30 days
+    # Daily view sparkline for the window
     daily = {}
     for iv in qs.filter(kind=CardInteraction.KIND_VIEW):
         day = iv.created_at.date().isoformat()
         daily[day] = daily.get(day, 0) + 1
 
     # Fill zeros so the chart has continuous points
-    from datetime import date as _date
+    sparkline_len = min(window_days, 30)
     sparkline = []
-    for i in range(30):
-        d = (now - timedelta(days=29 - i)).date().isoformat()
+    for i in range(sparkline_len):
+        d = (now - timedelta(days=sparkline_len - 1 - i)).date().isoformat()
         sparkline.append({'date': d, 'count': daily.get(d, 0)})
 
     # Top clicked targets
@@ -1931,6 +1964,8 @@ def card_analytics(request, slug):
         'sparkline_json': json.dumps(sparkline),
         'top_clicks': top_clicks,
         'totals': totals,
+        'analytics_is_capped': analytics_is_capped,
+        'analytics_window_days': window_days,
     })
 
 
@@ -2083,6 +2118,14 @@ def ai_bio(request):
             {'error': 'AI is not configured on this server yet.'},
             status=503,
         )
+
+    # AI bio is a Pro-only feature.
+    if not is_premium(request.user):
+        return JsonResponse({
+            'error': 'AI bio suggestions are a Pro feature. Upgrade to unlock.',
+            'locked': True,
+            'upgrade_url': reverse('pricing') + '?locked=ai_bio',
+        }, status=402)
 
     try:
         payload = json.loads(request.body.decode('utf-8') or '{}')

@@ -109,18 +109,39 @@
             </div>
         </section>
 
-        {# ===== Limit banner ===== #}
+        {# ===== Free-plan upgrade banner ===== #}
+        {% if user_is_free and not at_card_limit %}
+            <section class="dash-banner mc-fade-up mc-fade-up--d2 dash-banner--upsell">
+                <div class="dash-banner__icon"><i data-lucide="sparkles"></i></div>
+                <div class="dash-banner__body">
+                    <h3>{% trans "You're on the Free plan." %}</h3>
+                    <p class="mc-text-muted">
+                        {% trans "Free covers a single card with 7-day analytics and 5 leads/month. Upgrade to Pro for up to 5 cards, all themes, AI bio, and unlimited leads — ৳499 / month." %}
+                    </p>
+                </div>
+                <a href="{% url 'pricing' %}" class="mc-btn mc-btn--primary">
+                    <i data-lucide="rocket"></i> {% trans "Upgrade to Pro" %}
+                </a>
+            </section>
+        {% endif %}
+
+        {# ===== Limit banner (redirects to pricing for free users) ===== #}
         {% if at_card_limit %}
             <section class="dash-banner mc-fade-up mc-fade-up--d2">
                 <div class="dash-banner__icon"><i data-lucide="lock"></i></div>
                 <div class="dash-banner__body">
                     <h3>{% trans "You've hit your card limit." %}</h3>
                     <p class="mc-text-muted">
-                        {% blocktrans with lim=card_limit %}Your current plan allows {{ lim }} card(s). To publish more, request an upgrade — an admin will review shortly.{% endblocktrans %}
+                        {% if user_is_free %}
+                            {% trans "Free plan allows one card. Upgrade to Pro to create up to 5 cards." %}
+                        {% else %}
+                            {% blocktrans with lim=card_limit %}Your current plan allows {{ lim }} card(s). Upgrade for more.{% endblocktrans %}
+                        {% endif %}
                     </p>
                 </div>
-                <a href="{% url 'user_messages' %}" class="mc-btn mc-btn--primary">
-                    <i data-lucide="rocket"></i> {% trans "Request upgrade" %}
+                <a href="{% if user_is_free %}{% url 'pricing' %}?locked=extra_cards{% else %}{% url 'user_messages' %}{% endif %}" class="mc-btn mc-btn--primary">
+                    <i data-lucide="rocket"></i>
+                    {% if user_is_free %}{% trans "Upgrade to Pro" %}{% else %}{% trans "Request upgrade" %}{% endif %}
                 </a>
             </section>
         {% endif %}

@@ -51,6 +51,30 @@
             </p>
         </header>
 
+        {% if request.GET.locked %}
+            <section class="pr-locked mc-fade-up mc-fade-up--d1" role="status">
+                <div class="pr-locked__icon"><i data-lucide="lock"></i></div>
+                <div class="pr-locked__body">
+                    <h3>
+                        {% if request.GET.locked == 'ai_bio' %}
+                            {% trans "AI bio suggestions are a Pro feature." %}
+                        {% elif request.GET.locked == 'extra_cards' %}
+                            {% trans "Multiple cards are a Pro feature." %}
+                        {% elif request.GET.locked == 'premium_themes' %}
+                            {% trans "This theme is a Pro feature." %}
+                        {% elif request.GET.locked == 'analytics_range' %}
+                            {% trans "Full 90-day analytics are a Pro feature." %}
+                        {% else %}
+                            {% trans "That feature is a Pro feature." %}
+                        {% endif %}
+                    </h3>
+                    <p class="mc-text-muted">
+                        {% trans "Pick the Pro plan below to unlock it — plus every other Pro perk (unlimited leads, all themes, extended analytics, and more)." %}
+                    </p>
+                </div>
+            </section>
+        {% endif %}
+
         <div class="pr-grid mc-fade-up mc-fade-up--d1">
             {% for plan in plans %}
                 <div class="mc-card {% if plan.featured %}mc-card--glow pr-plan pr-plan--featured{% else %}pr-plan{% endif %}">
@@ -116,6 +140,38 @@
     align-items: center;
 }
 .pr-hero h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 0; }
+
+.pr-locked {
+    max-width: 780px;
+    margin: 0 auto var(--mc-s-6);
+    display: flex;
+    gap: var(--mc-s-4);
+    align-items: center;
+    padding: var(--mc-s-4) var(--mc-s-5);
+    border-radius: var(--mc-r-xl);
+    background: linear-gradient(120deg, color-mix(in srgb, var(--mc-accent) 15%, var(--mc-bg-1)) 0%, var(--mc-bg-1) 60%);
+    border: 1px solid var(--mc-border-glow);
+    position: relative;
+    overflow: hidden;
+}
+.pr-locked::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, var(--mc-accent), transparent 80%);
+}
+.pr-locked__icon {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+    box-shadow: 0 0 12px var(--mc-accent-halo);
+}
+.pr-locked__body h3 { margin: 0 0 4px; font-size: 1.05rem; }
+.pr-locked__body p { margin: 0; font-size: var(--mc-fs-body-sm); }
 
 .pr-grid {
     display: grid;
