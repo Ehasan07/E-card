@@ -5,24 +5,20 @@
 {% block page_label %}Requests{% endblock %}
 
 {% block content %}
-<nav class="mc-nav">
-    <div class="mc-container mc-container--wide mc-nav__inner">
-        <a href="{% url 'index' %}" class="mc-nav__logo">
-            <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
-            <span>MY-Card <span class="mc-caption" style="opacity:0.7;letter-spacing:0.24em;">CONTROL</span></span>
-        </a>
-        <ul class="mc-nav__links">
-            <li><a href="{% url 'admin_dashboard' %}" class="mc-nav-link">Dashboard</a></li>
-            <li><a href="{% url 'admin_messages' %}" class="mc-nav-link" aria-current="page">Messages</a></li>
-        </ul>
-        <div class="mc-nav__actions">
-            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme"><i data-lucide="moon" data-mc-theme-icon="moon"></i><i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i></button>
-            <a href="{% url 'logout' %}" class="mc-btn mc-btn--outline mc-btn--sm">
-                <i data-lucide="log-out"></i> Sign out
+<div class="dash-shell dash-shell--admin" data-dash-shell>
+    {% include 'cards/_admin_sidebar.html' with active='messages' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="Open menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+                Admin
             </a>
-        </div>
-    </div>
-</nav>
+            <span></span>
+        </header>
 
 <div class="am-page">
     <div class="am-bg" aria-hidden="true">
@@ -151,6 +147,8 @@
             </div>
         {% endif %}
     </div>
+</div>
+    </main>
 </div>
 
 <style>

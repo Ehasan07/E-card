@@ -1074,3 +1074,27 @@ body:has(.dash-shell) .mc-lang-pill { display: none !important; }
     .dash-sidebar__close { display: grid; place-items: center; }
     .dash-topbar { display: flex; }
 }
+
+/* Admin variant — recolours the shared sidebar violet so operators
+   know they're on the control surface. Applied via .dash-shell--admin
+   on the root wrapper of admin pages. */
+.dash-shell--admin {
+    --mc-accent: #B78BFF;
+    --mc-accent-strong: #A57BF0;
+    --mc-accent-halo: rgba(183, 139, 255, 0.15);
+    --mc-accent-glow: rgba(183, 139, 255, 0.35);
+    --mc-border-glow: rgba(183, 139, 255, 0.45);
+}
+.dash-shell--admin .dash-sidebar__avatar {
+    background: rgba(183, 139, 255, 0.15);
+    color: #B78BFF;
+    border-color: #B78BFF;
+}
+.dash-sidebar__logo-sub {
+    font-family: var(--mc-font-mono);
+    font-size: 0.55rem;
+    letter-spacing: 0.28em;
+    color: var(--mc-text-md);
+    opacity: 0.75;
+    margin-left: 4px;
+}

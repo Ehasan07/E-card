@@ -1,0 +1,74 @@
+{% comment %}
+Admin-only sidebar. Uses the same .dash-shell / .dash-sidebar
+components as the user sidebar but paints them violet via the
+.dash-shell--admin modifier so operators can tell at a glance
+they're on the control surface.
+
+Expected `active` values:
+  'dashboard' | 'messages' | 'users' | 'feedback'
+{% endcomment %}
+<aside class="dash-sidebar" data-dash-sidebar aria-label="Admin navigation">
+    <a href="{% url 'admin_dashboard' %}" class="dash-sidebar__logo">
+        <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+        <span>MY-Card <span class="dash-sidebar__logo-sub">CONTROL</span></span>
+    </a>
+
+    <button type="button" class="dash-sidebar__close" data-dash-close aria-label="Close menu">
+        <i data-lucide="x"></i>
+    </button>
+
+    <nav class="dash-sidebar__nav">
+        <a href="{% url 'admin_dashboard' %}"
+           class="dash-sidebar__link{% if active == 'dashboard' %} is-active{% endif %}"
+           {% if active == 'dashboard' %}aria-current="page"{% endif %}>
+            <i data-lucide="layout-dashboard"></i>
+            <span>Dashboard</span>
+        </a>
+        <a href="{% url 'admin_messages' %}"
+           class="dash-sidebar__link{% if active == 'messages' %} is-active{% endif %}"
+           {% if active == 'messages' %}aria-current="page"{% endif %}>
+            <i data-lucide="inbox"></i>
+            <span>Upgrade requests</span>
+            {% if pending_request_count %}<span class="dash-sidebar__badge">{{ pending_request_count }}</span>{% endif %}
+        </a>
+        <a href="{% url 'admin_dashboard' %}#ad-users-panel"
+           class="dash-sidebar__link{% if active == 'users' %} is-active{% endif %}">
+            <i data-lucide="users"></i>
+            <span>Users</span>
+        </a>
+        <a href="{% url 'admin_dashboard' %}#ad-feedback-panel"
+           class="dash-sidebar__link{% if active == 'feedback' %} is-active{% endif %}">
+            <i data-lucide="message-square"></i>
+            <span>Feedback</span>
+        </a>
+        <a href="{% url 'admin_dashboard' %}#ad-two-col"
+           class="dash-sidebar__link">
+            <i data-lucide="id-card"></i>
+            <span>Cards & analytics</span>
+        </a>
+    </nav>
+
+    <div class="dash-sidebar__foot">
+        <a href="{% url 'dashboard' %}" class="dash-sidebar__link" style="border:1px dashed var(--mc-border-hi);">
+            <i data-lucide="arrow-left"></i>
+            <span>Back to user site</span>
+        </a>
+
+        <div class="dash-sidebar__profile">
+            <div class="dash-sidebar__avatar" aria-hidden="true">{{ request.user.first_name|default:request.user.username|slice:':1'|upper }}</div>
+            <div class="dash-sidebar__profile-body">
+                <span class="dash-sidebar__name">{{ request.user.first_name|default:request.user.username }}</span>
+                <span class="dash-sidebar__plan">ADMIN</span>
+            </div>
+            <div class="dash-sidebar__profile-actions">
+                <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                    <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                    <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+                </button>
+                <a href="{% url 'logout' %}" class="mc-icon-btn" title="Sign out" aria-label="Sign out">
+                    <i data-lucide="log-out"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</aside>

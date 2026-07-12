@@ -31,7 +31,7 @@ def sidebar(request):
         }
 
     # Local imports keep Django startup cheap.
-    from .models import Card, LeadCapture
+    from .models import Card, LeadCapture, UpgradeRequest
 
     first_slug = (
         Card.objects
@@ -46,7 +46,14 @@ def sidebar(request):
         status=LeadCapture.STATUS_NEW,
     ).count()
 
+    pending = 0
+    if user.is_superuser:
+        pending = UpgradeRequest.objects.filter(
+            status=UpgradeRequest.STATUS_PENDING,
+        ).count()
+
     return {
         'sidebar_first_card_slug': first_slug,
         'sidebar_new_leads': new_leads,
+        'pending_request_count': pending,
     }
