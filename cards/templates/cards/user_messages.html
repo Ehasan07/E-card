@@ -6,25 +6,20 @@
 {% block page_label %}Messages{% endblock %}
 
 {% block content %}
-<nav class="mc-nav">
-    <div class="mc-container mc-nav__inner">
-        <a href="{% url 'index' %}" class="mc-nav__logo">
-            <span class="mc-nav__logo-mark"></span>
-            MY-Card
-        </a>
-        <ul class="mc-nav__links">
-            <li><a href="{% url 'dashboard' %}" class="mc-nav-link">{% trans "Dashboard" %}</a></li>
-            <li><a href="{% url 'leads_inbox' %}" class="mc-nav-link">{% trans "Leads" %}</a></li>
-            <li><a href="{% url 'user_messages' %}" class="mc-nav-link" aria-current="page">{% trans "Messages" %}</a></li>
-        </ul>
-        <div class="mc-nav__actions">
-            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme"><i data-lucide="moon" data-mc-theme-icon="moon"></i><i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i></button>
-            <a href="{% url 'logout' %}" class="mc-btn mc-btn--outline mc-btn--sm">
-                <i data-lucide="log-out"></i> {% trans "Sign out" %}
+<div class="dash-shell" data-dash-shell>
+    {% include 'cards/_sidebar.html' with active='messages' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="{% trans 'Open menu' %}">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'index' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
             </a>
-        </div>
-    </div>
-</nav>
+            <span></span>
+        </header>
 
 <div class="msg-page">
     <div class="msg-bg" aria-hidden="true">
@@ -205,6 +200,8 @@
             {% endif %}
         </section>
     </div>
+</div>
+    </main>
 </div>
 
 <style>

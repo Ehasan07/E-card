@@ -1,0 +1,109 @@
+{% load i18n %}
+{# Shared app sidebar + mobile scrim + topbar.
+   Usage in an authenticated page:
+
+       <div class="dash-shell" data-dash-shell>
+           {% include 'cards/_sidebar.html' with active='leads' %}
+           <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+           <main class="dash-main">
+               <header class="dash-topbar">…</header>
+               {# page content #}
+           </main>
+       </div>
+
+   The `active` variable ('dashboard' | 'leads' | 'messages' | 'analytics' |
+   'my-cards' | 'plans') controls which item gets the highlight rail.
+
+   Context vars this partial expects (populated by the sidebar context
+   processor for every logged-in request):
+     - sidebar_first_card_slug   → analytics link target (blank ⇒ hidden)
+     - sidebar_new_leads         → integer badge count (0 ⇒ hidden)
+     - user_plan_tier            → 'free' | 'pro' | 'team' | 'admin'
+     - user_is_free              → bool (drives the upsell card)
+#}
+<aside class="dash-sidebar" data-dash-sidebar aria-label="{% trans 'Main navigation' %}">
+    <a href="{% url 'index' %}" class="dash-sidebar__logo">
+        <span class="mc-nav__logo-mark"></span>
+        <span>MY-Card</span>
+    </a>
+
+    <button type="button" class="dash-sidebar__close" data-dash-close aria-label="{% trans 'Close menu' %}">
+        <i data-lucide="x"></i>
+    </button>
+
+    <nav class="dash-sidebar__nav">
+        <a href="{% url 'dashboard' %}"
+           class="dash-sidebar__link{% if active == 'dashboard' %} is-active{% endif %}"
+           {% if active == 'dashboard' %}aria-current="page"{% endif %}>
+            <i data-lucide="layout-dashboard"></i>
+            <span>{% trans "Dashboard" %}</span>
+        </a>
+        <a href="{% url 'leads_inbox' %}"
+           class="dash-sidebar__link{% if active == 'leads' %} is-active{% endif %}"
+           {% if active == 'leads' %}aria-current="page"{% endif %}>
+            <i data-lucide="user-plus"></i>
+            <span>{% trans "Leads" %}</span>
+            {% if sidebar_new_leads %}<span class="dash-sidebar__badge">{{ sidebar_new_leads }}</span>{% endif %}
+        </a>
+        <a href="{% url 'user_messages' %}"
+           class="dash-sidebar__link{% if active == 'messages' %} is-active{% endif %}"
+           {% if active == 'messages' %}aria-current="page"{% endif %}>
+            <i data-lucide="mail"></i>
+            <span>{% trans "Messages" %}</span>
+        </a>
+        {% if sidebar_first_card_slug %}
+        <a href="{% url 'card_analytics' sidebar_first_card_slug %}"
+           class="dash-sidebar__link{% if active == 'analytics' %} is-active{% endif %}"
+           {% if active == 'analytics' %}aria-current="page"{% endif %}>
+            <i data-lucide="line-chart"></i>
+            <span>{% trans "Analytics" %}</span>
+        </a>
+        {% endif %}
+        <a href="{% url 'dashboard' %}#your-cards"
+           class="dash-sidebar__link{% if active == 'my-cards' %} is-active{% endif %}">
+            <i data-lucide="id-card"></i>
+            <span>{% trans "My Cards" %}</span>
+        </a>
+        <a href="{% url 'pricing' %}"
+           class="dash-sidebar__link{% if active == 'plans' %} is-active{% endif %}"
+           {% if active == 'plans' %}aria-current="page"{% endif %}>
+            <i data-lucide="palette"></i>
+            <span>{% trans "Themes & Plans" %}</span>
+        </a>
+    </nav>
+
+    <div class="dash-sidebar__foot">
+        {% if user_is_free %}
+            <a href="{% url 'pricing' %}" class="dash-sidebar__upsell">
+                <span class="dash-sidebar__upsell-title">
+                    <i data-lucide="sparkles"></i>
+                    {% trans "Free plan" %}
+                </span>
+                <span class="dash-sidebar__upsell-body">{% trans "Upgrade to Pro for unlimited leads, all themes, and full analytics." %}</span>
+                <span class="dash-sidebar__upsell-cta">{% trans "Upgrade →" %}</span>
+            </a>
+        {% endif %}
+
+        <div class="dash-sidebar__profile">
+            <div class="dash-sidebar__avatar" aria-hidden="true">{{ request.user.first_name|default:request.user.username|slice:':1'|upper }}</div>
+            <div class="dash-sidebar__profile-body">
+                <span class="dash-sidebar__name">{{ request.user.first_name|default:request.user.username }}</span>
+                <span class="dash-sidebar__plan">
+                    {% if user_plan_tier == 'admin' %}ADMIN
+                    {% elif user_plan_tier == 'pro' %}PRO plan
+                    {% elif user_plan_tier == 'team' %}TEAM plan
+                    {% else %}FREE plan{% endif %}
+                </span>
+            </div>
+            <div class="dash-sidebar__profile-actions">
+                <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                    <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                    <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+                </button>
+                <a href="{% url 'logout' %}" class="mc-icon-btn" title="{% trans 'Sign out' %}" aria-label="{% trans 'Sign out' %}">
+                    <i data-lucide="log-out"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</aside>

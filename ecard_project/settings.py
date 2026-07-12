@@ -62,6 +62,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'cards.context_processors.user_plan',
+                'cards.context_processors.sidebar',
             ],
         },
     },

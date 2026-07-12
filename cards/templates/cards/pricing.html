@@ -6,6 +6,22 @@
 {% block page_label %}Pricing{% endblock %}
 
 {% block content %}
+{% if request.user.is_authenticated %}
+<div class="dash-shell" data-dash-shell>
+    {% include 'cards/_sidebar.html' with active='plans' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="{% trans 'Open menu' %}">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'index' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
+            </a>
+            <span></span>
+        </header>
+{% else %}
 <nav class="mc-nav">
     <div class="mc-container mc-nav__inner">
         <a href="{% url 'index' %}" class="mc-nav__logo">
@@ -18,15 +34,12 @@
         </ul>
         <div class="mc-nav__actions">
             <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme"><i data-lucide="moon" data-mc-theme-icon="moon"></i><i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i></button>
-            {% if request.user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Dashboard" %}</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
-            {% endif %}
+            <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
+            <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
         </div>
     </div>
 </nav>
+{% endif %}
 
 <div class="pr-page">
     <div class="pr-bg" aria-hidden="true">
@@ -125,6 +138,10 @@
         </section>
     </div>
 </div>
+{% if request.user.is_authenticated %}
+    </main>
+</div>
+{% endif %}
 
 <style>
 .pr-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-7) 0 var(--mc-s-9); overflow: hidden; }
