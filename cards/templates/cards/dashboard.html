@@ -6,38 +6,122 @@
 {% block page_label %}Dashboard{% endblock %}
 
 {% block content %}
-{# ===== Top nav ===== #}
-<nav class="mc-nav">
-    <div class="mc-container mc-nav__inner">
-        <a href="{% url 'index' %}" class="mc-nav__logo">
+<style>
+    /* Hide global back-button pill + language pill inside the dashboard —
+       the sidebar already covers navigation, and both overlays would sit
+       on top of it in the same corner. */
+    .mc-page-bar { display: none !important; }
+    .mc-lang-pill { display: none !important; }
+</style>
+<div class="dash-shell" data-dash-shell>
+
+    {# ===== Sidebar ===== #}
+    <aside class="dash-sidebar" data-dash-sidebar aria-label="{% trans 'Main navigation' %}">
+        <a href="{% url 'index' %}" class="dash-sidebar__logo">
             <span class="mc-nav__logo-mark"></span>
-            MY-Card
+            <span>MY-Card</span>
         </a>
-        <ul class="mc-nav__links">
-            <li><a href="{% url 'dashboard' %}" class="mc-nav-link" aria-current="page">{% trans "Dashboard" %}</a></li>
-            <li><a href="{% url 'leads_inbox' %}" class="mc-nav-link">{% trans "Leads" %}</a></li>
-            <li><a href="{% url 'user_messages' %}" class="mc-nav-link">{% trans "Messages" %}</a></li>
-        </ul>
-        <div class="mc-nav__actions">
-            <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
-                <i data-lucide="moon" data-mc-theme-icon="moon"></i>
-                <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
-            </button>
-            <a href="{% url 'logout' %}" class="mc-btn mc-btn--outline mc-btn--sm">
-                <i data-lucide="log-out"></i> {% trans "Sign out" %}
+
+        <button type="button" class="dash-sidebar__close" data-dash-close aria-label="{% trans 'Close menu' %}">
+            <i data-lucide="x"></i>
+        </button>
+
+        <nav class="dash-sidebar__nav">
+            <a href="{% url 'dashboard' %}" class="dash-sidebar__link is-active" aria-current="page">
+                <i data-lucide="layout-dashboard"></i>
+                <span>{% trans "Dashboard" %}</span>
             </a>
+            <a href="{% url 'leads_inbox' %}" class="dash-sidebar__link">
+                <i data-lucide="user-plus"></i>
+                <span>{% trans "Leads" %}</span>
+                {% if new_leads %}<span class="dash-sidebar__badge">{{ new_leads }}</span>{% endif %}
+            </a>
+            <a href="{% url 'user_messages' %}" class="dash-sidebar__link">
+                <i data-lucide="mail"></i>
+                <span>{% trans "Messages" %}</span>
+            </a>
+            {% if first_card_slug %}
+            <a href="{% url 'card_analytics' first_card_slug %}" class="dash-sidebar__link">
+                <i data-lucide="line-chart"></i>
+                <span>{% trans "Analytics" %}</span>
+            </a>
+            {% endif %}
+            <a href="#your-cards" class="dash-sidebar__link">
+                <i data-lucide="id-card"></i>
+                <span>{% trans "My Cards" %}</span>
+            </a>
+            <a href="{% url 'pricing' %}" class="dash-sidebar__link">
+                <i data-lucide="palette"></i>
+                <span>{% trans "Themes & Plans" %}</span>
+            </a>
+            <a href="{% url 'documentation' %}" class="dash-sidebar__link">
+                <i data-lucide="book-open"></i>
+                <span>{% trans "Docs" %}</span>
+            </a>
+        </nav>
+
+        <div class="dash-sidebar__foot">
+            {% if user_is_free %}
+                <a href="{% url 'pricing' %}" class="dash-sidebar__upsell">
+                    <span class="dash-sidebar__upsell-title">
+                        <i data-lucide="sparkles"></i>
+                        {% trans "Free plan" %}
+                    </span>
+                    <span class="dash-sidebar__upsell-body">{% trans "Upgrade to Pro for unlimited leads, all themes, and full analytics." %}</span>
+                    <span class="dash-sidebar__upsell-cta">
+                        {% trans "Upgrade →" %}
+                    </span>
+                </a>
+            {% endif %}
+
+            <div class="dash-sidebar__profile">
+                <div class="dash-sidebar__avatar" aria-hidden="true">{{ request.user.first_name|default:request.user.username|slice:':1'|upper }}</div>
+                <div class="dash-sidebar__profile-body">
+                    <span class="dash-sidebar__name">{{ request.user.first_name|default:request.user.username }}</span>
+                    <span class="dash-sidebar__plan">
+                        {% if user_plan_tier == 'admin' %}ADMIN
+                        {% elif user_plan_tier == 'pro' %}PRO plan
+                        {% elif user_plan_tier == 'team' %}TEAM plan
+                        {% else %}FREE plan{% endif %}
+                    </span>
+                </div>
+                <div class="dash-sidebar__profile-actions">
+                    <button class="mc-icon-btn" data-mc-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+                        <i data-lucide="moon" data-mc-theme-icon="moon"></i>
+                        <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
+                    </button>
+                    <a href="{% url 'logout' %}" class="mc-icon-btn" title="{% trans 'Sign out' %}" aria-label="{% trans 'Sign out' %}">
+                        <i data-lucide="log-out"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-    </div>
-</nav>
+    </aside>
 
-<div class="dash-page">
-    <div class="dash-bg" aria-hidden="true">
-        <div class="mc-dot-grid"></div>
-        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
-        <div class="mc-aurora mc-aurora--cyan"              style="width:520px;height:520px;bottom:-200px;right:-160px;opacity:0.28;"></div>
-    </div>
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
 
-    <div class="mc-container dash-container">
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="{% trans 'Open menu' %}">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'index' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
+            </a>
+            <a href="{% url 'create_card' %}" class="mc-btn mc-btn--primary mc-btn--sm">
+                <i data-lucide="plus"></i>
+            </a>
+        </header>
+
+        <div class="dash-page">
+            <div class="dash-bg" aria-hidden="true">
+                <div class="mc-dot-grid"></div>
+                <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;"></div>
+                <div class="mc-aurora mc-aurora--cyan"              style="width:520px;height:520px;bottom:-200px;right:-160px;opacity:0.28;"></div>
+            </div>
+
+            <div class="mc-container dash-container">
 
         {# ===== Hero row ===== #}
         <header class="dash-hero mc-fade-up">
@@ -148,7 +232,7 @@
 
         {# ===== Cards grid or empty state ===== #}
         {% if cards %}
-            <section class="dash-cards-head mc-fade-up mc-fade-up--d2">
+            <section id="your-cards" class="dash-cards-head mc-fade-up mc-fade-up--d2">
                 <h2>{% trans "Your cards" %}</h2>
                 <span class="mc-caption">{{ cards|length }} {% blocktrans count total=cards|length %}card{% plural %}cards{% endblocktrans %}</span>
             </section>
@@ -258,11 +342,271 @@
                 </div>
             </section>
         {% endif %}
-    </div>
+            </div>
+        </div>
+    </main>
 </div>
 
 <style>
-/* ===== Dashboard-specific layout ===== */
+/* ===== Dashboard sidebar shell ===== */
+.dash-shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+    background: var(--mc-bg-0);
+}
+.dash-main {
+    min-width: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.dash-sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    background: var(--mc-bg-1);
+    border-right: 1px solid var(--mc-border);
+    display: flex;
+    flex-direction: column;
+    padding: var(--mc-s-5) var(--mc-s-4);
+    gap: var(--mc-s-4);
+    overflow-y: auto;
+    z-index: 20;
+}
+.dash-sidebar__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    color: var(--mc-text-hi);
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    font-size: 1.1rem;
+    padding: 0 var(--mc-s-2);
+    margin-bottom: var(--mc-s-2);
+}
+.dash-sidebar__logo .mc-nav__logo-mark { width: 28px; height: 28px; }
+.dash-sidebar__close {
+    display: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: transparent;
+    border: none;
+    color: var(--mc-text-md);
+    padding: 6px;
+    border-radius: var(--mc-r-md);
+    cursor: pointer;
+}
+
+.dash-sidebar__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-height: 0;
+}
+.dash-sidebar__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--mc-r-md);
+    color: var(--mc-text-md);
+    text-decoration: none;
+    font-size: var(--mc-fs-body-sm);
+    font-weight: 500;
+    transition: background var(--mc-dur-fast) var(--mc-ease), color var(--mc-dur-fast) var(--mc-ease);
+    position: relative;
+}
+.dash-sidebar__link i {
+    width: 18px;
+    height: 18px;
+    color: var(--mc-text-md);
+    transition: color var(--mc-dur-fast) var(--mc-ease);
+    flex-shrink: 0;
+}
+.dash-sidebar__link:hover {
+    background: color-mix(in srgb, var(--mc-accent) 8%, transparent);
+    color: var(--mc-text-hi);
+}
+.dash-sidebar__link:hover i { color: var(--mc-accent); }
+.dash-sidebar__link.is-active {
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    font-weight: 600;
+}
+.dash-sidebar__link.is-active i { color: var(--mc-accent); }
+.dash-sidebar__link.is-active::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 8px;
+    bottom: 8px;
+    width: 3px;
+    border-radius: 2px;
+    background: var(--mc-accent);
+    box-shadow: 0 0 8px var(--mc-accent);
+}
+.dash-sidebar__badge {
+    margin-left: auto;
+    padding: 1px 8px;
+    border-radius: 999px;
+    background: var(--mc-accent);
+    color: var(--mc-bg-0);
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+/* Sidebar footer */
+.dash-sidebar__foot {
+    display: flex;
+    flex-direction: column;
+    gap: var(--mc-s-3);
+    padding-top: var(--mc-s-3);
+    border-top: 1px solid var(--mc-border);
+    margin-top: auto;
+}
+.dash-sidebar__upsell {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: var(--mc-s-3);
+    border-radius: var(--mc-r-md);
+    text-decoration: none;
+    background: linear-gradient(140deg, color-mix(in srgb, var(--mc-accent) 18%, var(--mc-bg-2)) 0%, var(--mc-bg-2) 100%);
+    border: 1px solid var(--mc-border-glow);
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+    transition: transform var(--mc-dur-fast) var(--mc-ease), box-shadow var(--mc-dur-fast) var(--mc-ease);
+}
+.dash-sidebar__upsell:hover { transform: translateY(-2px); box-shadow: 0 8px 24px -8px var(--mc-accent-halo); }
+.dash-sidebar__upsell-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    color: var(--mc-accent);
+    font-size: 0.7rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+.dash-sidebar__upsell-title i { width: 12px; height: 12px; }
+.dash-sidebar__upsell-body { color: var(--mc-text-md); font-size: 0.75rem; line-height: 1.35; }
+.dash-sidebar__upsell-cta { color: var(--mc-accent); font-weight: 700; font-size: 0.8rem; }
+
+.dash-sidebar__profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 6px;
+    border-radius: var(--mc-r-md);
+}
+.dash-sidebar__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid;
+    place-items: center;
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    border: 2px solid var(--mc-accent);
+}
+.dash-sidebar__profile-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.dash-sidebar__name {
+    color: var(--mc-text-hi);
+    font-weight: 600;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.dash-sidebar__plan {
+    color: var(--mc-text-md);
+    font-family: var(--mc-font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.dash-sidebar__profile-actions {
+    display: inline-flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* Mobile topbar */
+.dash-topbar {
+    display: none;
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    background: var(--mc-bg-1);
+    border-bottom: 1px solid var(--mc-border);
+    padding: var(--mc-s-3) var(--mc-s-4);
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--mc-s-3);
+}
+.dash-topbar__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--mc-text-hi);
+    font-weight: 700;
+    text-decoration: none;
+    font-family: var(--mc-font-display);
+}
+.dash-topbar__logo .mc-nav__logo-mark { width: 26px; height: 26px; }
+.dash-menu-toggle {
+    background: transparent;
+    border: 1px solid var(--mc-border);
+    color: var(--mc-text-hi);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--mc-r-md);
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+}
+
+/* Mobile scrim */
+.dash-scrim {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 19;
+    opacity: 0;
+    transition: opacity var(--mc-dur-fast) var(--mc-ease);
+}
+
+@media (max-width: 960px) {
+    .dash-shell { grid-template-columns: 1fr; }
+    .dash-sidebar {
+        position: fixed;
+        top: 0; left: 0;
+        width: 280px;
+        transform: translateX(-105%);
+        transition: transform var(--mc-dur-med) var(--mc-ease);
+        box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+    }
+    .dash-shell.is-menu-open .dash-sidebar { transform: translateX(0); }
+    .dash-shell.is-menu-open .dash-scrim { display: block; opacity: 1; }
+    .dash-sidebar__close { display: grid; place-items: center; }
+    .dash-topbar { display: flex; }
+}
+
+/* ===== Dashboard content ===== */
 .dash-page { position: relative; min-height: calc(100vh - 72px); overflow: hidden; padding: var(--mc-s-6) 0 var(--mc-s-9); }
 .dash-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .dash-container { position: relative; z-index: 1; }
@@ -441,6 +785,20 @@
 
 <script>
 (function() {
+    // Sidebar open/close on mobile
+    var shell = document.querySelector('[data-dash-shell]');
+    var openBtn = document.querySelector('[data-dash-open]');
+    var closeBtn = document.querySelector('[data-dash-close]');
+    var scrim = document.querySelector('[data-dash-scrim]');
+    function open()  { if (shell) shell.classList.add('is-menu-open'); }
+    function close() { if (shell) shell.classList.remove('is-menu-open'); }
+    if (openBtn)  openBtn.addEventListener('click', open);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+    if (scrim)    scrim.addEventListener('click', close);
+    document.querySelectorAll('.dash-sidebar__link').forEach(function(a) {
+        a.addEventListener('click', function() { if (window.matchMedia('(max-width: 960px)').matches) close(); });
+    });
+
     // Copy card URL
     document.querySelectorAll('[data-copy-url]').forEach(function(btn) {
         btn.addEventListener('click', function() {

@@ -418,6 +418,7 @@ def dashboard(request):
         'total_views': total_views,
         'total_saves': total_saves,
         'new_leads': new_leads,
+        'first_card_slug': cards[0].slug if cards else '',
     }
     return render(request, 'cards/dashboard.html', context)
 
