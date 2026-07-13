@@ -26,11 +26,21 @@
         <header class="ra-hero mc-fade-up">
             <span class="mc-badge mc-badge--accent">
                 <span class="mc-badge__dot"></span>
-                {% trans "Reactivate" %}
+                {% if is_early_renewal %}{% trans "Renew" %}{% else %}{% trans "Reactivate" %}{% endif %}
             </span>
-            <h1>{% trans "Bring your card back online." %}</h1>
+            <h1>
+                {% if is_early_renewal %}
+                    {% trans "Renew for another 12 months." %}
+                {% else %}
+                    {% trans "Bring your card back online." %}
+                {% endif %}
+            </h1>
             <p class="mc-text-muted">
-                {% blocktrans with slug=card.slug %}Your card <strong>{{ slug }}</strong> is currently offline. Renew it below to make it publicly reachable again for the next 12 months.{% endblocktrans %}
+                {% if is_early_renewal %}
+                    {% blocktrans with slug=card.slug %}Your card <strong>{{ slug }}</strong> is still live — you're renewing early. Because the card hasn't lapsed, the ৳50 reactivation fee is waived; you only pay the yearly amount.{% endblocktrans %}
+                {% else %}
+                    {% blocktrans with slug=card.slug %}Your card <strong>{{ slug }}</strong> is currently offline. Renew it below to make it publicly reachable again for the next 12 months.{% endblocktrans %}
+                {% endif %}
             </p>
         </header>
 
@@ -69,9 +79,20 @@
                     </span>
                     <span class="mc-mono">৳{{ yearly_price }}</span>
                 </li>
-                <li>
-                    <span>{% trans "Reactivation fee" %} <small class="mc-text-muted">{% trans "(one-time)" %}</small></span>
-                    <span class="mc-mono">৳{{ reactivation_fee }}</span>
+                <li{% if is_early_renewal %} class="ra-pricing__waived"{% endif %}>
+                    <span>
+                        {% trans "Reactivation fee" %}
+                        <small class="mc-text-muted">
+                            {% if is_early_renewal %}
+                                {% trans "waived — card still active" %}
+                            {% else %}
+                                {% trans "(one-time, card is offline)" %}
+                            {% endif %}
+                        </small>
+                    </span>
+                    <span class="mc-mono">
+                        {% if is_early_renewal %}<s>৳50</s> <span class="mc-text-accent">৳0</span>{% else %}৳{{ reactivation_fee }}{% endif %}
+                    </span>
                 </li>
                 <li class="ra-pricing__total">
                     <span><strong>{% trans "Total due" %}</strong></span>
@@ -109,7 +130,11 @@
                     </label>
                     <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg">
                         <i data-lucide="rocket"></i>
-                        {% trans "Send reactivation request" %}
+                        {% if is_early_renewal %}
+                            {% trans "Send renewal request" %}
+                        {% else %}
+                            {% trans "Send reactivation request" %}
+                        {% endif %}
                     </button>
                 </form>
             {% endif %}
@@ -181,6 +206,8 @@
     font-size: 1.2rem;
     color: var(--mc-text-hi);
 }
+.ra-pricing__waived s { color: var(--mc-text-md); margin-right: 6px; }
+.ra-pricing__waived .mc-text-accent { font-weight: 700; }
 .ra-pricing__note { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--mc-s-3); font-size: var(--mc-fs-body-sm); }
 .ra-pricing__note i { color: var(--mc-accent); width: 14px; height: 14px; }
 

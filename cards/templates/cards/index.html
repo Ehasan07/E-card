@@ -621,17 +621,19 @@
 
             {# ========== FREE ========== #}
             <article class="mc-card lp-plan lp-plan--free mc-fade-up mc-fade-up--d1">
-                <span class="lp-plan__trial-pill">
-                    <i data-lucide="gift"></i> {% trans "First 12 months free" %}
-                </span>
                 <header>
-                    <span class="mc-caption">{% trans "Free" %}</span>
+                    <div class="lp-plan__caption-row">
+                        <span class="mc-caption">{% trans "Free" %}</span>
+                        <span class="lp-plan__trial-chip">
+                            <i data-lucide="gift"></i> {% trans "12 months free" %}
+                        </span>
+                    </div>
                     <div class="lp-plan__price">
                         <span class="mc-mono">৳0</span>
                         <small>{% trans "for 12 months" %}</small>
                     </div>
                     <p class="mc-text-muted">
-                        {% trans "Then" %} <strong class="mc-text-hi">৳120 / {% trans "year" %}</strong> {% trans "to keep every card of yours online. Reactivation fee ৳50 if a lapsed card comes back after being offline." %}
+                        {% trans "Then" %} <strong class="mc-text-hi">৳120 / {% trans "year" %}</strong> {% trans "to keep every card of yours online. ৳50 reactivation fee applies only if a card lapses (goes offline) before you renew." %}
                     </p>
                 </header>
 
@@ -676,18 +678,20 @@
                     <span class="lp-plan__ribbon-shine"></span>
                     <i data-lucide="crown"></i> {% trans "Most popular" %}
                 </span>
-                <span class="lp-plan__trial-pill">
-                    <i data-lucide="gift"></i> {% trans "First 12 months free" %}
-                </span>
 
                 <header>
-                    <span class="mc-caption mc-text-accent">{% trans "Pro" %}</span>
+                    <div class="lp-plan__caption-row">
+                        <span class="mc-caption mc-text-accent">{% trans "Pro" %}</span>
+                        <span class="lp-plan__trial-chip lp-plan__trial-chip--accent">
+                            <i data-lucide="gift"></i> {% trans "12 months free" %}
+                        </span>
+                    </div>
                     <div class="lp-plan__price lp-plan__price--featured">
                         <span class="mc-mono">৳0</span>
                         <small>{% trans "for 12 months" %}</small>
                     </div>
                     <p class="mc-text-muted">
-                        {% trans "Then" %} <strong class="mc-text-accent">৳500 / {% trans "year" %}</strong> · {% trans "covers all 5 cards + reactivation fee ৳50 if a card lapses." %}
+                        {% trans "Then" %} <strong class="mc-text-accent">৳500 / {% trans "year" %}</strong> — {% trans "one payment covers all 5 cards. ৳50 reactivation fee only if a card goes offline before you renew." %}
                     </p>
                 </header>
 
@@ -766,8 +770,8 @@
                     <p class="mc-text-muted">{% trans "Inbox reminders start a full month ahead. No card ever goes offline without a heads-up." %}</p>
                 </div>
                 <div>
-                    <strong>{% trans "Lapsed? Reactivate any time." %}</strong>
-                    <p class="mc-text-muted">{% trans "Pay the yearly renewal + a one-time ৳50 fee. Data, socials, QR, and analytics come back exactly as they were." %}</p>
+                    <strong>{% trans "Renew before expiry — no reactivation fee." %}</strong>
+                    <p class="mc-text-muted">{% trans "If you pay the yearly renewal while your card is still active, you pay only the yearly fee. The ৳50 reactivation charge applies only if the card has already gone offline." %}</p>
                 </div>
                 <div>
                     <strong>{% trans "No auto-charge without approval." %}</strong>
@@ -1600,28 +1604,37 @@
     .lp-pricing-timeline__arrow { transform: rotate(90deg); }
 }
 
-/* Trial pill on each plan card */
-.lp-plan__trial-pill {
-    position: absolute;
-    top: -13px;
-    left: var(--mc-s-4);
-    z-index: 2;
+/* Trial chip sits inline inside each plan header — no absolute
+   positioning so it never collides with the featured ribbon. */
+.lp-plan__caption-row {
+    display: flex;
+    align-items: center;
+    gap: var(--mc-s-3);
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+}
+.lp-plan__trial-chip {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 12px;
-    background: linear-gradient(120deg, var(--mc-accent), color-mix(in srgb, var(--mc-accent) 40%, var(--mc-text-hi)));
-    color: var(--mc-bg-0);
+    gap: 5px;
+    padding: 3px 9px;
+    background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
+    color: var(--mc-accent);
+    border: 1px solid color-mix(in srgb, var(--mc-accent) 45%, transparent);
     font-family: var(--mc-font-mono);
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     font-weight: 700;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     border-radius: 999px;
-    box-shadow: 0 6px 18px -6px var(--mc-accent-glow);
 }
-.lp-plan__trial-pill i { width: 12px; height: 12px; }
-.lp-plan--featured .lp-plan__trial-pill { left: auto; right: var(--mc-s-4); top: 32px; }
+.lp-plan__trial-chip i { width: 11px; height: 11px; }
+.lp-plan__trial-chip--accent {
+    background: var(--mc-accent);
+    color: var(--mc-bg-0);
+    border-color: var(--mc-accent);
+    box-shadow: 0 4px 12px -4px var(--mc-accent-glow);
+}
 
 /* Renewal FAQ block */
 .lp-renewal-faq {

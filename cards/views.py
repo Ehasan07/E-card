@@ -768,8 +768,8 @@ def view_card(request, slug):
                 'existing_request': existing_request,
                 'is_owner': True,
                 'yearly_price': yearly,
-                'reactivation_fee': settings.CARD_REACTIVATION_FEE,
-                'total_due': yearly + settings.CARD_REACTIVATION_FEE,
+                'reactivation_fee': _reactivation_fee_for(card),
+                'total_due': yearly + _reactivation_fee_for(card),
                 'context_source': 'digital',
             }
             return render(request, 'cards/card_inactive.html', context)
@@ -1872,8 +1872,8 @@ def physical_card(request, slug):
                 'existing_request': existing_request,
                 'is_owner': True,
                 'yearly_price': _yearly_price_for(card.user),
-                'reactivation_fee': settings.CARD_REACTIVATION_FEE,
-                'total_due': _yearly_price_for(card.user) + settings.CARD_REACTIVATION_FEE,
+                'reactivation_fee': _reactivation_fee_for(card),
+                'total_due': _yearly_price_for(card.user) + _reactivation_fee_for(card),
                 'context_source': 'physical',
             })
         return render(request, 'cards/card_inactive_public.html', {'card': card}, status=200)
@@ -2235,6 +2235,17 @@ def _yearly_price_for(user) -> int:
     )
 
 
+def _reactivation_fee_for(card) -> int:
+    """৳50 reactivation fee applies ONLY to a card that has actually gone
+    offline (expired or admin-disabled). If the owner renews *before*
+    expiry — while the card is still in trial or paid — they pay just the
+    yearly fee."""
+    lapsed = {Card.STATUS_EXPIRED, Card.STATUS_ADMIN_DISABLED}
+    if card.lifecycle_status in lapsed or not card.is_active:
+        return settings.CARD_REACTIVATION_FEE
+    return 0
+
+
 @login_required
 def reactivate_card(request, slug):
     """Card owner requests to bring an offline card back online.
@@ -2247,8 +2258,11 @@ def reactivate_card(request, slug):
     card = get_object_or_404(Card, slug=slug, user=request.user)
 
     yearly = _yearly_price_for(request.user)
-    reactivation_fee = settings.CARD_REACTIVATION_FEE
+    reactivation_fee = _reactivation_fee_for(card)
     total = yearly + reactivation_fee
+    # `is_early_renewal` = card is still online; the owner is paying ahead
+    # of the expiry date, so no reactivation fee applies.
+    is_early_renewal = reactivation_fee == 0
 
     already_pending = UpgradeRequest.objects.filter(
         user=request.user,
@@ -2297,6 +2311,7 @@ def reactivate_card(request, slug):
         'reactivation_fee': reactivation_fee,
         'total_due': total,
         'is_premium_user': is_premium(request.user),
+        'is_early_renewal': is_early_renewal,
         'already_pending': already_pending,
         'logs': logs,
     })
