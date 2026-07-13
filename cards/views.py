@@ -2776,10 +2776,11 @@ def _grant_subscription(payment: Payment):
     )
 
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
 def bkash_journey_mockup(request):
-    """Internal-only page rendering the 6-step Merchant User Journey for
-    the bKash S-2 milestone. Screenshot each step for the submission."""
+    """6-step Merchant User Journey for the bKash S-2 milestone.
+
+    Public URL — not linked from any nav — so bKash reviewers can open
+    it directly to validate the customer flow."""
     return render(request, 'cards/bkash_journey_mockup.html')
 
 
