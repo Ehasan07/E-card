@@ -351,7 +351,8 @@ def register(request):
 
                 login(request, user)
                 messages.success(request, 'Welcome aboard! Your studio is ready for its first card.')
-                return redirect('dashboard')
+                next_url = (request.GET.get('next') or request.POST.get('next') or '').strip()
+                return redirect(next_url or 'dashboard')
             except Exception as exc:
                 messages.error(request, 'We could not create your account right now. Please try again.')
                 user_form.add_error(None, 'Unexpected error while creating your account. If this persists, contact support.')
@@ -372,7 +373,8 @@ def login_view(request):
         if form.is_valid():
             user = form.get_user()
             login(request, user)
-            return redirect('dashboard')
+            next_url = (request.GET.get('next') or request.POST.get('next') or '').strip()
+            return redirect(next_url or 'dashboard')
     else:
         form = AuthenticationForm()
     return render(request, 'cards/login.html', {'form': form})
@@ -2554,17 +2556,17 @@ _BKASH_SANDBOX_OTP = '123456'
 
 
 @login_required
-@require_POST
-def bkash_initiate(request):
+def bkash_initiate(request, plan=None):
     """Kick off a bKash subscription for the current user.
 
-    POST body fields:
-      - plan: 'pro' | 'free_renewal' | 'reactivate:<card_slug>'
-    """
+    Accepts either a POST body with a `plan` field (from a form on the
+    pricing page) OR a GET request that carries the plan in the URL
+    path — used by the anonymous flow: landing → register?next=… →
+    /pay/bkash/start/<plan>/. Both call the same code path."""
     from .gateways import bkash
     from datetime import date
 
-    plan = (request.POST.get('plan') or '').strip()
+    plan = (plan or request.POST.get('plan') or request.GET.get('plan') or '').strip()
     is_pro_upgrade = plan == 'pro'
     yearly = (
         settings.CARD_YEARLY_PRICE_PRO if is_pro_upgrade

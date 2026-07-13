@@ -711,11 +711,22 @@
                     </ul>
                 </div>
 
-                <a href="{% if request.user.is_authenticated %}{% url 'pricing' %}{% else %}{% url 'register' %}?next={% url 'pricing' %}{% endif %}"
-                   class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
-                    <i data-lucide="rocket"></i>
-                    {% trans "Upgrade to Pro — ৳500 / year" %}
-                </a>
+                {% if request.user.is_authenticated %}
+                    <form method="post" action="{% url 'bkash_initiate' %}" class="lp-plan__cta-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan" value="pro">
+                        <button type="submit" class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
+                            <i data-lucide="rocket"></i>
+                            {% trans "Upgrade to Pro — ৳500 / year" %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'register' %}?next={% url 'bkash_start' 'pro' %}"
+                       class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
+                        <i data-lucide="rocket"></i>
+                        {% trans "Upgrade to Pro — ৳500 / year" %}
+                    </a>
+                {% endif %}
                 <span class="lp-plan__foot lp-plan__foot--featured">
                     <i data-lucide="bell"></i> {% trans "We warn you 30 days before renewal — no silent charges." %}
                 </span>

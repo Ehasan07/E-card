@@ -28,6 +28,7 @@ urlpatterns = [
     path('pricing/', views.pricing, name='pricing'),
     path('pricing/checkout/<slug:plan>/', views.pricing_checkout, name='pricing_checkout'),
     path('pay/bkash/initiate/', views.bkash_initiate, name='bkash_initiate'),
+    path('pay/bkash/start/<slug:plan>/', views.bkash_initiate, name='bkash_start'),
     path('pay/bkash/return/', views.bkash_return, name='bkash_return'),
     path('pay/bkash/webhook/', views.bkash_webhook, name='bkash_webhook'),
     path('pay/bkash/journey/', views.bkash_journey_mockup, name='bkash_journey_mockup'),
