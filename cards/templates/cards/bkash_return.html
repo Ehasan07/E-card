@@ -1,0 +1,110 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Payment status — MY-Card{% endblock %}
+{% block page_icon %}check-circle-2{% endblock %}
+{% block page_label %}Payment{% endblock %}
+
+{% block content %}
+<div class="pay-page">
+    <div class="pay-bg" aria-hidden="true">
+        <div class="mc-dot-grid"></div>
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-160px;opacity:0.30;"></div>
+    </div>
+
+    <div class="mc-container pay-container">
+        <article class="mc-card mc-card--glow pay-hero mc-fade-up">
+            {% if status == 'SUCCEEDED' %}
+                <span class="pay-hero__icon pay-hero__icon--ok"><i data-lucide="check-circle-2"></i></span>
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    {% trans "Subscription active" %}
+                </span>
+                <h1>{% trans "Payment received." %}</h1>
+                <p class="mc-text-muted">
+                    {% trans "Your yearly subscription is live. Every card you own is active for the next 12 months. Renewal will happen automatically at the same time next year." %}
+                </p>
+            {% elif status == 'FAILED' %}
+                <span class="pay-hero__icon pay-hero__icon--fail"><i data-lucide="x-circle"></i></span>
+                <span class="mc-badge">
+                    <span class="mc-badge__dot" style="background:var(--mc-error);"></span>
+                    {% trans "Payment failed" %}
+                </span>
+                <h1>{% trans "The payment did not go through." %}</h1>
+                <p class="mc-text-muted">
+                    {% trans "bKash reported a failure. Please try again — your card is not charged if the payment did not complete." %}
+                </p>
+            {% elif status == 'CANCELLED' %}
+                <span class="pay-hero__icon pay-hero__icon--warn"><i data-lucide="ban"></i></span>
+                <span class="mc-badge mc-badge--warn">{% trans "Cancelled" %}</span>
+                <h1>{% trans "You cancelled the subscription." %}</h1>
+                <p class="mc-text-muted">
+                    {% trans "No payment was taken. You can restart the subscription any time from the pricing page." %}
+                </p>
+            {% else %}
+                <span class="pay-hero__icon pay-hero__icon--pending"><i data-lucide="loader"></i></span>
+                <span class="mc-badge">{% trans "Processing" %}</span>
+                <h1>{% trans "We're confirming your payment." %}</h1>
+                <p class="mc-text-muted">
+                    {% trans "bKash is finalising the transaction. This usually takes a few seconds; check your inbox for a confirmation notification, or refresh in a moment." %}
+                </p>
+            {% endif %}
+
+            <div class="pay-hero__actions">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--primary mc-btn--lg">
+                        <i data-lucide="layout-dashboard"></i>
+                        {% trans "Back to dashboard" %}
+                    </a>
+                    <a href="{% url 'user_inbox' %}" class="mc-btn mc-btn--outline mc-btn--lg">
+                        <i data-lucide="bell"></i>
+                        {% trans "Open inbox" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'index' %}" class="mc-btn mc-btn--primary mc-btn--lg">
+                        <i data-lucide="home"></i>
+                        {% trans "Home" %}
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if subscription_request_id %}
+                <p class="pay-hero__ref mc-mono mc-text-dim">
+                    Ref: {{ subscription_request_id }}
+                </p>
+            {% endif %}
+        </article>
+    </div>
+</div>
+
+<style>
+.pay-page { position: relative; min-height: 100vh; padding: var(--mc-s-6) 0; display: grid; place-items: center; overflow: hidden; }
+.pay-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.pay-container { position: relative; z-index: 1; max-width: 620px; }
+.pay-hero {
+    padding: clamp(2.2rem, 5vw, 3rem);
+    text-align: center;
+    display: flex; flex-direction: column;
+    align-items: center; gap: var(--mc-s-3);
+}
+.pay-hero h1 { font-family: var(--mc-font-display); font-size: clamp(1.7rem, 3.5vw, 2.2rem); margin: 0; }
+.pay-hero p { margin: 0; max-width: 500px; }
+
+.pay-hero__icon {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    display: grid; place-items: center;
+    box-shadow: var(--mc-shadow-2);
+}
+.pay-hero__icon i { width: 2.2rem; height: 2.2rem; }
+.pay-hero__icon--ok      { background: var(--mc-accent-halo); color: var(--mc-accent); box-shadow: 0 0 0 6px var(--mc-accent-halo), var(--mc-shadow-2); }
+.pay-hero__icon--fail    { background: rgba(248,113,113,0.12); color: var(--mc-error); box-shadow: 0 0 0 6px rgba(248,113,113,0.10), var(--mc-shadow-2); }
+.pay-hero__icon--warn    { background: rgba(245,158,11,0.12); color: var(--mc-warn); box-shadow: 0 0 0 6px rgba(245,158,11,0.10), var(--mc-shadow-2); }
+.pay-hero__icon--pending { background: var(--mc-bg-2); color: var(--mc-text-md); }
+.pay-hero__icon--pending i { animation: pay-spin 1.2s linear infinite; }
+@keyframes pay-spin { to { transform: rotate(360deg); } }
+
+.pay-hero__actions { display: flex; gap: var(--mc-s-3); flex-wrap: wrap; justify-content: center; margin-top: var(--mc-s-3); }
+.pay-hero__ref { font-size: 0.7rem; margin: var(--mc-s-3) 0 0; }
+</style>
+{% endblock %}

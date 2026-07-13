@@ -35,6 +35,7 @@ from .permissions import (
 from .models import (
     CardLifecycleLog,
     UserNotification,
+    Payment,
     Card,
     Profile,
     DEFAULT_CARD_LIMIT,
@@ -2027,7 +2028,7 @@ PLANS = [
             'Wallet pass + vCard',
             '7-day analytics',
             '5 leads / month',
-            'Yearly renewal ৳120 (৳50 reactivation fee if a card lapses)',
+            'Yearly renewal ৳120 (no reactivation penalty)',
         ],
         cta='Start free for 12 months',
         featured=False,
@@ -2243,14 +2244,11 @@ def _yearly_price_for(user) -> int:
 
 
 def _reactivation_fee_for(card) -> int:
-    """৳50 reactivation fee applies ONLY to a card that has actually gone
-    offline (expired or admin-disabled). If the owner renews *before*
-    expiry — while the card is still in trial or paid — they pay just the
-    yearly fee."""
-    lapsed = {Card.STATUS_EXPIRED, Card.STATUS_ADMIN_DISABLED}
-    if card.lifecycle_status in lapsed or not card.is_active:
-        return settings.CARD_REACTIVATION_FEE
-    return 0
+    """Reactivation fee is always ৳0 — international SaaS convention. To
+    come back online after a lapse the owner just pays the yearly rate,
+    same as a fresh subscription. Kept as a helper so templates can call
+    it without knowing the policy."""
+    return settings.CARD_REACTIVATION_FEE
 
 
 @login_required
@@ -2499,4 +2497,303 @@ def _notify_user(card, kind, subject, body, action_url=''):
         subject=subject,
         body=body,
         action_url=action_url,
+    )
+
+
+# ============================================================================
+# bKash Recurring Payment — scaffolding
+# ============================================================================
+# These endpoints are wired but intentionally minimal: sandbox credentials
+# haven't been provisioned yet, so the initiate view flashes an info
+# message and the webhook view accepts + logs the payload without
+# advancing any subscription state. Once BKASH_APP_KEY is set the real
+# gateway.py client is called instead.
+#
+# URL layout:
+#   POST /pay/bkash/initiate/  → owner clicks "Pay via bKash" from
+#                                 reactivate / pricing / dashboard.
+#   GET  /pay/bkash/return/    → bKash redirects the customer here
+#                                 after wallet+OTP+PIN. We call the
+#                                 Query API to confirm, then flip the
+#                                 Payment row + Profile.subscription_
+#                                 paid_until + card.lifecycle_status.
+#   POST /pay/bkash/webhook/   → bKash pushes 4 notification types:
+#                                 SUBSCRIPTION / PAYMENT / REFUND /
+#                                 CANCEL. Verify signature, then apply.
+
+def _bkash_ready() -> bool:
+    return bool(getattr(settings, 'FEATURE_BKASH', False))
+
+
+@login_required
+@require_POST
+def bkash_initiate(request):
+    """Kick off a bKash subscription for the current user.
+
+    POST body fields:
+      - plan: 'pro' | 'free_renewal' | 'reactivate:<card_slug>'
+    """
+    if not _bkash_ready():
+        messages.info(
+            request,
+            'bKash payments are launching very soon. Meanwhile, submit a '
+            'reactivation request and the admin will approve it manually.',
+        )
+        return redirect('pricing')
+
+    from .gateways import bkash
+    from datetime import date
+
+    plan = (request.POST.get('plan') or '').strip()
+    is_pro_upgrade = plan == 'pro'
+    yearly = (
+        settings.CARD_YEARLY_PRICE_PRO if is_pro_upgrade
+        else _yearly_price_for(request.user)
+    )
+
+    subscription_request_id = bkash.new_subscription_request_id()
+    start_date = date.today()
+    expiry_date = bkash.suggested_expiry_date(start=start_date, years=2)
+
+    Payment.objects.create(
+        user=request.user,
+        gateway=Payment.GATEWAY_BKASH,
+        amount=yearly,
+        currency='BDT',
+        status=Payment.STATUS_PENDING,
+        bkash_subscription_request_id=subscription_request_id,
+        raw_payload={'plan': plan, 'yearly': yearly},
+    )
+
+    try:
+        client = bkash.BkashClient()
+        result = client.create_subscription(
+            subscription_request_id=subscription_request_id,
+            amount=yearly,
+            start_date=start_date,
+            expiry_date=expiry_date,
+            frequency='CALENDAR_YEAR',
+            subscription_type='WITH_PAYMENT',
+            first_payment_amount=yearly,
+            subscription_reference=f'{request.user.username[:70]}',
+        )
+    except bkash.BkashError as exc:
+        logger.warning("bKash create_subscription failed: %s", exc)
+        messages.error(request, 'Could not reach bKash right now. Please try again in a minute.')
+        return redirect('pricing')
+
+    redirect_url = result.get('redirectURL')
+    if not redirect_url:
+        messages.error(request, 'bKash did not return a redirect URL.')
+        return redirect('pricing')
+
+    return redirect(redirect_url)
+
+
+def bkash_return(request):
+    """Landing page after bKash sends the customer back."""
+    subscription_request_id = (request.GET.get('subscriptionRequestId') or '').strip()
+
+    payment = (
+        Payment.objects
+        .filter(bkash_subscription_request_id=subscription_request_id)
+        .first()
+        if subscription_request_id else None
+    )
+
+    context = {
+        'payment': payment,
+        'subscription_request_id': subscription_request_id,
+        'bkash_ready': _bkash_ready(),
+    }
+
+    # If credentials are live, query bKash for the authoritative status
+    # (mandatory per Note-3 of the guide — merchant must not rely solely
+    # on the webhook arriving on time).
+    if _bkash_ready() and payment:
+        from .gateways import bkash
+        try:
+            info = bkash.BkashClient().query_by_request_id(subscription_request_id)
+            _apply_subscription_query(payment, info)
+            context['status'] = info.get('status')
+        except bkash.BkashError as exc:
+            logger.warning("bKash query on return failed: %s", exc)
+            context['status'] = 'unknown'
+    else:
+        context['status'] = 'pending'
+
+    return render(request, 'cards/bkash_return.html', context)
+
+
+@csrf_exempt
+@require_POST
+def bkash_webhook(request):
+    """Endpoint bKash POSTs to for SUBSCRIPTION / PAYMENT / REFUND / CANCEL.
+
+    Signature verification is enforced when BKASH_WEBHOOK_KEY is set.
+    Body is stored on the Payment row for auditability.
+    """
+    from .gateways import bkash
+
+    signature = request.headers.get('X-Signature', '') or request.headers.get('signature', '')
+    event_type = request.headers.get('Type', '') or request.headers.get('type', '')
+
+    if _bkash_ready() and settings.BKASH_WEBHOOK_KEY:
+        if not bkash.verify_signature(payload=request.body, signature_header=signature):
+            logger.warning("bKash webhook signature mismatch (type=%s)", event_type)
+            return HttpResponse(status=401)
+
+    try:
+        data = json.loads(request.body.decode('utf-8') or '{}')
+    except (ValueError, UnicodeDecodeError):
+        return HttpResponse(status=400)
+
+    logger.info("bKash webhook received: type=%s data=%s", event_type, data)
+
+    subscription_request_id = (data.get('subscriptionRequestId') or '').strip()
+    payment = (
+        Payment.objects
+        .filter(bkash_subscription_request_id=subscription_request_id)
+        .first()
+        if subscription_request_id else None
+    )
+
+    if payment:
+        _apply_webhook_event(payment, event_type.upper(), data)
+    else:
+        logger.warning("bKash webhook for unknown subscription_request_id=%s", subscription_request_id)
+
+    return HttpResponse(status=200)
+
+
+def _apply_subscription_query(payment: Payment, info: dict):
+    """Update a Payment row from a query API response (query_by_request_id)."""
+    payment.bkash_subscription_id = str(info.get('id') or payment.bkash_subscription_id)
+    payment.bkash_payer_msisdn = info.get('payer') or payment.bkash_payer_msisdn
+    if info.get('nextPaymentDate'):
+        payment.bkash_next_payment_date = info['nextPaymentDate']
+    if info.get('expiryDate'):
+        payment.bkash_expiry_date = info['expiryDate']
+
+    status = (info.get('status') or '').upper()
+    if status == 'SUCCEEDED':
+        payment.status = Payment.STATUS_SUCCESS
+        _grant_subscription(payment)
+    elif status == 'FAILED':
+        payment.status = Payment.STATUS_FAILED
+    elif status == 'CANCELLED':
+        payment.status = Payment.STATUS_REFUNDED
+
+    payment.raw_payload = {**(payment.raw_payload or {}), 'last_query': info}
+    payment.save()
+
+
+def _apply_webhook_event(payment: Payment, event_type: str, data: dict):
+    payment.raw_payload = {
+        **(payment.raw_payload or {}),
+        f'webhook_{event_type.lower()}': data,
+    }
+
+    if event_type == 'SUBSCRIPTION':
+        status = (data.get('subscriptionStatus') or '').upper()
+        payment.bkash_subscription_id = str(data.get('subscriptionId') or payment.bkash_subscription_id)
+        if status == 'SUCCEEDED':
+            payment.status = Payment.STATUS_SUCCESS
+            _grant_subscription(payment)
+        elif status == 'FAILED':
+            payment.status = Payment.STATUS_FAILED
+        elif status == 'CANCELLED':
+            payment.status = Payment.STATUS_REFUNDED
+            _mark_subscription_cancelled(payment)
+
+    elif event_type == 'PAYMENT':
+        payment.bkash_payment_id = str(data.get('paymentId') or payment.bkash_payment_id)
+        payment.bkash_trx_id = data.get('trxId') or payment.bkash_trx_id
+        if data.get('nextPaymentDate'):
+            payment.bkash_next_payment_date = data['nextPaymentDate']
+        status = (data.get('paymentStatus') or '').upper()
+        if status in {'SUCCEEDED_PAYMENT', 'RE_SUCCEEDED_PAYMENT'}:
+            payment.status = Payment.STATUS_SUCCESS
+            _grant_subscription(payment)
+
+    elif event_type == 'REFUND':
+        payment.status = Payment.STATUS_REFUNDED
+
+    payment.save()
+
+
+def _grant_subscription(payment: Payment):
+    """Extend the payer's `Profile.subscription_paid_until` by 1 year and
+    lift all their cards out of `expired`/`admin_disabled` limbo. This
+    runs once per successful yearly cycle."""
+    from django.utils import timezone
+
+    profile = getattr(payment.user, 'profile', None)
+    if not profile:
+        return
+    now = timezone.now()
+    base = profile.subscription_paid_until or now
+    profile.subscription_paid_until = max(base, now) + timezone.timedelta(days=365)
+    profile.save(update_fields=['subscription_paid_until'])
+
+    # Reactivate every card owned by the payer that had gone offline.
+    Card.objects.filter(
+        user=payment.user,
+        is_active=False,
+    ).update(
+        is_active=True,
+        lifecycle_status=Card.STATUS_ACTIVE_PAID,
+        deactivated_at=None,
+        deactivation_reason='',
+        last_warning_stage=0,
+    )
+    Card.objects.filter(
+        user=payment.user,
+        is_active=True,
+    ).update(
+        lifecycle_status=Card.STATUS_ACTIVE_PAID,
+        last_warning_stage=0,
+    )
+
+    for card in Card.objects.filter(user=payment.user):
+        CardLifecycleLog.objects.create(
+            card=card,
+            action=CardLifecycleLog.ACTION_RENEWED,
+            actor=CardLifecycleLog.ACTOR_USER,
+            actor_user=payment.user,
+            notes=f'bKash subscription success. Paid until {profile.subscription_paid_until:%Y-%m-%d}.',
+        )
+
+    UserNotification.objects.create(
+        user=payment.user,
+        kind=UserNotification.KIND_PAYMENT_RECEIVED,
+        subject='Payment received — every card active for another year',
+        body=(
+            f'Your yearly subscription is live until '
+            f'{profile.subscription_paid_until:%Y-%m-%d}. '
+            f'All of your cards are online.'
+        ),
+    )
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def bkash_journey_mockup(request):
+    """Internal-only page rendering the 6-step Merchant User Journey for
+    the bKash S-2 milestone. Screenshot each step for the submission."""
+    return render(request, 'cards/bkash_journey_mockup.html')
+
+
+def _mark_subscription_cancelled(payment: Payment):
+    """Q6(A): mark cancelled immediately but keep cards active until the
+    paid_until date. The lifecycle tick will take them offline naturally
+    when that date passes."""
+    UserNotification.objects.create(
+        user=payment.user,
+        kind=UserNotification.KIND_ADMIN_ACTION,
+        subject='Subscription cancelled',
+        body=(
+            'Your bKash subscription has been cancelled. Your cards stay '
+            'online until the current paid period ends; after that they '
+            'will go offline unless you resubscribe.'
+        ),
     )

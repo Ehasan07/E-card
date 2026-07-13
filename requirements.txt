@@ -11,3 +11,4 @@ whitenoise
 python-decouple
 dj-database-url
 openpyxl
+requests

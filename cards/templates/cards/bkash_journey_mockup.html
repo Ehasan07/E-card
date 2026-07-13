@@ -1,0 +1,200 @@
+{% extends 'cards/base.html' %}
+{% comment %}
+Internal-only page that renders the 6-step Merchant User Journey
+required for the bKash S-2 milestone. Open at /pay/bkash/journey/mock/
+(add the URL yourself when you want to capture screenshots) and shoot
+each numbered card as a separate PNG. bKash reviews the sequence and
+then releases sandbox credentials.
+{% endcomment %}
+
+{% block title %}bKash Merchant Journey — MY-Card{% endblock %}
+{% block content %}
+<div style="max-width: 960px; margin: 3rem auto; padding: 0 1.5rem; color: var(--mc-text-hi); font-family: var(--mc-font-body);">
+
+    <h1 style="font-family: var(--mc-font-display); font-size: 2rem; margin: 0 0 0.5rem;">
+        MY-Card × bKash — Merchant User Journey
+    </h1>
+    <p style="color: var(--mc-text-md); max-width: 640px;">
+        6 steps a customer takes to move from Free to Pro (or renew) through
+        the bKash Recurring Payment gateway. Each numbered block below is one
+        screenshot for the S-2 submission.
+    </p>
+
+    {# ===== Step 1 ===== #}
+    <section class="mj-step">
+        <div class="mj-step__num">1</div>
+        <div>
+            <h2>Customer visits the Pricing page</h2>
+            <p>
+                Landing / <code>/pricing/</code> shows the three tiers side by side.
+                The Pro card lists <strong>৳500 / year — paid upfront</strong> and
+                a "Upgrade to Pro" CTA. No free trial on Pro.
+            </p>
+            <div class="mj-mockup">
+                <div class="mj-plan">
+                    <span class="mj-caption">Pro</span>
+                    <div class="mj-price">৳500 <small>/ year</small></div>
+                    <p>Paid upfront, then renews yearly at the same rate.</p>
+                    <button class="mj-cta">Upgrade to Pro — ৳500 / year</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ===== Step 2 ===== #}
+    <section class="mj-step">
+        <div class="mj-step__num">2</div>
+        <div>
+            <h2>Confirm order & choose bKash</h2>
+            <p>
+                A short review screen shows the plan, ৳500 amount, cycle
+                (CALENDAR_YEAR), start date (today), expiry (+2 years). The
+                user picks <strong>Pay via bKash</strong> and submits a POST to
+                <code>/pay/bkash/initiate/</code>.
+            </p>
+            <div class="mj-mockup">
+                <div class="mj-review">
+                    <div class="mj-row"><span>Plan</span><strong>Pro (yearly)</strong></div>
+                    <div class="mj-row"><span>Amount</span><strong>৳500.00 BDT</strong></div>
+                    <div class="mj-row"><span>Cycle</span><strong>Calendar year</strong></div>
+                    <div class="mj-row"><span>Start</span><strong>Today</strong></div>
+                    <button class="mj-cta mj-cta--pink">Pay via bKash</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ===== Step 3 ===== #}
+    <section class="mj-step">
+        <div class="mj-step__num">3</div>
+        <div>
+            <h2>Redirect to bKash secure page</h2>
+            <p>
+                Our server calls <code>POST /gateway/api/subscription</code> with
+                <code>subscriptionType=WITH_PAYMENT</code>. bKash returns a
+                <code>redirectURL</code> and the browser is sent there. The
+                customer sees bKash's own consent screen.
+            </p>
+            <div class="mj-mockup mj-mockup--bkash">
+                <div class="mj-bkash-frame">
+                    <div class="mj-bkash-head">bKash Payment</div>
+                    <p>By continuing you agree to a yearly ৳500 debit from your bKash wallet on the same date every year until you cancel.</p>
+                    <div class="mj-row"><span>Amount</span><strong>৳500</strong></div>
+                    <div class="mj-row"><span>Merchant</span><strong>MY-Card by Dupno</strong></div>
+                    <button class="mj-cta mj-cta--pink">I Agree</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ===== Step 4 ===== #}
+    <section class="mj-step">
+        <div class="mj-step__num">4</div>
+        <div>
+            <h2>Wallet + OTP + PIN</h2>
+            <p>
+                Customer enters their bKash wallet number → receives an OTP via
+                SMS → enters PIN. All handled inside the bKash page, MY-Card
+                never sees the credentials.
+            </p>
+            <div class="mj-mockup mj-mockup--bkash">
+                <div class="mj-bkash-frame">
+                    <div class="mj-bkash-head">Enter wallet / OTP / PIN</div>
+                    <input value="0177 06185 75" readonly>
+                    <input value="123456" readonly>
+                    <input value="•••••" readonly type="password">
+                    <button class="mj-cta mj-cta--pink">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ===== Step 5 ===== #}
+    <section class="mj-step">
+        <div class="mj-step__num">5</div>
+        <div>
+            <h2>Redirect back — /pay/bkash/return/</h2>
+            <p>
+                bKash sends the customer back to our
+                <code>{{ 'https://mycard.dupno.com/pay/bkash/return/' }}</code>
+                page. Our server calls the mandatory Query API
+                (<code>GET /gateway/api/subscriptions/request-id/…</code>) to
+                confirm status and, in parallel, waits for the SUBSCRIPTION +
+                PAYMENT webhooks.
+            </p>
+            <div class="mj-mockup">
+                <div class="mj-success">
+                    <div class="mj-success__icon">✓</div>
+                    <h3>Payment received</h3>
+                    <p>Your subscription is live until {{ 'YYYY-MM-DD' }}. Every card of yours is active for the next 12 months.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {# ===== Step 6 ===== #}
+    <section class="mj-step">
+        <div class="mj-step__num">6</div>
+        <div>
+            <h2>Cancel anytime (customer initiated)</h2>
+            <p>
+                From the dashboard the customer can cancel via a
+                <strong>Cancel subscription</strong> button which calls
+                <code>DELETE /gateway/api/subscriptions/{id}</code>. Cards stay
+                online until the paid period ends; MY-Card takes them offline
+                automatically after that.
+            </p>
+            <div class="mj-mockup">
+                <div class="mj-review">
+                    <div class="mj-row"><span>Status</span><strong>Cancelling…</strong></div>
+                    <p>No further payments will be taken. Cards stay online until 2027-07-14.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<style>
+.mj-step {
+    display: flex;
+    gap: 1.75rem;
+    padding: 1.75rem 0;
+    border-bottom: 1px dashed var(--mc-border);
+}
+.mj-step__num {
+    flex-shrink: 0;
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--mc-accent);
+    color: var(--mc-bg-0);
+    font-family: var(--mc-font-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    display: grid; place-items: center;
+}
+.mj-step h2 { font-family: var(--mc-font-display); margin: 0 0 0.4rem; font-size: 1.25rem; }
+.mj-step p { margin: 0 0 1rem; color: var(--mc-text-md); line-height: 1.55; }
+.mj-step code { background: var(--mc-bg-2); padding: 2px 6px; border-radius: 4px; font-size: 0.85em; }
+.mj-mockup { border: 1px solid var(--mc-border-hi); border-radius: 12px; padding: 1.25rem; background: var(--mc-bg-1); max-width: 380px; }
+.mj-mockup--bkash { background: linear-gradient(180deg, #FDF2F8 0%, #FFE4EA 100%); color: #831843; }
+.mj-mockup--bkash .mj-row span { color: #9F1239; }
+.mj-mockup--bkash .mj-row strong { color: #831843; }
+.mj-caption { font-family: var(--mc-font-mono); font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mc-accent); }
+.mj-plan .mj-price { font-family: var(--mc-font-display); font-size: 2.2rem; color: var(--mc-text-hi); margin: 0.4rem 0; }
+.mj-plan .mj-price small { font-size: 1rem; color: var(--mc-text-md); }
+.mj-plan p { margin: 0 0 1rem; }
+.mj-cta { width: 100%; padding: 0.75rem 1rem; border: none; border-radius: 999px; background: var(--mc-accent); color: var(--mc-bg-0); font-weight: 700; cursor: pointer; }
+.mj-cta--pink { background: #E2136E; color: #fff; }
+.mj-bkash-frame { padding: 1rem; }
+.mj-bkash-head { text-align: center; font-weight: 700; margin-bottom: 0.75rem; }
+.mj-bkash-frame input { display: block; width: 100%; padding: 0.6rem 0.8rem; margin-bottom: 0.5rem; border: 1px solid #F9A8D4; border-radius: 8px; background: #fff; color: #831843; font-family: var(--mc-font-mono); }
+.mj-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dashed var(--mc-border); font-size: 0.9rem; }
+.mj-row:last-of-type { border-bottom: none; }
+.mj-review p { margin: 0.75rem 0 1rem; font-size: 0.85rem; }
+.mj-success { text-align: center; padding: 1rem 0.5rem; }
+.mj-success__icon { width: 56px; height: 56px; border-radius: 50%; background: var(--mc-accent-halo); color: var(--mc-accent); font-size: 2rem; font-weight: 700; display: grid; place-items: center; margin: 0 auto 0.75rem; }
+.mj-success h3 { margin: 0 0 0.4rem; font-family: var(--mc-font-display); }
+.mj-success p { margin: 0; color: var(--mc-text-md); }
+</style>
+{% endblock %}

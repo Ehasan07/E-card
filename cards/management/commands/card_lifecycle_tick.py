@@ -58,14 +58,21 @@ class Command(BaseCommand):
             .filter(lifecycle_status__in=[Card.STATUS_TRIAL, Card.STATUS_ACTIVE_PAID, Card.STATUS_EXPIRING_SOON])
         )
 
+        grace_days = getattr(settings, 'CARD_GRACE_PERIOD_DAYS', 7)
+
         for card in active_cards:
             effective_expiry = _effective_expiry(card)
             if effective_expiry is None:
                 stats['skipped'] += 1
                 continue
 
-            # --- Expiry ---
-            if effective_expiry <= now:
+            # --- Grace period after expiry ---
+            # Card stays online for CARD_GRACE_PERIOD_DAYS after the paid /
+            # trial period ends, so the owner has one final window to
+            # renew before it goes offline.
+            deactivate_after = effective_expiry + timedelta(days=grace_days)
+
+            if deactivate_after <= now:
                 if not dry:
                     _deactivate(card, now)
                 stats['expired'] += 1

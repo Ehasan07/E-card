@@ -376,6 +376,18 @@ class Payment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # ---- bKash recurring-payment fields ---------------------------------
+    # These are populated as the subscription progresses through the bKash
+    # lifecycle (Create → Verified → Payment success → Cancel/Refund).
+    # All optional so the same Payment row is reused for other gateways.
+    bkash_subscription_request_id = models.CharField(max_length=120, blank=True, db_index=True)
+    bkash_subscription_id = models.CharField(max_length=64, blank=True, db_index=True)
+    bkash_payment_id = models.CharField(max_length=64, blank=True, db_index=True)
+    bkash_trx_id = models.CharField(max_length=64, blank=True, db_index=True)
+    bkash_payer_msisdn = models.CharField(max_length=20, blank=True)
+    bkash_next_payment_date = models.DateField(null=True, blank=True)
+    bkash_expiry_date = models.DateField(null=True, blank=True)
+
     class Meta:
         ordering = ['-created_at']
         indexes = [models.Index(fields=['user', 'status', 'created_at'])]

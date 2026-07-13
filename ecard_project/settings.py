@@ -184,9 +184,33 @@ FEATURE_WALLET   = bool(APPLE_WALLET_CERT_PATH or GOOGLE_WALLET_SA_JSON)
 CARD_TRIAL_MONTHS         = config('CARD_TRIAL_MONTHS', default=12, cast=int)
 CARD_YEARLY_PRICE_FREE    = config('CARD_YEARLY_PRICE_FREE', default=120, cast=int)   # BDT
 CARD_YEARLY_PRICE_PRO     = config('CARD_YEARLY_PRICE_PRO', default=500, cast=int)    # BDT
-CARD_REACTIVATION_FEE     = config('CARD_REACTIVATION_FEE', default=50, cast=int)     # BDT
+# No separate reactivation fee — Meta / international SaaS pattern:
+# cancel or lapse, then resubscribe at the same yearly rate.
+CARD_REACTIVATION_FEE     = 0
 # Days before expiry to send an inbox warning (highest first).
 CARD_WARNING_DAYS         = [30, 7, 1]
+# Grace period after the paid/trial period lapses — the card stays online
+# so the owner has one last window to renew before it goes offline.
+CARD_GRACE_PERIOD_DAYS    = config('CARD_GRACE_PERIOD_DAYS', default=7, cast=int)
+
+
+# ---- bKash Recurring Payment Gateway ----
+# Sandbox: https://gateway.sbrecurring.pay.bka.sh
+# Live:    filled in after bKash provisions production credentials.
+BKASH_MODE                = config('BKASH_MODE', default='sandbox')  # 'sandbox' | 'live'
+BKASH_BASE_URL            = config('BKASH_BASE_URL', default='https://gateway.sbrecurring.pay.bka.sh')
+BKASH_APP_KEY             = config('BKASH_APP_KEY', default='')
+BKASH_MERCHANT_SHORT_CODE = config('BKASH_MERCHANT_SHORT_CODE', default='')
+BKASH_SERVICE_ID          = config('BKASH_SERVICE_ID', default='100001')
+# HMAC key bKash signs webhooks with (base64-encoded); usually the same
+# value as the app key, but stored separately so ops can rotate them.
+BKASH_WEBHOOK_KEY         = config('BKASH_WEBHOOK_KEY', default='')
+BKASH_DISPLAY_NAME        = config('BKASH_DISPLAY_NAME', default='MY-Card by Dupno')
+BKASH_REDIRECT_URL        = config('BKASH_REDIRECT_URL', default='https://mycard.dupno.com/pay/bkash/return/')
+BKASH_WEBHOOK_URL         = config('BKASH_WEBHOOK_URL', default='https://mycard.dupno.com/pay/bkash/webhook/')
+# Feature flag: True when all required credentials are filled, so views
+# can hide the bKash CTA until integration is live-ready.
+FEATURE_BKASH             = bool(BKASH_APP_KEY and BKASH_MERCHANT_SHORT_CODE)
 
 
 # ZeptoMail — transactional email for OTP password reset
