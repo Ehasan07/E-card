@@ -510,63 +510,151 @@
 </section>
 
 {# =====================  PRICING  ===================== #}
-<section id="pricing" class="lp-section lp-section--muted">
+<section id="pricing" class="lp-section lp-section--muted lp-pricing-section">
+    <div class="lp-pricing-section__bg" aria-hidden="true">
+        <div class="mc-aurora mc-aurora--mint mc-hue-drift" style="width:520px;height:520px;top:-140px;left:-8%;opacity:0.25;"></div>
+        <div class="mc-aurora mc-aurora--cyan" style="width:460px;height:460px;bottom:-160px;right:-6%;opacity:0.22;"></div>
+    </div>
+
     <div class="mc-container">
         <header class="lp-section__head">
-            <span class="mc-badge">{% trans "Pricing" %}</span>
-            <h2>{% trans "Simple pricing. No watermark on Pro." %}</h2>
-            <p class="mc-text-muted">{% trans "Priced in taka (BD) with automatic USD via Stripe for the rest of the world." %}</p>
+            <span class="mc-badge mc-badge--accent">
+                <span class="mc-badge__dot"></span>
+                {% trans "Pricing" %}
+            </span>
+            <h2>{% trans "One plan for casual users. One plan for professionals." %}</h2>
+            <p class="mc-text-muted">
+                {% trans "Free covers the basics forever — a single card, QR, and lead capture. Pro unlocks the network-effect features: multi-card, extended analytics, custom URLs, AI bio, and every premium theme. bKash for BD, Stripe worldwide." %}
+            </p>
         </header>
 
         <div class="lp-pricing">
-            <div class="mc-card lp-plan">
+
+            {# ========== FREE ========== #}
+            <article class="mc-card lp-plan lp-plan--free mc-fade-up">
                 <header>
                     <span class="mc-caption">{% trans "Free" %}</span>
-                    <div class="lp-plan__price"><span class="mc-mono">৳0</span><small>/{% trans "forever" %}</small></div>
+                    <div class="lp-plan__price">
+                        <span class="mc-mono">৳0</span>
+                        <small>/{% trans "forever" %}</small>
+                    </div>
+                    <p class="mc-text-muted">{% trans "For students, first-timers, and anyone testing the waters." %}</p>
                 </header>
-                <ul class="lp-plan__list">
-                    <li><i data-lucide="check"></i> {% trans "1 personal card" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "QR + shareable link" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Wallet pass + vCard" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "7-day analytics" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "5 leads / month" %}</li>
-                </ul>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">{% trans "Start free" %}</a>
-            </div>
 
-            <div class="mc-card mc-card--glow lp-plan lp-plan--featured">
-                <span class="mc-badge mc-badge--accent lp-plan__badge">{% trans "Most popular" %}</span>
+                <div class="lp-plan__group">
+                    <span class="lp-plan__group-label">{% trans "What's included" %}</span>
+                    <ul class="lp-plan__list">
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>1 card</strong> {% trans "with auto-generated URL" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>QR code</strong> + {% trans "shareable link" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>Apple + Google Wallet</strong> {% trans "passes" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>vCard</strong> {% trans "download for contacts app" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>{% trans "Physical card" %}</strong> {% trans "print (85.6 × 54 mm)" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>{% trans "7-day analytics" %}</strong> {% trans "window" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>{% trans "5 leads" %}</strong> / {% trans "month via card form" %}</span></li>
+                        <li><i data-lucide="check-circle-2"></i> <span><strong>{% trans "1 curated theme" %}</strong> (Aurora Dark)</span></li>
+                    </ul>
+                </div>
+
+                <div class="lp-plan__group lp-plan__group--locked">
+                    <span class="lp-plan__group-label">{% trans "Locked without Pro" %}</span>
+                    <ul class="lp-plan__list lp-plan__list--muted">
+                        <li><i data-lucide="lock"></i> <span>{% trans "Custom public URL" %}</span></li>
+                        <li><i data-lucide="lock"></i> <span>{% trans "13 premium themes" %}</span></li>
+                        <li><i data-lucide="lock"></i> <span>{% trans "AI bio suggestions" %}</span></li>
+                        <li><i data-lucide="lock"></i> <span>{% trans "Multi-card studio" %}</span></li>
+                        <li><i data-lucide="lock"></i> <span>{% trans "Extended analytics (90 days)" %}</span></li>
+                    </ul>
+                </div>
+
+                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
+                    <i data-lucide="user-plus"></i>
+                    {% trans "Start free" %}
+                </a>
+                <span class="lp-plan__foot">{% trans "No credit card. Upgrade any time." %}</span>
+            </article>
+
+            {# ========== PRO (featured) ========== #}
+            <article class="mc-card mc-card--glow lp-plan lp-plan--featured mc-fade-up mc-fade-up--d1">
+                <span class="lp-plan__ribbon">
+                    <span class="lp-plan__ribbon-shine"></span>
+                    <i data-lucide="crown"></i> {% trans "Most popular" %}
+                </span>
+
                 <header>
                     <span class="mc-caption mc-text-accent">{% trans "Pro" %}</span>
-                    <div class="lp-plan__price"><span class="mc-mono">৳499</span><small>/{% trans "month" %}</small></div>
-                    <p class="mc-text-muted">≈ $4.99 · {% trans "billed monthly" %}</p>
+                    <div class="lp-plan__price lp-plan__price--featured">
+                        <span class="mc-mono">৳499</span>
+                        <small>/{% trans "month" %}</small>
+                    </div>
+                    <p class="mc-text-muted">≈ $4.99 · {% trans "billed monthly. Cancel any time." %}</p>
                 </header>
-                <ul class="lp-plan__list">
-                    <li><i data-lucide="check"></i> {% trans "Up to 5 cards" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Full 90-day analytics" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Unlimited leads" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "All themes + AI bio" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Zero watermark" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Priority support" %}</li>
-                </ul>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--block">{% trans "Upgrade to Pro" %}</a>
-            </div>
 
-            <div class="mc-card lp-plan">
+                <div class="lp-plan__group">
+                    <span class="lp-plan__group-label lp-plan__group-label--accent">
+                        <i data-lucide="sparkles"></i> {% trans "Everything in Free, plus:" %}
+                    </span>
+                    <ul class="lp-plan__list lp-plan__list--accent">
+                        <li><i data-lucide="layers"></i> <span><strong>{% trans "Up to 5 cards" %}</strong> {% trans "— separate personas / brands" %}</span></li>
+                        <li><i data-lucide="link-2"></i> <span><strong>{% trans "Custom public URL" %}</strong> — mycard.dupno.com/<em>{% trans "yourname" %}</em></span></li>
+                        <li><i data-lucide="palette"></i> <span><strong>{% trans "All 14 themes" %}</strong> — Cyber Neon, Molten Gold, Deep Ocean, more</span></li>
+                        <li><i data-lucide="wand-2"></i> <span><strong>{% trans "AI bio generator" %}</strong> — 3 pro-quality bios in one click</span></li>
+                        <li><i data-lucide="line-chart"></i> <span><strong>{% trans "90-day analytics" %}</strong> — views, clicks, saves, referrers</span></li>
+                        <li><i data-lucide="infinity"></i> <span><strong>{% trans "Unlimited leads" %}</strong> — no monthly cap</span></li>
+                        <li><i data-lucide="badge-check"></i> <span><strong>{% trans "Zero watermark" %}</strong> on every card</span></li>
+                        <li><i data-lucide="life-buoy"></i> <span><strong>{% trans "Priority email support" %}</strong> — under 24 h</span></li>
+                    </ul>
+                </div>
+
+                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
+                    <i data-lucide="rocket"></i>
+                    {% trans "Upgrade to Pro" %}
+                </a>
+                <span class="lp-plan__foot lp-plan__foot--featured">
+                    <i data-lucide="shield-check"></i> {% trans "7-day money-back guarantee" %}
+                </span>
+            </article>
+
+            {# ========== TEAM ========== #}
+            <article class="mc-card lp-plan lp-plan--team mc-fade-up mc-fade-up--d2">
                 <header>
                     <span class="mc-caption">{% trans "Team" %}</span>
-                    <div class="lp-plan__price"><span class="mc-mono">৳1,999</span><small>/{% trans "month" %}</small></div>
-                    <p class="mc-text-muted">≈ $19.99 · {% trans "5 seats" %}</p>
+                    <div class="lp-plan__price">
+                        <span class="mc-mono">৳1,999</span>
+                        <small>/{% trans "month" %}</small>
+                    </div>
+                    <p class="mc-text-muted">≈ $19.99 · {% trans "5 seats included" %}</p>
                 </header>
-                <ul class="lp-plan__list">
-                    <li><i data-lucide="check"></i> {% trans "25 cards, 5 seats" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Team branding lock" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "CRM webhook" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "Analytics export" %}</li>
-                    <li><i data-lucide="check"></i> {% trans "SSO (on request)" %}</li>
-                </ul>
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">{% trans "Talk to sales" %}</a>
-            </div>
+
+                <div class="lp-plan__group">
+                    <span class="lp-plan__group-label lp-plan__group-label--accent">
+                        <i data-lucide="users"></i> {% trans "Everything in Pro, plus:" %}
+                    </span>
+                    <ul class="lp-plan__list">
+                        <li><i data-lucide="id-card"></i> <span><strong>25 cards</strong>, <strong>{% trans "5 team seats" %}</strong></span></li>
+                        <li><i data-lucide="shield"></i> <span><strong>{% trans "Team branding lock" %}</strong> — consistent look across the org</span></li>
+                        <li><i data-lucide="webhook"></i> <span><strong>{% trans "CRM webhook" %}</strong> — HubSpot / Salesforce</span></li>
+                        <li><i data-lucide="download"></i> <span><strong>{% trans "Analytics export" %}</strong> — CSV / API</span></li>
+                        <li><i data-lucide="key-round"></i> <span><strong>SSO</strong> <span class="mc-text-muted">({% trans "on request" %})</span></span></li>
+                        <li><i data-lucide="user-cog"></i> <span><strong>{% trans "Dedicated account manager" %}</strong></span></li>
+                    </ul>
+                </div>
+
+                <a href="mailto:mycard@dupno.com?subject=Team%20plan%20interest" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
+                    <i data-lucide="handshake"></i>
+                    {% trans "Talk to sales" %}
+                </a>
+                <span class="lp-plan__foot">{% trans "Custom volume pricing for 20+ seats." %}</span>
+            </article>
+
+        </div>
+
+        {# ==== Payment methods strip ==== #}
+        <div class="lp-pricing-pay mc-fade-up mc-fade-up--d3">
+            <span class="lp-pricing-pay__label">{% trans "Pay however works:" %}</span>
+            <span class="lp-pricing-pay__method"><i data-lucide="smartphone"></i> bKash</span>
+            <span class="lp-pricing-pay__method"><i data-lucide="credit-card"></i> {% trans "Card" %} · Stripe</span>
+            <span class="lp-pricing-pay__method"><i data-lucide="mail"></i> {% trans "Invoice" %} (Team)</span>
+            <span class="lp-pricing-pay__method"><i data-lucide="rotate-ccw"></i> {% trans "Cancel any time" %}</span>
         </div>
     </div>
 </section>
@@ -1003,43 +1091,202 @@
 .lp-showcase__card h3 { margin-bottom: 0.2rem; }
 .lp-showcase__card p { color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); margin: 0 0 var(--mc-s-4); }
 
-/* ============  Pricing  ============ */
+/* ============  Pricing (redesigned) ============ */
+.lp-pricing-section { position: relative; overflow: hidden; }
+.lp-pricing-section__bg { position: absolute; inset: 0; pointer-events: none; z-index: 0; }
+.lp-pricing-section .mc-container { position: relative; z-index: 1; }
+
 .lp-pricing {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--mc-s-5);
-    max-width: 1080px;
+    max-width: 1180px;
     margin: 0 auto;
+    align-items: stretch;
 }
-@media (min-width: 900px) { .lp-pricing { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 960px) {
+    .lp-pricing { grid-template-columns: 1fr 1.08fr 1fr; align-items: stretch; }
+}
 
 .lp-plan {
     display: flex;
     flex-direction: column;
     gap: var(--mc-s-4);
     position: relative;
+    padding: var(--mc-s-6);
+    transition: transform var(--mc-dur-med) var(--mc-ease), box-shadow var(--mc-dur-med) var(--mc-ease), border-color var(--mc-dur-med) var(--mc-ease);
 }
-.lp-plan header { display: flex; flex-direction: column; gap: var(--mc-s-2); }
+.lp-plan:hover {
+    transform: translateY(-6px);
+    border-color: var(--mc-border-glow);
+    box-shadow: var(--mc-shadow-2), 0 0 0 1px var(--mc-accent-halo);
+}
+.lp-plan header { display: flex; flex-direction: column; gap: var(--mc-s-2); padding-bottom: var(--mc-s-3); border-bottom: 1px dashed var(--mc-border); }
+.lp-plan header p { margin: var(--mc-s-2) 0 0; font-size: var(--mc-fs-body-sm); }
+
 .lp-plan__price {
     font-family: var(--mc-font-display);
-    font-size: 2.2rem;
+    font-size: 2.6rem;
     font-weight: 700;
     color: var(--mc-text-hi);
     display: flex;
     align-items: baseline;
     gap: 6px;
+    letter-spacing: -0.02em;
 }
 .lp-plan__price small { font-size: var(--mc-fs-body-sm); font-weight: 500; color: var(--mc-text-md); }
-.lp-plan__list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-2); color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); }
-.lp-plan__list li { display: flex; gap: var(--mc-s-2); align-items: center; }
-.lp-plan__list i { color: var(--mc-accent); width: 1rem; height: 1rem; }
-.lp-plan--featured { border-color: var(--mc-border-glow); }
-.lp-plan__badge {
-    position: absolute;
-    top: -12px;
-    right: var(--mc-s-4);
+.lp-plan__price--featured {
+    background: linear-gradient(120deg, var(--mc-text-hi) 20%, var(--mc-accent) 55%, var(--mc-text-hi) 85%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: lp-price-shimmer 4.5s linear infinite;
+}
+.lp-plan__price--featured small { -webkit-text-fill-color: initial; color: var(--mc-text-md); }
+@keyframes lp-price-shimmer {
+    from { background-position: 0 0; }
+    to   { background-position: 200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-plan__price--featured { animation: none; background: none; -webkit-text-fill-color: initial; color: var(--mc-text-hi); }
 }
 
+.lp-plan__group { display: flex; flex-direction: column; gap: var(--mc-s-2); }
+.lp-plan__group + .lp-plan__group { margin-top: var(--mc-s-3); padding-top: var(--mc-s-3); border-top: 1px dashed var(--mc-border); }
+.lp-plan__group-label {
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mc-text-md);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+.lp-plan__group-label i { width: 12px; height: 12px; color: var(--mc-accent); }
+.lp-plan__group-label--accent { color: var(--mc-accent); }
+.lp-plan__group--locked .lp-plan__group-label { color: var(--mc-text-lo); }
+
+.lp-plan__list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); }
+.lp-plan__list li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    line-height: 1.4;
+}
+.lp-plan__list li strong { color: var(--mc-text-hi); font-weight: 600; }
+.lp-plan__list li em { color: var(--mc-accent); font-style: normal; font-weight: 600; }
+.lp-plan__list i {
+    color: var(--mc-accent);
+    width: 1.05rem;
+    height: 1.05rem;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: transform var(--mc-dur-fast) var(--mc-ease);
+}
+.lp-plan__list li:hover i { transform: scale(1.2) rotate(-6deg); }
+.lp-plan__list--muted li { opacity: 0.55; }
+.lp-plan__list--muted i { color: var(--mc-text-lo); }
+.lp-plan__list--accent i { color: var(--mc-accent); }
+
+.lp-plan__cta { margin-top: auto; }
+.lp-plan__foot {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--mc-text-md);
+    font-size: var(--mc-fs-caption);
+    justify-content: center;
+    text-align: center;
+    margin-top: -6px;
+}
+.lp-plan__foot i { color: var(--mc-accent); width: 14px; height: 14px; }
+.lp-plan__foot--featured { color: var(--mc-accent); font-weight: 600; }
+
+/* Featured plan — glowing frame + subtle scale */
+.lp-plan--featured {
+    border-color: var(--mc-border-glow);
+    box-shadow: var(--mc-shadow-2), var(--mc-shadow-glow), 0 0 0 1px var(--mc-accent-halo);
+}
+@media (min-width: 960px) {
+    .lp-plan--featured { transform: translateY(-10px); }
+    .lp-plan--featured:hover { transform: translateY(-16px); }
+}
+
+/* Ribbon on featured plan */
+.lp-plan__ribbon {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--mc-accent);
+    color: var(--mc-bg-0);
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    box-shadow: 0 12px 24px -8px var(--mc-accent-glow);
+    overflow: hidden;
+    z-index: 2;
+}
+.lp-plan__ribbon i { width: 14px; height: 14px; }
+.lp-plan__ribbon-shine {
+    position: absolute;
+    top: 0; bottom: 0; left: -60%;
+    width: 45%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation: lp-ribbon-shine 3.4s ease-in-out infinite;
+}
+@keyframes lp-ribbon-shine {
+    0%       { left: -60%; }
+    55%,100% { left: 140%; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .lp-plan__ribbon-shine { animation: none; }
+}
+
+/* Payment methods strip */
+.lp-pricing-pay {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--mc-s-5);
+    flex-wrap: wrap;
+    margin-top: var(--mc-s-7);
+    padding-top: var(--mc-s-5);
+    border-top: 1px dashed var(--mc-border);
+}
+.lp-pricing-pay__label {
+    font-family: var(--mc-font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.7rem;
+    color: var(--mc-text-md);
+}
+.lp-pricing-pay__method {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border);
+    color: var(--mc-text-hi);
+    font-size: var(--mc-fs-body-sm);
+    font-weight: 600;
+    transition: transform var(--mc-dur-fast) var(--mc-ease), border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.lp-pricing-pay__method:hover { transform: translateY(-2px); border-color: var(--mc-accent); color: var(--mc-accent); }
+.lp-pricing-pay__method i { width: 14px; height: 14px; color: var(--mc-accent); }
 /* ============  FAQ  ============ */
 .lp-faq-container { max-width: 780px; }
 .lp-faq { display: grid; gap: var(--mc-s-3); }
