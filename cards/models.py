@@ -22,6 +22,9 @@ class Profile(models.Model):
     password_reset_count = models.PositiveSmallIntegerField(default=0)
     password_reset_day = models.DateField(blank=True, null=True)
     card_limit = models.PositiveIntegerField(default=DEFAULT_CARD_LIMIT)
+    # One-payment-covers-all: after the yearly subscription is charged, this
+    # date bumps to +1 year and all of the user's cards stay active until it.
+    subscription_paid_until = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -56,11 +59,47 @@ class Card(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Card lifecycle — every card gets a 12-month free trial from creation.
+    # After trial, the yearly subscription payment covers all of the owner's
+    # cards until Profile.subscription_paid_until. When that lapses (or the
+    # trial ends without payment), the card is taken offline and the owner
+    # must reactivate.
+    STATUS_TRIAL           = 'trial'
+    STATUS_ACTIVE_PAID     = 'active_paid'
+    STATUS_EXPIRING_SOON   = 'expiring_soon'
+    STATUS_EXPIRED         = 'expired'
+    STATUS_ADMIN_DISABLED  = 'admin_disabled'
+    LIFECYCLE_CHOICES = [
+        (STATUS_TRIAL,          'Trial (first 12 months)'),
+        (STATUS_ACTIVE_PAID,    'Paid'),
+        (STATUS_EXPIRING_SOON,  'Expiring soon'),
+        (STATUS_EXPIRED,        'Expired — offline'),
+        (STATUS_ADMIN_DISABLED, 'Disabled by admin'),
+    ]
+    lifecycle_status = models.CharField(
+        max_length=24,
+        choices=LIFECYCLE_CHOICES,
+        default=STATUS_TRIAL,
+    )
+    trial_ends_at = models.DateTimeField(blank=True, null=True)
+    deactivated_at = models.DateTimeField(blank=True, null=True)
+    deactivation_reason = models.CharField(max_length=64, blank=True)
+    last_warning_stage = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Highest warning stage already sent (30/7/1 → 1/2/3). Prevents re-sending.",
+    )
+
     def get_absolute_url(self):
         from django.urls import reverse
         return reverse('view_card', args=[self.slug])
 
     def save(self, *args, **kwargs):
+        # First-save: stamp the 12-month trial clock from creation time.
+        if not self.pk and not self.trial_ends_at:
+            from django.conf import settings as dj_settings
+            months = getattr(dj_settings, 'CARD_TRIAL_MONTHS', 12)
+            self.trial_ends_at = timezone.now() + timezone.timedelta(days=months * 30)
+
         if not self.slug:
             base_value = self.card_data.get('firstName') or self.user.get_full_name() or self.user.username or 'card'
             base_slug = slugify(base_value) or 'card'
@@ -377,3 +416,106 @@ class LeadCapture(models.Model):
     @property
     def preferred_contact(self):
         return self.email or self.phone or ''
+
+
+class CardLifecycleLog(models.Model):
+    """Audit trail for every automatic or manual lifecycle event on a card.
+
+    The admin dashboard uses this to explain WHY a card went offline, and
+    when the owner reactivated, extended, or renewed it. `actor='system'`
+    rows come from the daily tick; `actor='admin'` from the control
+    surface; `actor='user'` from reactivation/renewal actions.
+    """
+    ACTION_TRIAL_STARTED   = 'trial_started'
+    ACTION_WARNING_30D     = 'warning_30d'
+    ACTION_WARNING_7D      = 'warning_7d'
+    ACTION_WARNING_1D      = 'warning_1d'
+    ACTION_EXPIRING_SOON   = 'expiring_soon'
+    ACTION_TRIAL_ENDED     = 'trial_ended'
+    ACTION_DEACTIVATED     = 'deactivated'
+    ACTION_REACTIVATED     = 'reactivated'
+    ACTION_RENEWED         = 'renewed'
+    ACTION_ADMIN_OVERRIDE  = 'admin_override'
+    ACTION_CHOICES = [
+        (ACTION_TRIAL_STARTED,   'Trial started'),
+        (ACTION_WARNING_30D,     '30-day warning sent'),
+        (ACTION_WARNING_7D,      '7-day warning sent'),
+        (ACTION_WARNING_1D,      '1-day warning sent'),
+        (ACTION_EXPIRING_SOON,   'Marked expiring soon'),
+        (ACTION_TRIAL_ENDED,     'Trial ended'),
+        (ACTION_DEACTIVATED,     'Deactivated (offline)'),
+        (ACTION_REACTIVATED,     'Reactivated (back online)'),
+        (ACTION_RENEWED,         'Renewed (paid)'),
+        (ACTION_ADMIN_OVERRIDE,  'Admin override'),
+    ]
+
+    ACTOR_SYSTEM = 'system'
+    ACTOR_ADMIN  = 'admin'
+    ACTOR_USER   = 'user'
+    ACTOR_CHOICES = [
+        (ACTOR_SYSTEM, 'System (cron)'),
+        (ACTOR_ADMIN,  'Admin'),
+        (ACTOR_USER,   'User'),
+    ]
+
+    card = models.ForeignKey(Card, on_delete=models.CASCADE, related_name='lifecycle_logs')
+    action = models.CharField(max_length=32, choices=ACTION_CHOICES)
+    actor = models.CharField(max_length=16, choices=ACTOR_CHOICES, default=ACTOR_SYSTEM)
+    actor_user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='+',
+        help_text="Admin user who triggered the action (only for actor=admin).",
+    )
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['card', 'created_at']),
+            models.Index(fields=['action', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_action_display()} · {self.card.slug} · {self.created_at:%Y-%m-%d %H:%M}"
+
+
+class UserNotification(models.Model):
+    """In-app inbox message shown to a user in their dashboard.
+
+    Separate from the admin-facing UpgradeRequest system — this is for
+    proactive notifications from the platform to the user (card going
+    offline, back online, renewal due, admin action taken, etc.).
+    """
+    KIND_CARD_OFFLINE      = 'card_offline'
+    KIND_CARD_ONLINE       = 'card_online'
+    KIND_RENEWAL_WARNING   = 'renewal_warning'
+    KIND_TRIAL_ENDED       = 'trial_ended'
+    KIND_ADMIN_ACTION      = 'admin_action'
+    KIND_PAYMENT_RECEIVED  = 'payment_received'
+    KIND_CHOICES = [
+        (KIND_CARD_OFFLINE,     'Card went offline'),
+        (KIND_CARD_ONLINE,      'Card back online'),
+        (KIND_RENEWAL_WARNING,  'Renewal reminder'),
+        (KIND_TRIAL_ENDED,      'Trial ended'),
+        (KIND_ADMIN_ACTION,     'Admin action'),
+        (KIND_PAYMENT_RECEIVED, 'Payment received'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    card = models.ForeignKey(Card, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications')
+    kind = models.CharField(max_length=32, choices=KIND_CHOICES)
+    subject = models.CharField(max_length=200)
+    body = models.TextField()
+    action_url = models.CharField(max_length=250, blank=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_read', 'created_at']),
+        ]
+
+    def __str__(self):
+        return f"{self.get_kind_display()} → {self.user.username}"

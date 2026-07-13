@@ -1,0 +1,147 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Inbox — MY-Card{% endblock %}
+{% block page_icon %}bell{% endblock %}
+{% block page_label %}Inbox{% endblock %}
+
+{% block content %}
+<div class="dash-shell" data-dash-shell>
+    {% include 'cards/_sidebar.html' with active='inbox' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="{% trans 'Open menu' %}">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'index' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
+            </a>
+            <span></span>
+        </header>
+
+<div class="ib-page">
+    <div class="mc-container">
+        <header class="ib-hero mc-fade-up">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <i data-lucide="bell"></i>
+                    {% trans "Notifications" %}
+                </span>
+                <h1>{% trans "Your inbox" %}</h1>
+                <p class="mc-text-muted">
+                    {% blocktrans count unread=unread_count %}{{ unread }} unread message.{% plural %}{{ unread }} unread messages.{% endblocktrans %}
+                </p>
+            </div>
+        </header>
+
+        {% if notifications %}
+            <ul class="ib-list mc-fade-up mc-fade-up--d1">
+                {% for n in notifications %}
+                    <li class="ib-item mc-card {% if not n.is_read %}ib-item--unread{% endif %}">
+                        <div class="ib-item__ico">
+                            {% if n.kind == 'card_offline' %}<i data-lucide="power-off"></i>
+                            {% elif n.kind == 'card_online' %}<i data-lucide="power"></i>
+                            {% elif n.kind == 'renewal_warning' %}<i data-lucide="alarm-clock"></i>
+                            {% elif n.kind == 'trial_ended' %}<i data-lucide="hourglass"></i>
+                            {% elif n.kind == 'admin_action' %}<i data-lucide="shield"></i>
+                            {% elif n.kind == 'payment_received' %}<i data-lucide="check-circle-2"></i>
+                            {% else %}<i data-lucide="bell"></i>{% endif %}
+                        </div>
+                        <div class="ib-item__body">
+                            <div class="ib-item__head">
+                                <strong>{{ n.subject }}</strong>
+                                <span class="mc-caption ib-item__date">{{ n.created_at|timesince }} {% trans "ago" %}</span>
+                            </div>
+                            <p>{{ n.body }}</p>
+                            {% if n.card %}
+                                <span class="mc-caption ib-item__card">
+                                    <i data-lucide="id-card"></i> {{ n.card.slug }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <form method="post" action="{% url 'mark_notification_read' n.id %}" class="ib-item__cta">
+                            {% csrf_token %}
+                            <button type="submit" class="mc-btn mc-btn--{% if n.is_read %}outline{% else %}primary{% endif %} mc-btn--sm">
+                                {% if n.action_url %}
+                                    <i data-lucide="arrow-right"></i> {% trans "Open" %}
+                                {% elif n.is_read %}
+                                    <i data-lucide="check"></i> {% trans "Read" %}
+                                {% else %}
+                                    <i data-lucide="check"></i> {% trans "Mark read" %}
+                                {% endif %}
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="mc-card ib-empty mc-fade-up mc-fade-up--d1">
+                <div class="ib-empty__icon"><i data-lucide="inbox"></i></div>
+                <h2>{% trans "No notifications yet" %}</h2>
+                <p class="mc-text-muted">
+                    {% trans "You'll see renewal reminders, card status changes, and admin messages here." %}
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+    </main>
+</div>
+
+<style>
+.ib-page { position: relative; min-height: 100vh; padding: var(--mc-s-6) 0 var(--mc-s-9); }
+.ib-hero { margin-bottom: var(--mc-s-6); }
+.ib-hero h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: var(--mc-s-3) 0 var(--mc-s-2); }
+.ib-hero p { margin: 0; }
+
+.ib-list { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--mc-s-3); }
+.ib-item {
+    display: flex;
+    gap: var(--mc-s-4);
+    align-items: flex-start;
+    padding: var(--mc-s-4) var(--mc-s-5);
+    transition: border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.ib-item--unread { border-color: var(--mc-border-glow); box-shadow: var(--mc-shadow-1), 0 0 0 1px var(--mc-accent-halo); }
+.ib-item__ico {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid; place-items: center;
+    flex-shrink: 0;
+}
+.ib-item__ico i { width: 18px; height: 18px; }
+.ib-item__body { flex: 1; min-width: 0; }
+.ib-item__head { display: flex; justify-content: space-between; gap: var(--mc-s-3); flex-wrap: wrap; margin-bottom: 4px; }
+.ib-item__head strong { color: var(--mc-text-hi); font-weight: 600; font-size: 1rem; }
+.ib-item__date { color: var(--mc-text-md); font-size: var(--mc-fs-caption); }
+.ib-item__body p { margin: 0 0 var(--mc-s-2); color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); line-height: 1.4; }
+.ib-item__card {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--mc-accent); font-family: var(--mc-font-mono);
+}
+.ib-item__card i { width: 12px; height: 12px; }
+.ib-item__cta { flex-shrink: 0; margin: 0; }
+
+.ib-empty { text-align: center; padding: var(--mc-s-7) var(--mc-s-5); }
+.ib-empty__icon {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    background: var(--mc-accent-halo);
+    color: var(--mc-accent);
+    display: grid; place-items: center;
+    margin: 0 auto var(--mc-s-4);
+}
+.ib-empty h2 { margin: 0 0 var(--mc-s-2); }
+.ib-empty p { margin: 0; }
+
+@media (max-width: 720px) {
+    .ib-item { flex-direction: column; align-items: stretch; }
+    .ib-item__cta { align-self: flex-end; }
+}
+</style>
+{% endblock %}

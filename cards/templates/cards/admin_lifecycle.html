@@ -1,0 +1,317 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Card lifecycle · Admin — MY-Card{% endblock %}
+{% block page_icon %}activity{% endblock %}
+{% block page_label %}Lifecycle{% endblock %}
+
+{% block content %}
+<div class="dash-shell dash-shell--admin" data-dash-shell>
+    {% include 'cards/_admin_sidebar.html' with active='lifecycle' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="Open menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+                Admin
+            </a>
+            <span></span>
+        </header>
+
+<div class="al-page">
+    <div class="mc-container">
+        <header class="al-hero mc-fade-up">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <i data-lucide="activity"></i>
+                    Card lifecycle
+                </span>
+                <h1>Trial · Paid · Offline — full control</h1>
+                <p class="mc-text-muted">Every automated tick and every manual override is logged here. Cards are grouped by lifecycle status; use the filters or click a status card to narrow.</p>
+            </div>
+        </header>
+
+        {# ==== Counts strip ==== #}
+        <section class="al-counts mc-fade-up mc-fade-up--d1">
+            <a href="?" class="al-count {% if not status_filter %}is-active{% endif %}">
+                <span class="al-count__num mc-mono">{{ counts.total }}</span>
+                <span class="al-count__label">Total cards</span>
+            </a>
+            <a href="?status=trial" class="al-count {% if status_filter == 'trial' %}is-active{% endif %}">
+                <span class="al-count__num mc-mono">{{ counts.trial }}</span>
+                <span class="al-count__label">In trial</span>
+            </a>
+            <a href="?status=active_paid" class="al-count {% if status_filter == 'active_paid' %}is-active{% endif %}">
+                <span class="al-count__num mc-mono">{{ counts.active_paid }}</span>
+                <span class="al-count__label">Paid active</span>
+            </a>
+            <a href="?status=expiring_soon" class="al-count {% if status_filter == 'expiring_soon' %}is-active{% endif %}">
+                <span class="al-count__num mc-mono">{{ counts.expiring_soon }}</span>
+                <span class="al-count__label">Expiring soon</span>
+            </a>
+            <a href="?status=expired" class="al-count {% if status_filter == 'expired' %}is-active{% endif %}">
+                <span class="al-count__num mc-mono">{{ counts.expired }}</span>
+                <span class="al-count__label">Expired (offline)</span>
+            </a>
+            <a href="?status=admin_disabled" class="al-count {% if status_filter == 'admin_disabled' %}is-active{% endif %}">
+                <span class="al-count__num mc-mono">{{ counts.admin_disabled }}</span>
+                <span class="al-count__label">Disabled by admin</span>
+            </a>
+        </section>
+
+        {# ==== Card table ==== #}
+        <section class="al-cards mc-fade-up mc-fade-up--d2">
+            <h2>Cards</h2>
+            <div class="al-table__wrap">
+                <table class="al-table">
+                    <thead>
+                        <tr>
+                            <th>Card</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Trial ends</th>
+                            <th>Sub. paid until</th>
+                            <th class="al-table__actions">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for card in cards %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'view_card' card.slug %}" target="_blank" class="mc-mono">{{ card.slug }}</a>
+                            </td>
+                            <td>
+                                <a href="{% url 'admin_edit_card' card.slug %}">{{ card.user.username }}</a>
+                            </td>
+                            <td>
+                                <span class="al-badge al-badge--{{ card.lifecycle_status }}">
+                                    {{ card.get_lifecycle_status_display }}
+                                </span>
+                            </td>
+                            <td class="mc-mono">{{ card.trial_ends_at|date:"Y-m-d"|default:"—" }}</td>
+                            <td class="mc-mono">{{ card.user.profile.subscription_paid_until|date:"Y-m-d"|default:"—" }}</td>
+                            <td class="al-table__actions">
+                                <details class="al-menu">
+                                    <summary class="mc-btn mc-btn--outline mc-btn--sm">
+                                        <i data-lucide="settings"></i>
+                                    </summary>
+                                    <div class="al-menu__body">
+                                        <form method="post" action="{% url 'admin_lifecycle_action' card.slug 'activate' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="al-menu__btn"><i data-lucide="power"></i> Activate + extend 1 year</button>
+                                        </form>
+                                        <form method="post" action="{% url 'admin_lifecycle_action' card.slug 'deactivate' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="al-menu__btn"><i data-lucide="power-off"></i> Deactivate</button>
+                                        </form>
+                                        <form method="post" action="{% url 'admin_lifecycle_action' card.slug 'extend' %}">
+                                            {% csrf_token %}
+                                            <label><input type="number" name="days" value="30" min="1" max="730" class="al-menu__input"> days</label>
+                                            <button type="submit" class="al-menu__btn"><i data-lucide="calendar-plus"></i> Extend trial</button>
+                                        </form>
+                                        <form method="post" action="{% url 'admin_lifecycle_action' card.slug 'reset_trial' %}">
+                                            {% csrf_token %}
+                                            <button type="submit" class="al-menu__btn"><i data-lucide="refresh-cw"></i> Reset to 12-month trial</button>
+                                        </form>
+                                    </div>
+                                </details>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="al-empty">No cards match this filter.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        {# ==== Recent lifecycle log ==== #}
+        <section class="al-log mc-fade-up mc-fade-up--d3">
+            <h2>Recent lifecycle events (last 50)</h2>
+            <div class="al-table__wrap">
+                <table class="al-table al-table--log">
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>Card</th>
+                            <th>Action</th>
+                            <th>Actor</th>
+                            <th>Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entry in logs %}
+                        <tr>
+                            <td class="mc-mono">{{ entry.created_at|date:"Y-m-d H:i" }}</td>
+                            <td class="mc-mono"><a href="{% url 'view_card' entry.card.slug %}" target="_blank">{{ entry.card.slug }}</a></td>
+                            <td>{{ entry.get_action_display }}</td>
+                            <td>
+                                <span class="al-actor al-actor--{{ entry.actor }}">
+                                    {{ entry.get_actor_display }}
+                                </span>
+                                {% if entry.actor_user %}<small>{{ entry.actor_user.username }}</small>{% endif %}
+                            </td>
+                            <td class="al-log__notes">{{ entry.notes|default:"—" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="al-empty">No events logged yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+    </main>
+</div>
+
+<style>
+.al-page { position: relative; min-height: 100vh; padding: var(--mc-s-6) 0 var(--mc-s-9); }
+.al-hero { margin-bottom: var(--mc-s-6); }
+.al-hero h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: var(--mc-s-3) 0 var(--mc-s-2); }
+.al-hero p { margin: 0; max-width: 620px; }
+
+.al-counts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--mc-s-3);
+    margin-bottom: var(--mc-s-6);
+}
+@media (min-width: 720px) { .al-counts { grid-template-columns: repeat(6, 1fr); } }
+
+.al-count {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: var(--mc-s-4) var(--mc-s-2);
+    border-radius: var(--mc-r-md);
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border);
+    text-decoration: none;
+    color: var(--mc-text-hi);
+    transition: transform var(--mc-dur-fast) var(--mc-ease), border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.al-count:hover { transform: translateY(-2px); border-color: var(--mc-border-glow); }
+.al-count.is-active {
+    border-color: var(--mc-accent);
+    box-shadow: 0 0 0 3px var(--mc-accent-halo);
+}
+.al-count__num { font-size: 1.7rem; font-weight: 700; letter-spacing: -0.02em; }
+.al-count__label {
+    font-family: var(--mc-font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--mc-text-md);
+    text-align: center;
+}
+
+.al-cards h2, .al-log h2 { margin: 0 0 var(--mc-s-4); font-size: 1.15rem; }
+
+.al-table__wrap { overflow-x: auto; margin: 0 -1rem; padding: 0 1rem; }
+.al-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-md);
+    overflow: hidden;
+    margin-bottom: var(--mc-s-6);
+    font-size: var(--mc-fs-body-sm);
+}
+.al-table th, .al-table td {
+    padding: var(--mc-s-3);
+    text-align: left;
+    border-bottom: 1px solid var(--mc-border);
+    vertical-align: middle;
+}
+.al-table th {
+    background: var(--mc-bg-2);
+    color: var(--mc-text-md);
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 700;
+}
+.al-table tr:last-child td { border-bottom: none; }
+.al-table a { color: var(--mc-accent); text-decoration: none; font-weight: 600; }
+.al-table__actions { text-align: right; }
+
+.al-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+.al-badge--trial          { background: rgba(56,225,255,0.15); color: #38E1FF; border: 1px solid rgba(56,225,255,0.35); }
+.al-badge--active_paid    { background: var(--mc-accent-halo); color: var(--mc-accent); border: 1px solid var(--mc-border-glow); }
+.al-badge--expiring_soon  { background: rgba(245,158,11,0.15); color: #F59E0B; border: 1px solid rgba(245,158,11,0.35); }
+.al-badge--expired        { background: rgba(248,113,113,0.12); color: #F87171; border: 1px solid rgba(248,113,113,0.35); }
+.al-badge--admin_disabled { background: rgba(183,139,255,0.12); color: #B78BFF; border: 1px solid rgba(183,139,255,0.35); }
+
+.al-actor { font-family: var(--mc-font-mono); font-size: 0.65rem; letter-spacing: 0.14em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--mc-border-hi); }
+.al-actor--system { color: var(--mc-text-md); }
+.al-actor--admin  { color: #B78BFF; border-color: rgba(183,139,255,0.35); }
+.al-actor--user   { color: var(--mc-accent); border-color: var(--mc-border-glow); }
+.al-log__notes { color: var(--mc-text-md); max-width: 380px; }
+
+.al-empty { text-align: center; color: var(--mc-text-md); padding: var(--mc-s-6); }
+
+/* Per-row action dropdown */
+.al-menu { position: relative; display: inline-block; }
+.al-menu summary { cursor: pointer; list-style: none; display: inline-flex; gap: 6px; align-items: center; }
+.al-menu summary::-webkit-details-marker { display: none; }
+.al-menu[open] .al-menu__body { display: flex; }
+.al-menu__body {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    min-width: 260px;
+    z-index: 30;
+    flex-direction: column;
+    gap: 6px;
+    padding: var(--mc-s-3);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-md);
+    box-shadow: var(--mc-shadow-2);
+}
+.al-menu__body form { display: flex; align-items: center; gap: 6px; margin: 0; }
+.al-menu__btn {
+    flex: 1;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 10px;
+    background: transparent;
+    border: 1px solid var(--mc-border);
+    color: var(--mc-text-hi);
+    border-radius: var(--mc-r-sm);
+    cursor: pointer;
+    font-size: 0.8rem;
+    text-align: left;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease), color var(--mc-dur-fast) var(--mc-ease);
+}
+.al-menu__btn:hover { border-color: var(--mc-accent); color: var(--mc-accent); }
+.al-menu__btn i { width: 12px; height: 12px; }
+.al-menu__input {
+    width: 60px;
+    padding: 4px 6px;
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border);
+    color: var(--mc-text-hi);
+    border-radius: var(--mc-r-sm);
+    font-family: var(--mc-font-mono);
+    font-size: 0.8rem;
+}
+</style>
+{% endblock %}

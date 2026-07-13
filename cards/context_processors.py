@@ -46,6 +46,11 @@ def sidebar(request):
         status=LeadCapture.STATUS_NEW,
     ).count()
 
+    from .models import UserNotification
+    unread_notifications = UserNotification.objects.filter(
+        user=user, is_read=False,
+    ).count()
+
     pending = 0
     if user.is_superuser:
         pending = UpgradeRequest.objects.filter(
@@ -55,5 +60,6 @@ def sidebar(request):
     return {
         'sidebar_first_card_slug': first_slug,
         'sidebar_new_leads': new_leads,
+        'sidebar_unread_notifications': unread_notifications,
         'pending_request_count': pending,
     }

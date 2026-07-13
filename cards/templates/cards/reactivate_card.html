@@ -1,0 +1,240 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Reactivate card — MY-Card{% endblock %}
+{% block page_icon %}refresh-cw{% endblock %}
+{% block page_label %}Reactivate{% endblock %}
+
+{% block content %}
+<div class="dash-shell" data-dash-shell>
+    {% include 'cards/_sidebar.html' with active='my-cards' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="{% trans 'Open menu' %}">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'index' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
+            </a>
+            <span></span>
+        </header>
+
+<div class="ra-page">
+    <div class="mc-container ra-container">
+        <header class="ra-hero mc-fade-up">
+            <span class="mc-badge mc-badge--accent">
+                <span class="mc-badge__dot"></span>
+                {% trans "Reactivate" %}
+            </span>
+            <h1>{% trans "Bring your card back online." %}</h1>
+            <p class="mc-text-muted">
+                {% blocktrans with slug=card.slug %}Your card <strong>{{ slug }}</strong> is currently offline. Renew it below to make it publicly reachable again for the next 12 months.{% endblocktrans %}
+            </p>
+        </header>
+
+        <section class="ra-status mc-card mc-fade-up mc-fade-up--d1">
+            <div class="ra-status__row">
+                <span class="ra-status__label">{% trans "Current lifecycle status" %}</span>
+                <span class="ra-status__value">{{ card.get_lifecycle_status_display }}</span>
+            </div>
+            <div class="ra-status__row">
+                <span class="ra-status__label">{% trans "Trial ends" %}</span>
+                <span class="ra-status__value mc-mono">{{ card.trial_ends_at|date:"Y-m-d H:i" }}</span>
+            </div>
+            {% if card.deactivated_at %}
+                <div class="ra-status__row">
+                    <span class="ra-status__label">{% trans "Went offline" %}</span>
+                    <span class="ra-status__value mc-mono">{{ card.deactivated_at|date:"Y-m-d H:i" }}</span>
+                </div>
+                <div class="ra-status__row">
+                    <span class="ra-status__label">{% trans "Reason" %}</span>
+                    <span class="ra-status__value">{{ card.deactivation_reason|default:"—" }}</span>
+                </div>
+            {% endif %}
+        </section>
+
+        <section class="ra-pricing mc-card mc-card--glow mc-fade-up mc-fade-up--d2">
+            <h2>{% trans "What you owe" %}</h2>
+            <ul class="ra-pricing__list">
+                <li>
+                    <span>
+                        {% trans "Yearly subscription" %}
+                        {% if is_premium_user %}
+                            <small class="mc-caption mc-text-accent">PRO</small>
+                        {% else %}
+                            <small class="mc-caption">FREE</small>
+                        {% endif %}
+                    </span>
+                    <span class="mc-mono">৳{{ yearly_price }}</span>
+                </li>
+                <li>
+                    <span>{% trans "Reactivation fee" %} <small class="mc-text-muted">{% trans "(one-time)" %}</small></span>
+                    <span class="mc-mono">৳{{ reactivation_fee }}</span>
+                </li>
+                <li class="ra-pricing__total">
+                    <span><strong>{% trans "Total due" %}</strong></span>
+                    <span class="mc-mono">৳{{ total_due }}</span>
+                </li>
+            </ul>
+            <p class="mc-text-muted ra-pricing__note">
+                <i data-lucide="info"></i>
+                {% trans "One yearly payment covers every card you own for the next 12 months." %}
+            </p>
+        </section>
+
+        <section class="ra-actions mc-card mc-fade-up mc-fade-up--d3">
+            <h2>{% trans "How to reactivate" %}</h2>
+            <p class="mc-text-muted">
+                {% trans "Automatic bKash / card payments are launching soon. Meanwhile you can send us a reactivation request — an admin will contact you to arrange payment and bring the card back online, usually within a business day." %}
+            </p>
+
+            {% if already_pending %}
+                <div class="ra-actions__pending">
+                    <i data-lucide="clock"></i>
+                    <div>
+                        <strong>{% trans "Request pending" %}</strong>
+                        <span class="mc-text-muted">
+                            {% blocktrans with when=already_pending.created_at|timesince %}Submitted {{ when }} ago. We'll notify you the moment it's approved.{% endblocktrans %}
+                        </span>
+                    </div>
+                </div>
+            {% else %}
+                <form method="post" class="ra-form">
+                    {% csrf_token %}
+                    <label class="mc-label">
+                        <span><i data-lucide="edit-3"></i> {% trans "Message to admin (optional)" %}</span>
+                        <textarea name="note" rows="4" placeholder="{% trans 'Anything the admin should know — preferred payment method, invoice details, etc.' %}"></textarea>
+                    </label>
+                    <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg">
+                        <i data-lucide="rocket"></i>
+                        {% trans "Send reactivation request" %}
+                    </button>
+                </form>
+            {% endif %}
+
+            <div class="ra-actions__contact">
+                <span class="mc-caption">{% trans "Or reach out directly:" %}</span>
+                <a href="mailto:mycard@dupno.com?subject=Reactivate%20card%20{{ card.slug }}">
+                    <i data-lucide="mail"></i> mycard@dupno.com
+                </a>
+            </div>
+        </section>
+
+        {% if logs %}
+        <section class="ra-log mc-card mc-fade-up mc-fade-up--d4">
+            <h2>{% trans "Recent lifecycle events" %}</h2>
+            <ul class="ra-log__list">
+                {% for entry in logs %}
+                    <li>
+                        <span class="mc-mono ra-log__date">{{ entry.created_at|date:"Y-m-d H:i" }}</span>
+                        <span class="ra-log__action">{{ entry.get_action_display }}</span>
+                        <span class="ra-log__actor">{{ entry.get_actor_display }}</span>
+                        {% if entry.notes %}<span class="ra-log__notes">{{ entry.notes }}</span>{% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% endif %}
+    </div>
+</div>
+
+    </main>
+</div>
+
+<style>
+.ra-page { position: relative; min-height: 100vh; padding: var(--mc-s-6) 0 var(--mc-s-9); }
+.ra-container { max-width: 780px; }
+.ra-hero { text-align: center; display: flex; flex-direction: column; gap: var(--mc-s-3); align-items: center; margin-bottom: var(--mc-s-7); }
+.ra-hero h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); margin: 0; }
+
+.ra-status, .ra-pricing, .ra-actions, .ra-log {
+    padding: var(--mc-s-5) var(--mc-s-6);
+    margin-bottom: var(--mc-s-5);
+}
+.ra-status__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--mc-s-2) 0;
+    border-bottom: 1px dashed var(--mc-border);
+}
+.ra-status__row:last-child { border-bottom: none; }
+.ra-status__label { color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); }
+.ra-status__value { color: var(--mc-text-hi); font-weight: 600; }
+
+.ra-pricing__list { list-style: none; padding: 0; margin: var(--mc-s-3) 0 0; }
+.ra-pricing__list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: var(--mc-s-3) 0;
+    border-bottom: 1px dashed var(--mc-border);
+    font-size: 1rem;
+}
+.ra-pricing__list li small { display: inline-block; margin-left: 6px; }
+.ra-pricing__total {
+    border-top: 2px solid var(--mc-accent) !important;
+    border-bottom: none !important;
+    margin-top: var(--mc-s-3);
+    font-size: 1.2rem;
+    color: var(--mc-text-hi);
+}
+.ra-pricing__note { display: inline-flex; align-items: center; gap: 6px; margin-top: var(--mc-s-3); font-size: var(--mc-fs-body-sm); }
+.ra-pricing__note i { color: var(--mc-accent); width: 14px; height: 14px; }
+
+.ra-form textarea {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    color: var(--mc-text-hi);
+    border-radius: var(--mc-r-md);
+    font-family: var(--mc-font-body);
+    font-size: var(--mc-fs-body);
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    transition: border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.ra-form textarea:focus { border-color: var(--mc-accent); box-shadow: 0 0 0 4px var(--mc-accent-halo); }
+.ra-actions__pending {
+    display: flex; gap: var(--mc-s-3); align-items: center;
+    padding: var(--mc-s-4); border-radius: var(--mc-r-md);
+    background: var(--mc-accent-halo); border: 1px solid var(--mc-border-glow);
+    margin-top: var(--mc-s-3);
+}
+.ra-actions__pending i { color: var(--mc-accent); width: 24px; height: 24px; flex-shrink: 0; }
+.ra-actions__pending strong { display: block; color: var(--mc-text-hi); font-weight: 600; margin-bottom: 3px; }
+.ra-actions__contact {
+    margin-top: var(--mc-s-5);
+    display: inline-flex; align-items: center; gap: 10px;
+    padding-top: var(--mc-s-4); border-top: 1px dashed var(--mc-border);
+}
+.ra-actions__contact a { display: inline-flex; align-items: center; gap: 4px; color: var(--mc-accent); font-weight: 600; text-decoration: none; }
+
+.ra-log__list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; font-size: var(--mc-fs-body-sm); }
+.ra-log__list li {
+    display: grid;
+    grid-template-columns: 140px 180px 90px 1fr;
+    gap: var(--mc-s-3);
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px dashed var(--mc-border);
+    color: var(--mc-text-md);
+}
+.ra-log__date { color: var(--mc-text-md); }
+.ra-log__action { color: var(--mc-text-hi); font-weight: 600; }
+.ra-log__actor {
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--mc-accent);
+}
+@media (max-width: 720px) {
+    .ra-log__list li { grid-template-columns: 1fr; gap: 4px; }
+}
+</style>
+{% endblock %}

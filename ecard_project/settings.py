@@ -177,6 +177,18 @@ FEATURE_AI       = bool(AI_PROVIDER and AI_API_KEY)
 FEATURE_WALLET   = bool(APPLE_WALLET_CERT_PATH or GOOGLE_WALLET_SA_JSON)
 
 
+# ---- Card lifecycle / subscription pricing ----
+# First 12 months every card gets are free (trial), then the yearly subscription
+# amount is charged. Reactivation fee is charged on top when a lapsed card is
+# brought back online.
+CARD_TRIAL_MONTHS         = config('CARD_TRIAL_MONTHS', default=12, cast=int)
+CARD_YEARLY_PRICE_FREE    = config('CARD_YEARLY_PRICE_FREE', default=120, cast=int)   # BDT
+CARD_YEARLY_PRICE_PRO     = config('CARD_YEARLY_PRICE_PRO', default=500, cast=int)    # BDT
+CARD_REACTIVATION_FEE     = config('CARD_REACTIVATION_FEE', default=50, cast=int)     # BDT
+# Days before expiry to send an inbox warning (highest first).
+CARD_WARNING_DAYS         = [30, 7, 1]
+
+
 # ZeptoMail — transactional email for OTP password reset
 ZEPTOMAIL_URL          = config('ZEPTOMAIL_URL',          default='https://api.zeptomail.com/v1.1/email')
 ZEPTOMAIL_TOKEN        = config('ZEPTOMAIL_TOKEN',        default='')

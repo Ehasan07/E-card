@@ -36,6 +36,12 @@ Expected `active` values:
             <i data-lucide="users"></i>
             <span>Users</span>
         </a>
+        <a href="{% url 'admin_lifecycle' %}"
+           class="dash-sidebar__link{% if active == 'lifecycle' %} is-active{% endif %}"
+           {% if active == 'lifecycle' %}aria-current="page"{% endif %}>
+            <i data-lucide="activity"></i>
+            <span>Card lifecycle</span>
+        </a>
         <a href="{% url 'admin_dashboard' %}#ad-feedback-panel"
            class="dash-sidebar__link{% if active == 'feedback' %} is-active{% endif %}">
             <i data-lucide="message-square"></i>

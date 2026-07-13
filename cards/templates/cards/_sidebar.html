@@ -41,6 +41,13 @@ Context vars supplied by the `sidebar` context processor:
             <i data-lucide="mail"></i>
             <span>{% trans "Messages" %}</span>
         </a>
+        <a href="{% url 'user_inbox' %}"
+           class="dash-sidebar__link{% if active == 'inbox' %} is-active{% endif %}"
+           {% if active == 'inbox' %}aria-current="page"{% endif %}>
+            <i data-lucide="bell"></i>
+            <span>{% trans "Notifications" %}</span>
+            {% if sidebar_unread_notifications %}<span class="dash-sidebar__badge">{{ sidebar_unread_notifications }}</span>{% endif %}
+        </a>
         {% if sidebar_first_card_slug %}
         <a href="{% url 'card_analytics' sidebar_first_card_slug %}"
            class="dash-sidebar__link{% if active == 'analytics' %} is-active{% endif %}"

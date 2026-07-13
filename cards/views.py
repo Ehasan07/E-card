@@ -33,6 +33,8 @@ from .permissions import (
     user_plan_tier,
 )
 from .models import (
+    CardLifecycleLog,
+    UserNotification,
     Card,
     Profile,
     DEFAULT_CARD_LIMIT,
@@ -2187,3 +2189,261 @@ def ai_bio(request):
     except Exception as exc:
         logger.warning("AI bio failed: %s", exc)
         return JsonResponse({'error': 'AI provider is unavailable right now.'}, status=502)
+
+
+# ============================================================================
+# Card lifecycle — trial expiry, reactivation, admin control
+# ============================================================================
+
+def _yearly_price_for(user) -> int:
+    """Return the yearly-subscription price for `user` in BDT."""
+    return (
+        settings.CARD_YEARLY_PRICE_PRO
+        if is_premium(user)
+        else settings.CARD_YEARLY_PRICE_FREE
+    )
+
+
+@login_required
+def reactivate_card(request, slug):
+    """Card owner requests to bring an offline card back online.
+
+    Payment is deferred (bKash integration lands later). For now we file
+    an UpgradeRequest that the admin approves manually — same manual-fallback
+    pattern used by pricing_checkout. The user also gets a notification
+    once the admin marks it approved.
+    """
+    card = get_object_or_404(Card, slug=slug, user=request.user)
+
+    yearly = _yearly_price_for(request.user)
+    reactivation_fee = settings.CARD_REACTIVATION_FEE
+    total = yearly + reactivation_fee
+
+    already_pending = UpgradeRequest.objects.filter(
+        user=request.user,
+        card=card,
+        status=UpgradeRequest.STATUS_PENDING,
+        requested_plan__startswith='reactivate:',
+    ).first()
+
+    if request.method == 'POST':
+        if already_pending:
+            messages.info(request, 'You already have a pending reactivation request.')
+            return redirect('reactivate_card', slug=slug)
+
+        note = (request.POST.get('note') or '').strip()[:2000]
+        UpgradeRequest.objects.create(
+            user=request.user,
+            card=card,
+            requested_plan=f'reactivate:card:{card.slug}',
+            message=(
+                f"Card reactivation request from {request.user.username}. "
+                f"Card: {card.slug}. Yearly: {yearly} BDT + Reactivation fee: "
+                f"{reactivation_fee} BDT = {total} BDT.\n\n"
+                f"Note from user: {note or '—'}"
+            ),
+        )
+
+        CardLifecycleLog.objects.create(
+            card=card,
+            action=CardLifecycleLog.ACTION_ADMIN_OVERRIDE,
+            actor=CardLifecycleLog.ACTOR_USER,
+            actor_user=request.user,
+            notes=f"User filed reactivation request (total {total} BDT).",
+        )
+
+        messages.success(
+            request,
+            'Your reactivation request has been sent to the admin. '
+            'You will get an inbox notification the moment it is approved.',
+        )
+        return redirect('reactivate_card', slug=slug)
+
+    logs = card.lifecycle_logs.all()[:20]
+    return render(request, 'cards/reactivate_card.html', {
+        'card': card,
+        'yearly_price': yearly,
+        'reactivation_fee': reactivation_fee,
+        'total_due': total,
+        'is_premium_user': is_premium(request.user),
+        'already_pending': already_pending,
+        'logs': logs,
+    })
+
+
+@login_required
+def user_inbox(request):
+    """Owner-facing inbox of platform notifications (card offline/online,
+    renewal reminders, etc.)."""
+    notifications = request.user.notifications.select_related('card').all()[:100]
+    unread_count = request.user.notifications.filter(is_read=False).count()
+    return render(request, 'cards/user_inbox.html', {
+        'notifications': notifications,
+        'unread_count': unread_count,
+    })
+
+
+@login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    note = get_object_or_404(UserNotification, id=notification_id, user=request.user)
+    if not note.is_read:
+        note.is_read = True
+        note.save(update_fields=['is_read'])
+    if note.action_url:
+        return redirect(note.action_url)
+    return redirect('user_inbox')
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+def admin_lifecycle(request):
+    """Admin control surface for card lifecycle — see every card's trial /
+    paid-until / offline state and manually override any of them."""
+    status_filter = (request.GET.get('status') or '').strip()
+
+    cards_qs = (
+        Card.objects
+        .select_related('user', 'user__profile')
+        .order_by('-updated_at')
+    )
+    if status_filter and status_filter in {c[0] for c in Card.LIFECYCLE_CHOICES}:
+        cards_qs = cards_qs.filter(lifecycle_status=status_filter)
+
+    logs = (
+        CardLifecycleLog.objects
+        .select_related('card', 'actor_user')
+        .order_by('-created_at')[:50]
+    )
+
+    now = timezone.now()
+    counts = {
+        'total':          Card.objects.count(),
+        'trial':          Card.objects.filter(lifecycle_status=Card.STATUS_TRIAL).count(),
+        'active_paid':    Card.objects.filter(lifecycle_status=Card.STATUS_ACTIVE_PAID).count(),
+        'expiring_soon':  Card.objects.filter(lifecycle_status=Card.STATUS_EXPIRING_SOON).count(),
+        'expired':        Card.objects.filter(lifecycle_status=Card.STATUS_EXPIRED).count(),
+        'admin_disabled': Card.objects.filter(lifecycle_status=Card.STATUS_ADMIN_DISABLED).count(),
+    }
+
+    return render(request, 'cards/admin_lifecycle.html', {
+        'cards': cards_qs[:200],
+        'logs': logs,
+        'now': now,
+        'counts': counts,
+        'status_filter': status_filter,
+        'status_choices': Card.LIFECYCLE_CHOICES,
+    })
+
+
+@user_passes_test(lambda u: u.is_superuser, login_url='/my-admin/login/')
+@require_POST
+def admin_lifecycle_action(request, slug, action):
+    """Admin action on a specific card:
+       - activate    → bring card online, mark active_paid until +1 year
+       - deactivate  → take card offline, mark admin_disabled
+       - extend      → push trial_ends_at forward by N days (form field 'days')
+       - reset_trial → set trial_ends_at to now + 12 months
+    """
+    card = get_object_or_404(Card, slug=slug)
+    now = timezone.now()
+    note_extra = (request.POST.get('note') or '').strip()[:500]
+
+    if action == 'activate':
+        card.is_active = True
+        card.lifecycle_status = Card.STATUS_ACTIVE_PAID
+        card.deactivated_at = None
+        card.deactivation_reason = ''
+        card.last_warning_stage = 0
+        # Bump the *user's* subscription_paid_until by 1 year — Q5: one
+        # payment covers all cards under the owner.
+        profile = getattr(card.user, 'profile', None)
+        if profile:
+            profile.subscription_paid_until = max(
+                profile.subscription_paid_until or now,
+                now,
+            ) + timezone.timedelta(days=365)
+            profile.save(update_fields=['subscription_paid_until'])
+        card.save(update_fields=[
+            'is_active', 'lifecycle_status', 'deactivated_at',
+            'deactivation_reason', 'last_warning_stage',
+        ])
+        _log_admin(card, request.user, CardLifecycleLog.ACTION_REACTIVATED,
+                   f"Admin marked reactivated. {note_extra}")
+        _notify_user(card, UserNotification.KIND_CARD_ONLINE,
+                     f"Your card '{card.slug}' is back online",
+                     f"Admin has reactivated your card. It stays live until "
+                     f"{profile.subscription_paid_until:%Y-%m-%d} if a paid period is active.")
+        messages.success(request, 'Card reactivated and yearly period extended.')
+
+    elif action == 'deactivate':
+        card.is_active = False
+        card.lifecycle_status = Card.STATUS_ADMIN_DISABLED
+        card.deactivated_at = now
+        card.deactivation_reason = 'admin_disabled'
+        card.save(update_fields=[
+            'is_active', 'lifecycle_status', 'deactivated_at', 'deactivation_reason',
+        ])
+        _log_admin(card, request.user, CardLifecycleLog.ACTION_ADMIN_OVERRIDE,
+                   f"Admin manually deactivated. {note_extra}")
+        _notify_user(card, UserNotification.KIND_CARD_OFFLINE,
+                     f"Your card '{card.slug}' has been taken offline",
+                     f"Admin has taken your card offline. Reason: {note_extra or 'unspecified'}. "
+                     f"Contact support if you need clarification.")
+        messages.success(request, 'Card deactivated.')
+
+    elif action == 'extend':
+        try:
+            days = max(1, min(730, int(request.POST.get('days') or 30)))
+        except ValueError:
+            days = 30
+        base = card.trial_ends_at or now
+        card.trial_ends_at = max(base, now) + timezone.timedelta(days=days)
+        card.last_warning_stage = 0
+        if card.lifecycle_status == Card.STATUS_EXPIRING_SOON:
+            card.lifecycle_status = Card.STATUS_TRIAL
+        card.save(update_fields=['trial_ends_at', 'last_warning_stage', 'lifecycle_status'])
+        _log_admin(card, request.user, CardLifecycleLog.ACTION_ADMIN_OVERRIDE,
+                   f"Admin extended trial by {days} days. {note_extra}")
+        messages.success(request, f'Trial extended by {days} days.')
+
+    elif action == 'reset_trial':
+        months = settings.CARD_TRIAL_MONTHS
+        card.trial_ends_at = now + timezone.timedelta(days=months * 30)
+        card.last_warning_stage = 0
+        card.lifecycle_status = Card.STATUS_TRIAL
+        card.is_active = True
+        card.deactivated_at = None
+        card.deactivation_reason = ''
+        card.save(update_fields=[
+            'trial_ends_at', 'last_warning_stage', 'lifecycle_status',
+            'is_active', 'deactivated_at', 'deactivation_reason',
+        ])
+        _log_admin(card, request.user, CardLifecycleLog.ACTION_ADMIN_OVERRIDE,
+                   f"Admin reset trial to {months} months. {note_extra}")
+        messages.success(request, f'Trial reset to {months} months from now.')
+
+    else:
+        messages.error(request, f'Unknown lifecycle action: {action}')
+
+    return redirect(request.META.get('HTTP_REFERER') or reverse('admin_lifecycle'))
+
+
+def _log_admin(card, admin_user, action, notes):
+    CardLifecycleLog.objects.create(
+        card=card,
+        action=action,
+        actor=CardLifecycleLog.ACTOR_ADMIN,
+        actor_user=admin_user,
+        notes=notes,
+    )
+
+
+def _notify_user(card, kind, subject, body, action_url=''):
+    UserNotification.objects.create(
+        user=card.user,
+        card=card,
+        kind=kind,
+        subject=subject,
+        body=body,
+        action_url=action_url,
+    )
