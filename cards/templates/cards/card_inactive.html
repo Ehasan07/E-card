@@ -1,4 +1,5 @@
 {% extends 'cards/base.html' %}
+{% load i18n %}
 
 {% block title %}Card offline — MY-Card{% endblock %}
 {% block page_icon %}power-off{% endblock %}
@@ -13,112 +14,193 @@
     </div>
 
     <div class="mc-container ci-container">
-        <div class="mc-card mc-card--glow ci-hero mc-fade-up">
-            <span class="ci-hero__icon"><i data-lucide="power-off"></i></span>
+
+        <article class="ci-hero mc-card mc-card--glow mc-fade-up">
+            <span class="ci-hero__icon">
+                <i data-lucide="{% if context_source == 'physical' %}printer{% else %}power-off{% endif %}"></i>
+            </span>
             <span class="mc-badge mc-badge--warn">
                 <span class="mc-badge__dot"></span>
-                Card is currently offline
+                {% if context_source == 'physical' %}
+                    {% trans "Physical card locked" %}
+                {% else %}
+                    {% trans "Card is currently offline" %}
+                {% endif %}
             </span>
-            <h1 class="ci-hero__title">Your card is paused.</h1>
-            <p class="mc-text-muted">
-                Reactivate to keep sharing this identity. Your data, socials, and QR code stay saved — nothing is deleted.
-                {% if card.card_data.firstName %}
-                    <br><span class="mc-mono mc-text-dim">Card: {{ card.card_data.firstName }} {{ card.card_data.lastName }} · {{ card.slug }}</span>
+            <h1 class="ci-hero__title">
+                {% if context_source == 'physical' %}
+                    {% trans "Print unlock needs an active card." %}
+                {% else %}
+                    {% trans "Your public card is offline." %}
+                {% endif %}
+            </h1>
+            <p class="ci-hero__lede mc-text-muted">
+                {% if context_source == 'physical' %}
+                    {% trans "The physical card share/print flow is blocked while the digital version is inactive. Reactivate below to bring both back online." %}
+                {% else %}
+                    {% trans "The public link and QR code are unreachable until you reactivate. Nothing is deleted — your data, socials, and analytics are safe." %}
                 {% endif %}
             </p>
+            {% if card.card_data.firstName or card.slug %}
+                <p class="ci-hero__meta mc-mono">
+                    {{ card.card_data.firstName }} {{ card.card_data.lastName }} · {{ card.slug }}
+                </p>
+            {% endif %}
+        </article>
 
+        {# ==== Pricing panel ==== #}
+        {% if yearly_price %}
+        <section class="ci-pricing mc-card mc-fade-up mc-fade-up--d1">
+            <header class="ci-pricing__head">
+                <span class="mc-caption">{% trans "Reactivation cost" %}</span>
+                <h2>{% trans "Pay once, back online for 12 months." %}</h2>
+                <p class="mc-text-muted">{% trans "One yearly payment covers every card you own. All your existing data + socials + QR + analytics come back exactly as they were." %}</p>
+            </header>
+            <ul class="ci-pricing__list">
+                <li>
+                    <span>{% trans "Yearly subscription" %} <small class="mc-text-muted">({% trans "12 months" %})</small></span>
+                    <span class="mc-mono">৳{{ yearly_price }}</span>
+                </li>
+                <li>
+                    <span>{% trans "Reactivation fee" %} <small class="mc-text-muted">({% trans "one-time" %})</small></span>
+                    <span class="mc-mono">৳{{ reactivation_fee }}</span>
+                </li>
+                <li class="ci-pricing__total">
+                    <strong>{% trans "Total due" %}</strong>
+                    <span class="mc-mono">৳{{ total_due }}</span>
+                </li>
+            </ul>
+        </section>
+        {% endif %}
+
+        {# ==== Action panel ==== #}
+        <section class="ci-actions-card mc-card mc-fade-up mc-fade-up--d2">
             {% if existing_request %}
                 <div class="ci-status">
-                    <i data-lucide="hourglass"></i>
+                    <i data-lucide="clock"></i>
                     <div>
-                        <strong>Request received.</strong>
-                        <p class="mc-text-muted">Concierge is reviewing your reactivation. You'll see the update in your message box.</p>
+                        <strong>{% trans "Reactivation request pending." %}</strong>
+                        <p class="mc-text-muted">
+                            {% blocktrans with when=existing_request.created_at|timesince %}Submitted {{ when }} ago. You'll receive an inbox notification when the admin approves it.{% endblocktrans %}
+                        </p>
                     </div>
                 </div>
                 <div class="ci-actions">
                     <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--ghost mc-btn--lg">
-                        <i data-lucide="arrow-left"></i>
-                        Back to dashboard
+                        <i data-lucide="arrow-left"></i> {% trans "Back to dashboard" %}
                     </a>
-                    <a href="{% url 'user_messages' %}" class="mc-btn mc-btn--outline mc-btn--lg">
-                        <i data-lucide="mail-plus"></i>
-                        View message box
+                    <a href="{% url 'user_inbox' %}" class="mc-btn mc-btn--outline mc-btn--lg">
+                        <i data-lucide="bell"></i> {% trans "Check inbox" %}
                     </a>
                 </div>
             {% else %}
+                <h3>{% trans "Bring the card back online" %}</h3>
+                <p class="mc-text-muted">
+                    {% trans "Automatic bKash & card payments launch shortly. In the meantime, submit a reactivation request and the admin will confirm within a business day." %}
+                </p>
                 <div class="ci-actions">
-                    <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--ghost mc-btn--lg">
-                        <i data-lucide="arrow-left"></i>
-                        Back
+                    <a href="{% url 'reactivate_card' card.slug %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
+                        <i data-lucide="power"></i> {% trans "Reactivate now" %}
                     </a>
-                    <form method="post" action="{% url 'request_upgrade' card.slug %}" style="margin:0;">
-                        {% csrf_token %}
-                        <input type="hidden" name="plan" value="card_reactivation">
-                        <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
-                            <i data-lucide="power"></i>
-                            Request reactivation
-                        </button>
-                    </form>
+                    <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--ghost mc-btn--lg">
+                        <i data-lucide="arrow-left"></i> {% trans "Back to dashboard" %}
+                    </a>
                 </div>
+                <p class="ci-fine-print mc-text-muted">
+                    <i data-lucide="info"></i>
+                    {% trans "Prefer email? Reach out at" %} <a href="mailto:mycard@dupno.com?subject=Reactivate%20{{ card.slug }}">mycard@dupno.com</a>.
+                </p>
             {% endif %}
-        </div>
+        </section>
     </div>
 </div>
 
 <style>
-.ci-page { position: relative; min-height: 100vh; padding: var(--mc-s-6) 0; display: grid; place-items: center; overflow: hidden; }
+.ci-page { position: relative; min-height: 100vh; padding: var(--mc-s-6) 0 var(--mc-s-9); overflow: hidden; }
 .ci-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-.ci-container { position: relative; z-index: 1; max-width: 640px; }
+.ci-container { position: relative; z-index: 1; max-width: 720px; display: grid; gap: var(--mc-s-4); }
 
+/* Hero */
 .ci-hero {
-    padding: clamp(2rem, 5vw, 3rem);
+    padding: clamp(2rem, 4vw, 2.5rem);
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: var(--mc-s-4);
-    align-items: center;
+    display: flex; flex-direction: column;
+    gap: var(--mc-s-3); align-items: center;
 }
 .ci-hero__icon {
-    width: 80px; height: 80px;
+    width: 76px; height: 76px;
     border-radius: 50%;
     background: linear-gradient(135deg, rgba(245,158,11,0.25), var(--mc-bg-2));
     color: var(--mc-warn);
-    display: grid;
-    place-items: center;
+    display: grid; place-items: center;
     box-shadow: 0 0 0 6px rgba(245,158,11,0.10), var(--mc-shadow-2);
+    animation: ci-pulse 2.4s ease-in-out infinite;
 }
-.ci-hero__icon i { width: 2rem; height: 2rem; }
-.ci-hero__title {
-    font-family: var(--mc-font-display);
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
-    margin: 0;
+.ci-hero__icon i { width: 1.85rem; height: 1.85rem; }
+@keyframes ci-pulse {
+    0%,100% { transform: scale(1); box-shadow: 0 0 0 6px rgba(245,158,11,0.10), var(--mc-shadow-2); }
+    50%     { transform: scale(1.05); box-shadow: 0 0 0 12px rgba(245,158,11,0.05), var(--mc-shadow-2); }
 }
-.ci-hero p { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .ci-hero__icon { animation: none; } }
 
-.ci-status {
-    display: flex;
-    gap: var(--mc-s-3);
-    align-items: center;
-    padding: var(--mc-s-4);
+.ci-hero__title { font-family: var(--mc-font-display); font-size: clamp(1.7rem, 3.5vw, 2.2rem); margin: 0; }
+.ci-hero__lede { margin: 0; max-width: 520px; }
+.ci-hero__meta {
+    margin: 4px 0 0;
+    font-size: 0.75rem;
+    color: var(--mc-text-md);
+    padding: 4px 10px;
     background: var(--mc-bg-2);
-    border: 1px solid var(--mc-border-hi);
-    border-radius: var(--mc-r-md);
-    text-align: left;
+    border-radius: var(--mc-r-full);
+    border: 1px solid var(--mc-border);
+    display: inline-block;
 }
-.ci-status i {
-    color: var(--mc-warn);
-    width: 1.4rem; height: 1.4rem;
-    flex-shrink: 0;
-    animation: mc-fade-up 2s ease-in-out infinite alternate;
-}
-.ci-status p { margin: 4px 0 0; font-size: var(--mc-fs-body-sm); }
 
-.ci-actions {
-    display: flex;
-    gap: var(--mc-s-3);
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: var(--mc-s-3);
+/* Pricing */
+.ci-pricing { padding: var(--mc-s-5) var(--mc-s-6); }
+.ci-pricing__head { margin-bottom: var(--mc-s-4); }
+.ci-pricing__head h2 { font-size: 1.2rem; margin: var(--mc-s-2) 0 var(--mc-s-2); }
+.ci-pricing__head p { margin: 0; font-size: var(--mc-fs-body-sm); }
+.ci-pricing__list { list-style: none; margin: 0; padding: 0; }
+.ci-pricing__list li {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: var(--mc-s-3) 0;
+    border-bottom: 1px dashed var(--mc-border);
+    font-size: 1rem;
 }
+.ci-pricing__list li small { margin-left: 4px; font-size: 0.75rem; }
+.ci-pricing__total {
+    border-top: 2px solid var(--mc-accent) !important;
+    border-bottom: none !important;
+    margin-top: var(--mc-s-2);
+    font-size: 1.15rem;
+    color: var(--mc-text-hi);
+}
+.ci-pricing__total strong { color: var(--mc-text-hi); }
+
+/* Action panel */
+.ci-actions-card { padding: var(--mc-s-5) var(--mc-s-6); }
+.ci-actions-card h3 { margin: 0 0 var(--mc-s-2); }
+.ci-actions-card > p { margin: 0 0 var(--mc-s-4); font-size: var(--mc-fs-body-sm); }
+.ci-actions { display: flex; gap: var(--mc-s-3); flex-wrap: wrap; }
+.ci-fine-print {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: var(--mc-s-4); font-size: var(--mc-fs-body-sm);
+}
+.ci-fine-print i { color: var(--mc-accent); width: 14px; height: 14px; }
+.ci-fine-print a { color: var(--mc-accent); }
+
+/* Pending status */
+.ci-status {
+    display: flex; gap: var(--mc-s-3); align-items: flex-start;
+    padding: var(--mc-s-4);
+    background: var(--mc-accent-halo);
+    border: 1px solid var(--mc-border-glow);
+    border-radius: var(--mc-r-md);
+    margin-bottom: var(--mc-s-4);
+}
+.ci-status i { color: var(--mc-accent); width: 22px; height: 22px; flex-shrink: 0; margin-top: 2px; }
+.ci-status strong { color: var(--mc-text-hi); font-weight: 600; }
+.ci-status p { margin: 4px 0 0; font-size: var(--mc-fs-body-sm); }
 </style>
 {% endblock %}

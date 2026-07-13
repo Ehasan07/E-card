@@ -762,10 +762,15 @@ def view_card(request, slug):
                 card=card,
                 status=UpgradeRequest.STATUS_PENDING
             ).first()
+            yearly = _yearly_price_for(card.user)
             context = {
                 'card': card,
                 'existing_request': existing_request,
                 'is_owner': True,
+                'yearly_price': yearly,
+                'reactivation_fee': settings.CARD_REACTIVATION_FEE,
+                'total_due': yearly + settings.CARD_REACTIVATION_FEE,
+                'context_source': 'digital',
             }
             return render(request, 'cards/card_inactive.html', context)
         return render(request, 'cards/card_inactive_public.html', {'card': card}, status=200)
@@ -1844,8 +1849,34 @@ def lead_update_status(request, lead_id):
 
 
 def physical_card(request, slug):
-    """Printable ID-1 sized physical card (front + back) with QR."""
-    card = get_object_or_404(Card, slug=slug, is_active=True)
+    """Printable ID-1 sized physical card (front + back) with QR.
+
+    When the card is inactive we branch:
+      - Owner: show the offline / reactivate screen (same one the digital
+        view uses) so they know they need to pay before printing.
+      - Anyone else: show the public 'card unavailable' screen.
+    """
+    card = get_object_or_404(Card, slug=slug)
+    is_owner = request.user.is_authenticated and request.user == card.user
+    is_admin = request.user.is_authenticated and request.user.is_superuser
+
+    if not card.is_active and not is_admin:
+        if is_owner:
+            existing_request = UpgradeRequest.objects.filter(
+                user=request.user,
+                card=card,
+                status=UpgradeRequest.STATUS_PENDING,
+            ).first()
+            return render(request, 'cards/card_inactive.html', {
+                'card': card,
+                'existing_request': existing_request,
+                'is_owner': True,
+                'yearly_price': _yearly_price_for(card.user),
+                'reactivation_fee': settings.CARD_REACTIVATION_FEE,
+                'total_due': _yearly_price_for(card.user) + settings.CARD_REACTIVATION_FEE,
+                'context_source': 'physical',
+            })
+        return render(request, 'cards/card_inactive_public.html', {'card': card}, status=200)
 
     whatsapp_link = _normalize_whatsapp_link(card.card_data.get('whatsapp'))
     phone_digits, phone_display = _normalize_phone_number(card.card_data.get('phone'))

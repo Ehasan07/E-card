@@ -584,23 +584,55 @@
                 <span class="mc-badge__dot"></span>
                 {% trans "Pricing" %}
             </span>
-            <h2>{% trans "One plan for casual users. One plan for professionals." %}</h2>
+            <h2>{% trans "12 months free. Then a small yearly renewal." %}</h2>
             <p class="mc-text-muted">
-                {% trans "Free covers the basics forever — a single card, QR, and lead capture. Pro unlocks the network-effect features: multi-card, extended analytics, custom URLs, AI bio, and every premium theme. bKash for BD, Stripe worldwide." %}
+                {% trans "Every card — Free or Pro — gets its first 12 months on the house. After that, one tiny yearly renewal keeps every card you own online for the next 12 months. No monthly bills, no auto-cards-on-file surprises, no lockouts mid-trial." %}
             </p>
         </header>
+
+        {# ==== How the year works — three step timeline ==== #}
+        <div class="lp-pricing-timeline mc-fade-up mc-fade-up--d1">
+            <div class="lp-pricing-timeline__step">
+                <span class="lp-pricing-timeline__num mc-mono">01</span>
+                <div>
+                    <strong>{% trans "Sign up" %}</strong>
+                    <span class="mc-text-muted">{% trans "Card goes live instantly. 12-month free trial starts today." %}</span>
+                </div>
+            </div>
+            <span class="lp-pricing-timeline__arrow"><i data-lucide="arrow-right"></i></span>
+            <div class="lp-pricing-timeline__step">
+                <span class="lp-pricing-timeline__num mc-mono">02</span>
+                <div>
+                    <strong>{% trans "Enjoy 12 months free" %}</strong>
+                    <span class="mc-text-muted">{% trans "Full access — QR, socials, leads, analytics, Wallet. Zero charge." %}</span>
+                </div>
+            </div>
+            <span class="lp-pricing-timeline__arrow"><i data-lucide="arrow-right"></i></span>
+            <div class="lp-pricing-timeline__step">
+                <span class="lp-pricing-timeline__num mc-mono">03</span>
+                <div>
+                    <strong>{% trans "Renew for another year" %}</strong>
+                    <span class="mc-text-muted">{% trans "৳120 (Free) or ৳500 (Pro) — one payment covers every card you own." %}</span>
+                </div>
+            </div>
+        </div>
 
         <div class="lp-pricing">
 
             {# ========== FREE ========== #}
-            <article class="mc-card lp-plan lp-plan--free mc-fade-up">
+            <article class="mc-card lp-plan lp-plan--free mc-fade-up mc-fade-up--d1">
+                <span class="lp-plan__trial-pill">
+                    <i data-lucide="gift"></i> {% trans "First 12 months free" %}
+                </span>
                 <header>
                     <span class="mc-caption">{% trans "Free" %}</span>
                     <div class="lp-plan__price">
                         <span class="mc-mono">৳0</span>
-                        <small>/{% trans "forever" %}</small>
+                        <small>{% trans "for 12 months" %}</small>
                     </div>
-                    <p class="mc-text-muted">{% trans "For students, first-timers, and anyone testing the waters." %}</p>
+                    <p class="mc-text-muted">
+                        {% trans "Then" %} <strong class="mc-text-hi">৳120 / {% trans "year" %}</strong> {% trans "to keep every card of yours online. Reactivation fee ৳50 if a lapsed card comes back after being offline." %}
+                    </p>
                 </header>
 
                 <div class="lp-plan__group">
@@ -630,25 +662,33 @@
 
                 <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
                     <i data-lucide="user-plus"></i>
-                    {% trans "Start free" %}
+                    {% trans "Start free for 12 months" %}
                 </a>
-                <span class="lp-plan__foot">{% trans "No credit card. Upgrade any time." %}</span>
+                <span class="lp-plan__foot">
+                    <i data-lucide="calendar-check"></i>
+                    {% trans "No credit card at signup." %}
+                </span>
             </article>
 
             {# ========== PRO (featured) ========== #}
-            <article class="mc-card mc-card--glow lp-plan lp-plan--featured mc-fade-up mc-fade-up--d1">
+            <article class="mc-card mc-card--glow lp-plan lp-plan--featured mc-fade-up mc-fade-up--d2">
                 <span class="lp-plan__ribbon">
                     <span class="lp-plan__ribbon-shine"></span>
                     <i data-lucide="crown"></i> {% trans "Most popular" %}
+                </span>
+                <span class="lp-plan__trial-pill">
+                    <i data-lucide="gift"></i> {% trans "First 12 months free" %}
                 </span>
 
                 <header>
                     <span class="mc-caption mc-text-accent">{% trans "Pro" %}</span>
                     <div class="lp-plan__price lp-plan__price--featured">
-                        <span class="mc-mono">৳499</span>
-                        <small>/{% trans "month" %}</small>
+                        <span class="mc-mono">৳0</span>
+                        <small>{% trans "for 12 months" %}</small>
                     </div>
-                    <p class="mc-text-muted">≈ $4.99 · {% trans "billed monthly. Cancel any time." %}</p>
+                    <p class="mc-text-muted">
+                        {% trans "Then" %} <strong class="mc-text-accent">৳500 / {% trans "year" %}</strong> · {% trans "covers all 5 cards + reactivation fee ৳50 if a card lapses." %}
+                    </p>
                 </header>
 
                 <div class="lp-plan__group">
@@ -656,7 +696,7 @@
                         <i data-lucide="sparkles"></i> {% trans "Everything in Free, plus:" %}
                     </span>
                     <ul class="lp-plan__list lp-plan__list--accent">
-                        <li><i data-lucide="layers"></i> <span><strong>{% trans "Up to 5 cards" %}</strong> {% trans "— separate personas / brands" %}</span></li>
+                        <li><i data-lucide="layers"></i> <span><strong>{% trans "Up to 5 cards" %}</strong> — {% trans "separate personas / brands" %}</span></li>
                         <li><i data-lucide="link-2"></i> <span><strong>{% trans "Custom public URL" %}</strong> — mycard.dupno.com/<em>{% trans "yourname" %}</em></span></li>
                         <li><i data-lucide="palette"></i> <span><strong>{% trans "All 14 themes" %}</strong> — Cyber Neon, Molten Gold, Deep Ocean, more</span></li>
                         <li><i data-lucide="wand-2"></i> <span><strong>{% trans "AI bio generator" %}</strong> — 3 pro-quality bios in one click</span></li>
@@ -669,15 +709,15 @@
 
                 <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
                     <i data-lucide="rocket"></i>
-                    {% trans "Upgrade to Pro" %}
+                    {% trans "Try Pro free for 12 months" %}
                 </a>
                 <span class="lp-plan__foot lp-plan__foot--featured">
-                    <i data-lucide="shield-check"></i> {% trans "7-day money-back guarantee" %}
+                    <i data-lucide="bell"></i> {% trans "We warn you 30 days before renewal — no silent charges." %}
                 </span>
             </article>
 
             {# ========== TEAM ========== #}
-            <article class="mc-card lp-plan lp-plan--team mc-fade-up mc-fade-up--d2">
+            <article class="mc-card lp-plan lp-plan--team mc-fade-up mc-fade-up--d3">
                 <header>
                     <span class="mc-caption">{% trans "Team" %}</span>
                     <div class="lp-plan__price">
@@ -711,6 +751,29 @@
                 </span>
             </article>
 
+        </div>
+
+        {# ==== Renewal FAQ ==== #}
+        <div class="lp-renewal-faq mc-fade-up mc-fade-up--d3">
+            <h3><i data-lucide="calendar-days"></i> {% trans "How the yearly renewal works" %}</h3>
+            <div class="lp-renewal-faq__grid">
+                <div>
+                    <strong>{% trans "One yearly payment covers every card." %}</strong>
+                    <p class="mc-text-muted">{% trans "Pro users with 5 cards pay ৳500 once — every card stays live for the next 12 months. No per-card billing." %}</p>
+                </div>
+                <div>
+                    <strong>{% trans "You get warned 30, 7, and 1 day before." %}</strong>
+                    <p class="mc-text-muted">{% trans "Inbox reminders start a full month ahead. No card ever goes offline without a heads-up." %}</p>
+                </div>
+                <div>
+                    <strong>{% trans "Lapsed? Reactivate any time." %}</strong>
+                    <p class="mc-text-muted">{% trans "Pay the yearly renewal + a one-time ৳50 fee. Data, socials, QR, and analytics come back exactly as they were." %}</p>
+                </div>
+                <div>
+                    <strong>{% trans "No auto-charge without approval." %}</strong>
+                    <p class="mc-text-muted">{% trans "Payments only happen when you actively confirm — bKash prompt on your phone, or manual admin approval today." %}</p>
+                </div>
+            </div>
         </div>
 
         {# ==== Payment methods strip ==== #}
@@ -1481,6 +1544,116 @@
 @media (prefers-reduced-motion: reduce) {
     .lp-plan__ribbon-shine { animation: none; }
 }
+
+/* 3-step timeline explaining "12 months free → renew for another year" */
+.lp-pricing-timeline {
+    display: flex;
+    gap: var(--mc-s-3);
+    justify-content: center;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin: 0 auto var(--mc-s-6);
+    max-width: 1080px;
+}
+.lp-pricing-timeline__step {
+    flex: 1 1 240px;
+    min-width: 220px;
+    max-width: 320px;
+    display: flex;
+    gap: var(--mc-s-3);
+    padding: var(--mc-s-4);
+    background: var(--mc-bg-1);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: var(--mc-r-lg);
+    transition: transform var(--mc-dur-fast) var(--mc-ease), border-color var(--mc-dur-fast) var(--mc-ease);
+}
+.lp-pricing-timeline__step:hover { transform: translateY(-3px); border-color: var(--mc-border-glow); }
+.lp-pricing-timeline__num {
+    font-family: var(--mc-font-display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--mc-accent);
+    letter-spacing: -0.04em;
+    line-height: 1;
+    flex-shrink: 0;
+}
+.lp-pricing-timeline__step strong {
+    display: block;
+    color: var(--mc-text-hi);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+}
+.lp-pricing-timeline__step span.mc-text-muted {
+    font-size: var(--mc-fs-body-sm);
+    line-height: 1.35;
+    color: var(--mc-text-md);
+}
+.lp-pricing-timeline__arrow {
+    display: grid;
+    place-items: center;
+    color: var(--mc-accent);
+    flex-shrink: 0;
+}
+.lp-pricing-timeline__arrow i { width: 24px; height: 24px; }
+@media (max-width: 780px) {
+    .lp-pricing-timeline__arrow { transform: rotate(90deg); }
+}
+
+/* Trial pill on each plan card */
+.lp-plan__trial-pill {
+    position: absolute;
+    top: -13px;
+    left: var(--mc-s-4);
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: linear-gradient(120deg, var(--mc-accent), color-mix(in srgb, var(--mc-accent) 40%, var(--mc-text-hi)));
+    color: var(--mc-bg-0);
+    font-family: var(--mc-font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    box-shadow: 0 6px 18px -6px var(--mc-accent-glow);
+}
+.lp-plan__trial-pill i { width: 12px; height: 12px; }
+.lp-plan--featured .lp-plan__trial-pill { left: auto; right: var(--mc-s-4); top: 32px; }
+
+/* Renewal FAQ block */
+.lp-renewal-faq {
+    max-width: 1080px;
+    margin: var(--mc-s-7) auto 0;
+    padding: var(--mc-s-5) var(--mc-s-6);
+    background: var(--mc-bg-1);
+    border: 1px dashed var(--mc-border-hi);
+    border-radius: var(--mc-r-xl);
+}
+.lp-renewal-faq h3 {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--mc-s-2);
+    margin: 0 0 var(--mc-s-4);
+    font-size: 1.15rem;
+}
+.lp-renewal-faq h3 i { color: var(--mc-accent); width: 20px; height: 20px; }
+.lp-renewal-faq__grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--mc-s-4) var(--mc-s-5);
+}
+@media (min-width: 720px) { .lp-renewal-faq__grid { grid-template-columns: 1fr 1fr; } }
+.lp-renewal-faq__grid strong {
+    display: block;
+    color: var(--mc-text-hi);
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+}
+.lp-renewal-faq__grid p { margin: 0; font-size: var(--mc-fs-body-sm); }
 
 /* Payment methods strip */
 .lp-pricing-pay {

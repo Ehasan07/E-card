@@ -1,8 +1,9 @@
 {% extends 'cards/base.html' %}
+{% load i18n %}
 
-{% block title %}Card offline — MY-Card{% endblock %}
+{% block title %}Card unavailable — MY-Card{% endblock %}
 {% block page_icon %}moon{% endblock %}
-{% block page_label %}Offline{% endblock %}
+{% block page_label %}Unavailable{% endblock %}
 
 {% block content %}
 <div class="cip-page">
@@ -13,27 +14,36 @@
     </div>
 
     <div class="mc-container cip-container">
-        <div class="mc-card cip-hero mc-fade-up">
+        <article class="mc-card cip-hero mc-fade-up">
             <span class="cip-hero__icon"><i data-lucide="moon"></i></span>
             <span class="mc-badge">
                 <span class="mc-badge__dot" style="background:var(--mc-text-md);"></span>
-                Temporarily offline
+                {% trans "Card unavailable" %}
             </span>
-            <h1 class="cip-hero__title">This card is taking a break.</h1>
-            <p class="mc-text-muted">
-                The owner has temporarily paused public access while they refresh their card. Please check back later or reach out to them directly through another channel.
+            <h1 class="cip-hero__title">{% trans "This card is currently offline." %}</h1>
+            <p class="cip-hero__lede mc-text-muted">
+                {% trans "The owner's public card is temporarily unavailable — usually because a subscription needs to be renewed. It may come back online soon." %}
             </p>
+            <p class="cip-hero__meta mc-mono">
+                mycard.dupno.com/card/{{ card.slug }}
+            </p>
+
             <div class="cip-actions">
                 <a href="{% url 'index' %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
                     <i data-lucide="sparkles"></i>
-                    Make your own MY-Card
+                    {% trans "Make your own MY-Card" %}
                 </a>
                 <a href="{% url 'index' %}" class="mc-btn mc-btn--ghost mc-btn--lg">
                     <i data-lucide="home"></i>
-                    Explore MY-Card
+                    {% trans "How MY-Card works" %}
                 </a>
             </div>
-        </div>
+
+            <p class="cip-fine-print mc-text-muted">
+                <i data-lucide="info"></i>
+                {% trans "Know the owner? Reach them through another channel — SMS, WhatsApp, email — and let them know the card is offline." %}
+            </p>
+        </article>
     </div>
 </div>
 
@@ -45,28 +55,39 @@
 .cip-hero {
     padding: clamp(2rem, 5vw, 3rem);
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    gap: var(--mc-s-4);
-    align-items: center;
+    display: flex; flex-direction: column;
+    gap: var(--mc-s-3); align-items: center;
 }
 .cip-hero__icon {
-    width: 80px; height: 80px;
+    width: 84px; height: 84px;
     border-radius: 50%;
     background: linear-gradient(160deg, var(--mc-bg-2), var(--mc-bg-3));
     color: var(--mc-text-md);
-    display: grid;
-    place-items: center;
+    display: grid; place-items: center;
     border: 1px solid var(--mc-border-hi);
     box-shadow: var(--mc-shadow-2);
+    position: relative;
+    animation: cip-float 4s ease-in-out infinite;
 }
-.cip-hero__icon i { width: 2rem; height: 2rem; animation: mc-fade-up 3s ease-in-out infinite alternate; }
-.cip-hero__title {
-    font-family: var(--mc-font-display);
-    font-size: clamp(1.8rem, 4vw, 2.4rem);
+.cip-hero__icon i { width: 2rem; height: 2rem; }
+@keyframes cip-float {
+    0%,100% { transform: translateY(0); }
+    50%     { transform: translateY(-6px); }
+}
+@media (prefers-reduced-motion: reduce) { .cip-hero__icon { animation: none; } }
+
+.cip-hero__title { font-family: var(--mc-font-display); font-size: clamp(1.8rem, 4vw, 2.4rem); margin: 0; }
+.cip-hero__lede { margin: 0; max-width: 480px; }
+.cip-hero__meta {
+    padding: 4px 12px;
+    background: var(--mc-bg-2);
+    color: var(--mc-text-md);
+    border: 1px solid var(--mc-border);
+    border-radius: var(--mc-r-full);
+    font-size: 0.75rem;
     margin: 0;
 }
-.cip-hero p { margin: 0; max-width: 480px; }
+
 .cip-actions {
     display: flex;
     gap: var(--mc-s-3);
@@ -74,5 +95,11 @@
     flex-wrap: wrap;
     margin-top: var(--mc-s-3);
 }
+.cip-fine-print {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: var(--mc-s-4); font-size: var(--mc-fs-body-sm);
+    max-width: 500px;
+}
+.cip-fine-print i { color: var(--mc-accent); width: 14px; height: 14px; flex-shrink: 0; }
 </style>
 {% endblock %}
