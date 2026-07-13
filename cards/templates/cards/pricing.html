@@ -98,9 +98,11 @@
                         <span class="mc-caption {% if plan.featured %}mc-text-accent{% endif %}">{{ plan.name }}</span>
                         <div class="pr-plan__price">
                             <span class="mc-mono">৳{{ plan.price_bdt }}</span>
-                            <small>/{% trans "month" %}</small>
+                            <small>{% if plan.slug == 'team' %}/{% trans "month" %}{% else %}/{% trans "year" %}{% endif %}</small>
                         </div>
-                        <p class="mc-text-muted">≈ ${{ plan.price_usd }} · {% trans "billed monthly" %}</p>
+                        <p class="mc-text-muted">
+                            {% if plan.billing %}{{ plan.billing }}{% else %}≈ ${{ plan.price_usd }}{% endif %}
+                        </p>
                     </header>
                     <ul class="pr-plan__list">
                         {% for feat in plan.features %}

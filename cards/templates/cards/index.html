@@ -584,35 +584,35 @@
                 <span class="mc-badge__dot"></span>
                 {% trans "Pricing" %}
             </span>
-            <h2>{% trans "12 months free. Then a small yearly renewal." %}</h2>
+            <h2>{% trans "Free for 12 months. Pro is paid upfront." %}</h2>
             <p class="mc-text-muted">
-                {% trans "Every card — Free or Pro — gets its first 12 months on the house. After that, one tiny yearly renewal keeps every card you own online for the next 12 months. No monthly bills, no auto-cards-on-file surprises, no lockouts mid-trial." %}
+                {% trans "Free tier gives you a full year with no card required — perfect to test the waters. Pro is billed ৳500/year upfront (no free trial) and unlocks multi-card, custom URLs, AI bio, and every premium theme. Both tiers renew once a year — no monthly surprises." %}
             </p>
         </header>
 
-        {# ==== How the year works — three step timeline ==== #}
+        {# ==== How the year works — split into Free vs Pro flow ==== #}
         <div class="lp-pricing-timeline mc-fade-up mc-fade-up--d1">
             <div class="lp-pricing-timeline__step">
                 <span class="lp-pricing-timeline__num mc-mono">01</span>
                 <div>
-                    <strong>{% trans "Sign up" %}</strong>
-                    <span class="mc-text-muted">{% trans "Card goes live instantly. 12-month free trial starts today." %}</span>
+                    <strong>{% trans "Sign up Free" %}</strong>
+                    <span class="mc-text-muted">{% trans "Card goes live instantly. 12 months free — no card, no charge." %}</span>
                 </div>
             </div>
             <span class="lp-pricing-timeline__arrow"><i data-lucide="arrow-right"></i></span>
             <div class="lp-pricing-timeline__step">
                 <span class="lp-pricing-timeline__num mc-mono">02</span>
                 <div>
-                    <strong>{% trans "Enjoy 12 months free" %}</strong>
-                    <span class="mc-text-muted">{% trans "Full access — QR, socials, leads, analytics, Wallet. Zero charge." %}</span>
+                    <strong>{% trans "Free renews at ৳120 / year" %}</strong>
+                    <span class="mc-text-muted">{% trans "One payment keeps your card online for the next 12 months." %}</span>
                 </div>
             </div>
             <span class="lp-pricing-timeline__arrow"><i data-lucide="arrow-right"></i></span>
-            <div class="lp-pricing-timeline__step">
+            <div class="lp-pricing-timeline__step lp-pricing-timeline__step--accent">
                 <span class="lp-pricing-timeline__num mc-mono">03</span>
                 <div>
-                    <strong>{% trans "Renew for another year" %}</strong>
-                    <span class="mc-text-muted">{% trans "৳120 (Free) or ৳500 (Pro) — one payment covers every card you own." %}</span>
+                    <strong>{% trans "Want Pro? Pay ৳500 upfront" %}</strong>
+                    <span class="mc-text-muted">{% trans "No free trial on Pro. 12 months live from day one, all 5 cards covered." %}</span>
                 </div>
             </div>
         </div>
@@ -683,15 +683,15 @@
                     <div class="lp-plan__caption-row">
                         <span class="mc-caption mc-text-accent">{% trans "Pro" %}</span>
                         <span class="lp-plan__trial-chip lp-plan__trial-chip--accent">
-                            <i data-lucide="gift"></i> {% trans "12 months free" %}
+                            <i data-lucide="zap"></i> {% trans "Paid upfront" %}
                         </span>
                     </div>
                     <div class="lp-plan__price lp-plan__price--featured">
-                        <span class="mc-mono">৳0</span>
-                        <small>{% trans "for 12 months" %}</small>
+                        <span class="mc-mono">৳500</span>
+                        <small>/{% trans "year" %}</small>
                     </div>
                     <p class="mc-text-muted">
-                        {% trans "Then" %} <strong class="mc-text-accent">৳500 / {% trans "year" %}</strong> — {% trans "one payment covers all 5 cards. ৳50 reactivation fee only if a card goes offline before you renew." %}
+                        {% trans "No free trial — Pro is billed upfront, then renews yearly at" %} <strong class="mc-text-accent">৳500 / {% trans "year" %}</strong>. {% trans "One payment covers all 5 cards. ৳50 reactivation fee only if a card goes offline before you renew." %}
                     </p>
                 </header>
 
@@ -711,9 +711,10 @@
                     </ul>
                 </div>
 
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
+                <a href="{% if request.user.is_authenticated %}{% url 'pricing' %}{% else %}{% url 'register' %}?next={% url 'pricing' %}{% endif %}"
+                   class="mc-btn mc-btn--primary mc-btn--block mc-neon-pulse lp-plan__cta">
                     <i data-lucide="rocket"></i>
-                    {% trans "Try Pro free for 12 months" %}
+                    {% trans "Upgrade to Pro — ৳500 / year" %}
                 </a>
                 <span class="lp-plan__foot lp-plan__foot--featured">
                     <i data-lucide="bell"></i> {% trans "We warn you 30 days before renewal — no silent charges." %}
@@ -759,23 +760,23 @@
 
         {# ==== Renewal FAQ ==== #}
         <div class="lp-renewal-faq mc-fade-up mc-fade-up--d3">
-            <h3><i data-lucide="calendar-days"></i> {% trans "How the yearly renewal works" %}</h3>
+            <h3><i data-lucide="calendar-days"></i> {% trans "How pricing works — the short version" %}</h3>
             <div class="lp-renewal-faq__grid">
                 <div>
-                    <strong>{% trans "One yearly payment covers every card." %}</strong>
+                    <strong>{% trans "Free = 12 months no charge. Pro = pay upfront." %}</strong>
+                    <p class="mc-text-muted">{% trans "Only the Free tier ships with a 12-month free trial. To try Pro you pay the ৳500 yearly fee first — it's not available as a free trial." %}</p>
+                </div>
+                <div>
+                    <strong>{% trans "One yearly payment covers every card you own." %}</strong>
                     <p class="mc-text-muted">{% trans "Pro users with 5 cards pay ৳500 once — every card stays live for the next 12 months. No per-card billing." %}</p>
                 </div>
                 <div>
-                    <strong>{% trans "You get warned 30, 7, and 1 day before." %}</strong>
-                    <p class="mc-text-muted">{% trans "Inbox reminders start a full month ahead. No card ever goes offline without a heads-up." %}</p>
-                </div>
-                <div>
                     <strong>{% trans "Renew before expiry — no reactivation fee." %}</strong>
-                    <p class="mc-text-muted">{% trans "If you pay the yearly renewal while your card is still active, you pay only the yearly fee. The ৳50 reactivation charge applies only if the card has already gone offline." %}</p>
+                    <p class="mc-text-muted">{% trans "If you pay the yearly renewal while your card is still active, only the yearly fee applies. The ৳50 reactivation charge is only for cards that have already gone offline." %}</p>
                 </div>
                 <div>
-                    <strong>{% trans "No auto-charge without approval." %}</strong>
-                    <p class="mc-text-muted">{% trans "Payments only happen when you actively confirm — bKash prompt on your phone, or manual admin approval today." %}</p>
+                    <strong>{% trans "30 / 7 / 1-day warnings. No silent charges." %}</strong>
+                    <p class="mc-text-muted">{% trans "Inbox reminders start a full month ahead of renewal. Payments only happen when you actively confirm — bKash prompt today, plus more gateways soon." %}</p>
                 </div>
             </div>
         </div>
@@ -1572,6 +1573,12 @@
     transition: transform var(--mc-dur-fast) var(--mc-ease), border-color var(--mc-dur-fast) var(--mc-ease);
 }
 .lp-pricing-timeline__step:hover { transform: translateY(-3px); border-color: var(--mc-border-glow); }
+.lp-pricing-timeline__step--accent {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--mc-accent) 12%, var(--mc-bg-1)) 0%, var(--mc-bg-1) 100%);
+    border-color: var(--mc-border-glow);
+    box-shadow: var(--mc-shadow-1), 0 0 0 1px var(--mc-accent-halo);
+}
+.lp-pricing-timeline__step--accent .lp-pricing-timeline__num { color: var(--mc-accent); }
 .lp-pricing-timeline__num {
     font-family: var(--mc-font-display);
     font-size: 1.8rem;
