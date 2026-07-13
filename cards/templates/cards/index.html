@@ -701,11 +701,14 @@
                     </ul>
                 </div>
 
-                <a href="mailto:mycard@dupno.com?subject=Team%20plan%20interest" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
+                <button type="button" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta" data-team-soon>
                     <i data-lucide="handshake"></i>
                     {% trans "Talk to sales" %}
-                </a>
-                <span class="lp-plan__foot">{% trans "Custom volume pricing for 20+ seats." %}</span>
+                </button>
+                <span class="lp-plan__foot">
+                    <i data-lucide="clock"></i>
+                    {% trans "Team plan launching soon" %}
+                </span>
             </article>
 
         </div>
@@ -2309,6 +2312,39 @@
     padding-top: var(--mc-s-3);
 }
 </style>
+
+{# ---- Team plan "coming soon" popup ---- #}
+<script>
+(function () {
+    document.querySelectorAll('[data-team-soon]').forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (window.Swal) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Team plan — coming soon',
+                    html: 'The Team tier is still in preparation and hasn\'t launched yet. '
+                        + '<br><br>Interested? Drop us a note and we\'ll email the moment it goes live.',
+                    confirmButtonText: 'Email us',
+                    showCancelButton: true,
+                    cancelButtonText: 'Close',
+                    background: 'var(--mc-bg-2)',
+                    color: 'var(--mc-text-hi)',
+                    confirmButtonColor: 'var(--mc-accent)',
+                    cancelButtonColor: 'var(--mc-bg-3)',
+                    iconColor: 'var(--mc-accent)',
+                }).then(function (r) {
+                    if (r.isConfirmed) {
+                        window.location.href = 'mailto:mycard@dupno.com?subject=Team%20plan%20interest';
+                    }
+                });
+            } else {
+                alert('Team plan is not launched yet. Please email mycard@dupno.com');
+            }
+        });
+    });
+})();
+</script>
 
 {# ---- Landing-page micro-animations: count-up on scroll ---- #}
 <script>
