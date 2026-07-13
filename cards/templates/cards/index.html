@@ -479,32 +479,94 @@
 {% endif %}
 
 {# =====================  SHOWCASE  ===================== #}
-<section id="showcase" class="lp-section">
+<section id="showcase" class="lp-section lp-showcase-section">
     <div class="mc-container">
         <header class="lp-section__head">
-            <span class="mc-badge">{% trans "Showcase" %}</span>
+            <span class="mc-badge mc-badge--accent">
+                <span class="mc-badge__dot"></span>
+                {% trans "Showcase" %}
+            </span>
             <h2>{% trans "Cards that turn heads." %}</h2>
-            <p class="mc-text-muted">{% trans "Every card is fully responsive, dark/light aware, and animated for a memorable first impression." %}</p>
+            <p class="mc-text-muted">{% trans "Every theme comes fully animated, dark/light aware, and print-ready. Hover a card to see the shine." %}</p>
         </header>
+
         <div class="lp-showcase">
-            <div class="lp-showcase__card lp-showcase__card--aurora">
-                <div class="lp-showcase__avatar">RH</div>
-                <h3>Rakib Hasan</h3>
-                <p>Founder · Onset Labs</p>
-                <span class="mc-caption mc-text-accent">Aurora Dark</span>
-            </div>
-            <div class="lp-showcase__card lp-showcase__card--cyber">
-                <div class="lp-showcase__avatar">SM</div>
-                <h3>Sadia Momo</h3>
-                <p>Growth Lead · SaaS</p>
-                <span class="mc-caption" style="color:#F471FF;">Cyber Neon</span>
-            </div>
-            <div class="lp-showcase__card lp-showcase__card--slate">
-                <div class="lp-showcase__avatar">TA</div>
-                <h3>Tanvir Ahmed</h3>
-                <p>MD · Bengal Group</p>
-                <span class="mc-caption" style="color:#94A3B8;">Executive Slate</span>
-            </div>
+
+            <article class="lp-sc mc-tilt mc-fade-up" data-mc-tilt data-mc-tilt-max="7"
+                     style="--sc-bg: linear-gradient(155deg, #05060B 0%, #0B0D14 40%, #124D33 100%); --sc-accent: #7CFFB2;">
+                <span class="lp-sc__live"><span class="lp-sc__live-dot"></span>LIVE</span>
+                <div class="lp-sc__shine" aria-hidden="true"></div>
+                <header class="lp-sc__brand">
+                    <span class="lp-sc__brand-dot"></span>
+                    MY·Card
+                </header>
+                <div class="lp-sc__main">
+                    <div class="lp-sc__avatar">RH</div>
+                    <div class="lp-sc__identity">
+                        <h3 class="lp-sc__name">Rakib Hasan</h3>
+                        <p class="lp-sc__role">Founder · <span class="lp-sc__company">Onset Labs</span></p>
+                    </div>
+                </div>
+                <div class="lp-sc__chips">
+                    <span class="lp-sc__chip"><i data-lucide="mail"></i>hello@onset.co</span>
+                    <span class="lp-sc__chip"><i data-lucide="phone"></i>+880 17…</span>
+                </div>
+                <footer class="lp-sc__foot">
+                    <span class="lp-sc__theme-tag">AURORA DARK</span>
+                    <span class="lp-sc__qr" aria-hidden="true"><i data-lucide="qr-code"></i></span>
+                </footer>
+            </article>
+
+            <article class="lp-sc mc-tilt mc-fade-up mc-fade-up--d1" data-mc-tilt data-mc-tilt-max="7"
+                     style="--sc-bg: linear-gradient(155deg, #14002A 0%, #260040 45%, #4B1275 100%); --sc-accent: #F471FF;">
+                <span class="lp-sc__live"><span class="lp-sc__live-dot"></span>LIVE</span>
+                <div class="lp-sc__shine" aria-hidden="true"></div>
+                <header class="lp-sc__brand">
+                    <span class="lp-sc__brand-dot"></span>
+                    MY·Card
+                </header>
+                <div class="lp-sc__main">
+                    <div class="lp-sc__avatar">SM</div>
+                    <div class="lp-sc__identity">
+                        <h3 class="lp-sc__name">Sadia Momo</h3>
+                        <p class="lp-sc__role">Growth Lead · <span class="lp-sc__company">SaaS</span></p>
+                    </div>
+                </div>
+                <div class="lp-sc__chips">
+                    <span class="lp-sc__chip"><i data-lucide="mail"></i>sadia@sass.co</span>
+                    <span class="lp-sc__chip"><i data-lucide="linkedin"></i>momo</span>
+                </div>
+                <footer class="lp-sc__foot">
+                    <span class="lp-sc__theme-tag">CYBER NEON</span>
+                    <span class="lp-sc__qr" aria-hidden="true"><i data-lucide="qr-code"></i></span>
+                </footer>
+            </article>
+
+            <article class="lp-sc mc-tilt mc-fade-up mc-fade-up--d2" data-mc-tilt data-mc-tilt-max="7"
+                     style="--sc-bg: linear-gradient(155deg, #0B0F19 0%, #1E2432 55%, #2A3145 100%); --sc-accent: #C4B078;">
+                <span class="lp-sc__live"><span class="lp-sc__live-dot"></span>LIVE</span>
+                <div class="lp-sc__shine" aria-hidden="true"></div>
+                <header class="lp-sc__brand">
+                    <span class="lp-sc__brand-dot"></span>
+                    MY·Card
+                </header>
+                <div class="lp-sc__main">
+                    <div class="lp-sc__avatar">TA</div>
+                    <div class="lp-sc__identity">
+                        <h3 class="lp-sc__name">Tanvir Ahmed</h3>
+                        <p class="lp-sc__role">MD · <span class="lp-sc__company">Bengal Group</span></p>
+                    </div>
+                </div>
+                <div class="lp-sc__chips">
+                    <span class="lp-sc__chip"><i data-lucide="briefcase"></i>Executive</span>
+                    <span class="lp-sc__chip"><i data-lucide="map-pin"></i>Dhaka</span>
+                </div>
+                <footer class="lp-sc__foot">
+                    <span class="lp-sc__theme-tag">EXECUTIVE SLATE</span>
+                    <span class="lp-sc__qr" aria-hidden="true"><i data-lucide="qr-code"></i></span>
+                </footer>
+            </article>
+
         </div>
     </div>
 </section>
@@ -800,7 +862,6 @@
                     <li><a href="#features">{% trans "Features" %}</a></li>
                     <li><a href="#pricing">{% trans "Pricing" %}</a></li>
                     <li><a href="#showcase">{% trans "Showcase" %}</a></li>
-                    <li><a href="{% url 'documentation' %}">{% trans "Docs" %}</a></li>
                 </ul>
             </div>
             <div>
@@ -1052,44 +1113,208 @@
     letter-spacing: -0.05em;
 }
 
-/* ============  Showcase  ============ */
+/* ============  Showcase (real card previews) ============ */
+.lp-showcase-section { position: relative; }
 .lp-showcase {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--mc-s-4);
+    gap: var(--mc-s-5);
+    perspective: 1600px;
 }
-@media (min-width: 720px) {
+@media (min-width: 780px) {
     .lp-showcase { grid-template-columns: repeat(3, 1fr); }
 }
-.lp-showcase__card {
-    padding: var(--mc-s-6);
-    border-radius: var(--mc-r-xl);
-    border: 1px solid var(--mc-border-hi);
-    text-align: center;
-    color: var(--mc-text-hi);
+
+.lp-sc {
     position: relative;
+    padding: 22px 24px 18px;
+    border-radius: 22px;
+    background: var(--sc-bg);
+    color: #F2F4F8;
     overflow: hidden;
-    transition: transform var(--mc-dur-med) var(--mc-ease);
+    isolation: isolate;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow:
+        0 24px 60px -20px rgba(0, 0, 0, 0.55),
+        0 0 0 1px rgba(255, 255, 255, 0.06);
+    transition: transform var(--mc-dur-med) var(--mc-ease), box-shadow var(--mc-dur-med) var(--mc-ease);
 }
-.lp-showcase__card:hover { transform: translateY(-6px); }
-.lp-showcase__card--aurora { background: radial-gradient(circle at 50% 0%, rgba(124,255,178,0.25), var(--mc-bg-1) 70%); }
-.lp-showcase__card--cyber  { background: radial-gradient(circle at 50% 0%, rgba(244,113,255,0.28), var(--mc-bg-1) 70%); }
-.lp-showcase__card--slate  { background: linear-gradient(135deg, #1E2432 0%, #12141C 100%); }
-.lp-showcase__avatar {
-    width: 80px; height: 80px;
+.lp-sc:hover {
+    box-shadow:
+        0 32px 80px -12px rgba(0, 0, 0, 0.65),
+        0 0 0 1px var(--sc-accent);
+}
+.lp-sc::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 12% -10%, rgba(255,255,255,0.18), transparent 55%);
+    pointer-events: none;
+    z-index: 0;
+}
+.lp-sc > * { position: relative; z-index: 1; }
+
+/* Auto-sweeping shine — subtle, always on */
+.lp-sc__shine {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.14) 50%, transparent 65%);
+    background-size: 300% 100%;
+    animation: lp-sc-shine 6s ease-in-out infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: 0;
+}
+@keyframes lp-sc-shine {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) { .lp-sc__shine { animation: none; } }
+
+/* LIVE pulse chip */
+.lp-sc__live {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    border: 1px solid var(--sc-accent);
+    border-radius: 999px;
+    font-family: var(--mc-font-mono);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--sc-accent);
+    text-transform: uppercase;
+}
+.lp-sc__live-dot {
+    width: 6px; height: 6px;
     border-radius: 50%;
-    margin: 0 auto var(--mc-s-3);
-    background: var(--mc-bg-3);
+    background: var(--sc-accent);
+    box-shadow: 0 0 8px var(--sc-accent);
+    animation: lp-sc-blink 1.6s ease-in-out infinite;
+}
+@keyframes lp-sc-blink {
+    0%,100% { opacity: 1; }
+    50%     { opacity: 0.35; }
+}
+@media (prefers-reduced-motion: reduce) { .lp-sc__live-dot { animation: none; } }
+
+/* Brand row */
+.lp-sc__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mc-font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.9);
+}
+.lp-sc__brand-dot {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    background: var(--sc-accent);
+    box-shadow: 0 0 10px var(--sc-accent);
+}
+
+/* Main identity block */
+.lp-sc__main { display: flex; align-items: center; gap: 12px; }
+.lp-sc__avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid var(--sc-accent);
+    box-shadow: 0 0 12px var(--sc-accent);
     display: grid;
     place-items: center;
     font-family: var(--mc-font-display);
     font-weight: 700;
-    font-size: 1.4rem;
-    color: var(--mc-text-hi);
-    border: 3px solid var(--mc-accent);
+    font-size: 1.1rem;
+    color: #FFF;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
 }
-.lp-showcase__card h3 { margin-bottom: 0.2rem; }
-.lp-showcase__card p { color: var(--mc-text-md); font-size: var(--mc-fs-body-sm); margin: 0 0 var(--mc-s-4); }
+.lp-sc__identity { min-width: 0; }
+.lp-sc__name {
+    font-family: var(--mc-font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 3px;
+    letter-spacing: -0.01em;
+    color: #FFF;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.lp-sc__role {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.75);
+    line-height: 1.3;
+}
+.lp-sc__company { color: var(--sc-accent); font-weight: 600; }
+
+/* Contact chips */
+.lp-sc__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: auto;
+}
+.lp-sc__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.09);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+.lp-sc__chip i { width: 12px; height: 12px; color: var(--sc-accent); flex-shrink: 0; }
+
+/* Footer — theme tag + QR corner */
+.lp-sc__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.lp-sc__theme-tag {
+    font-family: var(--mc-font-mono);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--sc-accent);
+    text-transform: uppercase;
+    text-shadow: 0 0 12px color-mix(in srgb, var(--sc-accent) 40%, transparent);
+}
+.lp-sc__qr {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.94);
+    display: grid;
+    place-items: center;
+    color: #05060B;
+    box-shadow: 0 0 12px var(--sc-accent);
+}
+.lp-sc__qr i { width: 18px; height: 18px; }
 
 /* ============  Pricing (redesigned) ============ */
 .lp-pricing-section { position: relative; overflow: hidden; }
