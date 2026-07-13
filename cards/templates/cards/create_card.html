@@ -66,12 +66,16 @@
                     {% endif %}
 
                     {% if card %}
-                    {# ---- Section 0: Public URL — one-time customisation ---- #}
-                    <section class="ed-section ed-slug-section">
+                    {# ---- Section 0: Public URL — Pro-only, one-time customisation ---- #}
+                    <section class="ed-section ed-slug-section{% if user_is_free %} ed-slug-section--locked{% endif %}">
                         <header class="ed-section__head">
                             <span class="ed-step"><i data-lucide="link-2"></i></span>
                             <h2>{% trans "Public URL" %}</h2>
-                            {% if card.slug_customized %}
+                            {% if user_is_free %}
+                                <span class="ed-slug-lock" title="{% trans 'Pro feature — upgrade to unlock URL customisation' %}">
+                                    <i data-lucide="lock"></i> PRO
+                                </span>
+                            {% elif card.slug_customized %}
                                 <span class="ed-slug-lock" title="{% trans 'Already customised — cannot change again' %}">
                                     <i data-lucide="lock"></i> {% trans "Locked" %}
                                 </span>
@@ -84,7 +88,9 @@
 
                         <div class="ed-slug-body">
                             <p class="mc-text-muted ed-slug-lede">
-                                {% if card.slug_customized %}
+                                {% if user_is_free %}
+                                    {% trans "Your card lives at mycard.dupno.com/card/<your-username>. Custom URLs are a Pro feature — upgrade to pick your own memorable link." %}
+                                {% elif card.slug_customized %}
                                     {% trans "You've already used your one-time URL change. Contact support if you need it changed again." %}
                                 {% else %}
                                     {% trans "This is the shareable link people scan and open. Pick something short and memorable — you can only change it once, so choose carefully." %}
@@ -103,10 +109,15 @@
                                            pattern="[a-z0-9-]{3,60}"
                                            autocomplete="off"
                                            spellcheck="false"
-                                           {% if card.slug_customized %}readonly aria-readonly="true"{% endif %}>
+                                           {% if user_is_free or card.slug_customized %}readonly aria-readonly="true"{% endif %}>
                                 </div>
                                 {% if slug_error %}
                                     <span class="mc-field-error">{{ slug_error }}</span>
+                                {% elif user_is_free %}
+                                    <span class="mc-field-hint">
+                                        {% trans "Free plan uses your auto-generated username slug." %}
+                                        <a href="{% url 'pricing' %}?locked=custom_url" class="mc-text-accent">{% trans "Upgrade to unlock" %}</a>.
+                                    </span>
                                 {% elif not card.slug_customized %}
                                     <span class="mc-field-hint">
                                         {% trans "Lowercase letters, numbers, and hyphens only. 3–60 characters. Once saved, this link is locked." %}
@@ -114,7 +125,7 @@
                                 {% endif %}
                             </label>
 
-                            {% if not card.slug_customized %}
+                            {% if not user_is_free and not card.slug_customized %}
                                 <div class="ed-slug-preview" data-mc-slug-preview>
                                     <span>{% trans "Preview:" %}</span>
                                     <span class="mc-mono" data-mc-slug-preview-url>mycard.dupno.com/card/{{ card.slug }}</span>

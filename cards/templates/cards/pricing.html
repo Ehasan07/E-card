@@ -75,6 +75,8 @@
                             {% trans "Multiple cards are a Pro feature." %}
                         {% elif request.GET.locked == 'premium_themes' %}
                             {% trans "This theme is a Pro feature." %}
+                        {% elif request.GET.locked == 'custom_url' %}
+                            {% trans "Custom public URLs are a Pro feature." %}
                         {% elif request.GET.locked == 'analytics_range' %}
                             {% trans "Full 90-day analytics are a Pro feature." %}
                         {% else %}

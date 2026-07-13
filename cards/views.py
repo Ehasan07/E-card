@@ -582,12 +582,17 @@ def edit_card(request, slug):
         form = form_class(request.POST, request.FILES, instance=card)
 
         # One-time custom public URL. Applied before form.save() so the
-        # updated slug lands in the same DB write.
+        # updated slug lands in the same DB write. Free users are locked
+        # out entirely — they keep the auto-generated slug.
         requested_slug = (request.POST.get('custom_slug') or '').strip().lower()
         if requested_slug and requested_slug != card.slug:
-            slug_error = _apply_custom_slug(card, requested_slug)
-            if slug_error:
-                messages.error(request, slug_error)
+            if not is_premium(request.user):
+                slug_error = 'Custom public URLs are a Pro feature. Upgrade to unlock URL customisation.'
+                messages.info(request, slug_error)
+            else:
+                slug_error = _apply_custom_slug(card, requested_slug)
+                if slug_error:
+                    messages.error(request, slug_error)
 
         if slug_error is None and form.is_valid():
             previous_card_data = _card_initial_data(card)
