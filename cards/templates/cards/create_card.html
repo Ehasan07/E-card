@@ -71,10 +71,11 @@
                         <header class="ed-section__head">
                             <span class="ed-step"><i data-lucide="link-2"></i></span>
                             <h2>{% trans "Public URL" %}</h2>
+                            <span class="ed-theme__pro" title="{% trans 'Pro feature' %}">
+                                {% if user_is_free %}<i data-lucide="lock"></i> {% endif %}PRO
+                            </span>
                             {% if user_is_free %}
-                                <span class="ed-slug-lock" title="{% trans 'Pro feature — upgrade to unlock URL customisation' %}">
-                                    <i data-lucide="lock"></i> PRO
-                                </span>
+                                {# lock chip is enough for free users #}
                             {% elif card.slug_customized %}
                                 <span class="ed-slug-lock" title="{% trans 'Already customised — cannot change again' %}">
                                     <i data-lucide="lock"></i> {% trans "Locked" %}
@@ -390,7 +391,7 @@
                         </div>
                         <div class="ed-device__screen">
                             <div class="ed-device__statusbar">
-                                <span class="ed-device__time mc-mono">9:41</span>
+                                <span class="ed-device__time mc-mono" data-live-time>9:41</span>
                                 <div class="ed-device__icons">
                                     <i data-lucide="signal-high"></i>
                                     <i data-lucide="wifi"></i>
@@ -1702,6 +1703,25 @@
             });
         });
     }
+
+    /* iPhone frame — real-time clock in the preview status bar */
+    (function () {
+        var el = document.querySelector('[data-live-time]');
+        if (!el) return;
+        function pad(n) { return n < 10 ? '0' + n : '' + n; }
+        function paint() {
+            var d = new Date();
+            el.textContent = d.getHours() + ':' + pad(d.getMinutes());
+        }
+        paint();
+        // Align next tick to the next minute boundary, then tick every 60s.
+        var now = new Date();
+        var delay = (60 - now.getSeconds()) * 1000 - now.getMilliseconds();
+        setTimeout(function () {
+            paint();
+            setInterval(paint, 60000);
+        }, delay);
+    })();
 
     /* Custom public URL — live sanitisation + preview */
     var slugInput = document.getElementById('ed-custom-slug');
