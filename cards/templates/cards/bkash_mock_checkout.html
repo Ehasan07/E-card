@@ -1,36 +1,78 @@
 {% extends 'cards/base.html' %}
 {% load i18n %}
 
-{% block title %}bKash Payment (Sandbox) — MY-Card{% endblock %}
+{% block title %}bKash Payment{% endblock %}
 {% block page_icon %}smartphone{% endblock %}
 {% block page_label %}bKash{% endblock %}
 
 {% block content %}
 <div class="bk-page">
-    <div class="bk-page__scrim" aria-hidden="true"></div>
 
     <div class="bk-frame">
-        <header class="bk-frame__head">
-            <span class="bk-frame__logo">bKash <span>Payment</span></span>
-            <span class="bk-frame__badge">SANDBOX</span>
+
+        {# ==== TOP: brand + payment pill (white bar) ==== #}
+        <header class="bk-brand">
+            <span class="bk-brand__mark">
+                {# Inline bKash-style logo mark (recreated for the sandbox
+                   simulator — not the official trademark asset) #}
+                <svg viewBox="0 0 96 34" width="82" height="30" xmlns="http://www.w3.org/2000/svg" aria-label="bKash">
+                    <text x="0" y="26" font-family="Helvetica, Arial, sans-serif" font-weight="900" font-size="28" fill="#231F20" letter-spacing="-1">
+                        b<tspan fill="#E2136E">K</tspan>ash
+                    </text>
+                    <path d="M76 6 L88 15 L82 15 L82 26 L70 26 L70 15 L64 15 Z" fill="#E2136E"/>
+                </svg>
+            </span>
+            <span class="bk-brand__pill">
+                <span class="bk-brand__pill-arrow"></span>
+                Payment
+            </span>
         </header>
 
-        <section class="bk-summary">
-            <div class="bk-summary__row"><span>Merchant</span><strong>MY-Card by Dupno</strong></div>
-            <div class="bk-summary__row"><span>Invoice</span><strong>{{ payment.bkash_subscription_request_id|truncatechars:24 }}</strong></div>
-            <div class="bk-summary__row"><span>Amount</span><strong>৳ {{ payment.amount }}</strong></div>
-            <div class="bk-summary__row"><span>Cycle</span><strong>Calendar Year</strong></div>
+        {# ==== Merchant / invoice card ==== #}
+        <section class="bk-merchant">
+            <div class="bk-merchant__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="#8A8A8A"><path d="M7 4h10l1 4H6l1-4zm-2 6h14v10H5V10zm3 2v6h8v-6H8z"/></svg>
+            </div>
+            <div class="bk-merchant__body">
+                <div>Merchant: <strong>{{ payment.user.username|default:"MY-Card by Dupno" }}</strong></div>
+                <div>Invoice: <strong>{{ payment.bkash_subscription_request_id|truncatechars:22 }}</strong></div>
+            </div>
         </section>
 
-        {# ==== Step 1: Consent ==== #}
+        {# ==== Subscription facts (gray rows, real bKash layout) ==== #}
+        <section class="bk-facts">
+            <div class="bk-facts__row">
+                <span>Amount:</span><strong>৳ {{ payment.amount }}</strong>
+                <span>Start Date:</span><strong>{{ today_iso }}</strong>
+            </div>
+            <div class="bk-facts__row">
+                <span>End Date:</span><strong>{{ expiry_iso }}</strong>
+                <span>Cycle:</span><strong>Calendar Year</strong>
+            </div>
+            <div class="bk-facts__row">
+                <span>Next Date:</span><strong>{{ next_year_iso }}</strong>
+                <span>Next Amount:</span><strong>৳ {{ payment.amount }}</strong>
+            </div>
+            <div class="bk-facts__row">
+                <span>Total No. of Payments:</span><strong>2</strong>
+            </div>
+        </section>
+
+        {# ==== The pink action panel per real bKash flow ==== #}
         {% if step == 'consent' %}
-        <section class="bk-body">
-            <ul class="bk-terms">
-                <li>By continuing, ৳{{ payment.amount }} will be deducted from your bKash Account each year on this date.</li>
-                <li>You'll receive an SMS notification before each cycle deduction.</li>
-                <li>You may cancel this subscription anytime from your MY-Card dashboard.</li>
+        <section class="bk-panel bk-panel--consent">
+            <p class="bk-panel__note">
+                according to subscription details i.e. start date, end date, fixed
+                payment amount and payment cycle.
+            </p>
+            <ul class="bk-panel__list">
+                <li>You will receive a pre-notification SMS before payment date (except for daily subscription), you are requested to maintain sufficient balance on your bKash Account on such payment date.</li>
+                <li>If the auto payment is successful, you will receive payment success notification through SMS.</li>
+                <li>If the auto payment fails, you will be notified through SMS about such payment failure and bKash will retry the auto payment as per the agreed timeline between bKash and Merchant.</li>
+                <li>After cancellation of the subscription, you will be notified through SMS. You can re-subscribe as many times as you want.</li>
+                <li>Through this process merchant is not receiving any confidential information related to your bKash Account.</li>
             </ul>
-            <form method="post">
+            <form method="post" class="bk-panel__form">
                 {% csrf_token %}
                 <input type="hidden" name="step" value="consent">
                 <div class="bk-actions">
@@ -41,20 +83,19 @@
         </section>
         {% endif %}
 
-        {# ==== Step 2: Wallet ==== #}
         {% if step == 'wallet' %}
-        <section class="bk-body">
-            <label class="bk-label">Your bKash Account Number</label>
-            <form method="post" class="bk-form">
+        <section class="bk-panel">
+            <div class="bk-panel__label">Your bKash Account Number</div>
+            <form method="post" class="bk-panel__form">
                 {% csrf_token %}
                 <input type="hidden" name="step" value="wallet">
-                <input class="bk-input" type="tel" name="wallet" placeholder="01XXXXXXXXX" maxlength="11" required autofocus value="{{ wallet }}">
+                <input class="bk-input" type="tel" name="wallet" placeholder="e.g 01XXXXXXXXX" maxlength="11" required autofocus value="{{ wallet }}" inputmode="numeric">
                 {% if error %}<p class="bk-error">{{ error }}</p>{% endif %}
                 <details class="bk-hint">
                     <summary>Sandbox test wallets</summary>
                     <ul>
                         {% for w, p in sandbox_wallets.items %}
-                            <li><code>{{ w }}</code> PIN <code>{{ p }}</code></li>
+                            <li><code>{{ w }}</code> · PIN <code>{{ p }}</code></li>
                         {% endfor %}
                     </ul>
                 </details>
@@ -66,197 +107,317 @@
         </section>
         {% endif %}
 
-        {# ==== Step 3: OTP ==== #}
         {% if step == 'otp' %}
-        <section class="bk-body">
-            <label class="bk-label">Enter Verification Code (OTP)</label>
-            <form method="post" class="bk-form">
+        <section class="bk-panel">
+            <div class="bk-panel__label">Enter Verification Code</div>
+            <form method="post" class="bk-panel__form">
                 {% csrf_token %}
                 <input type="hidden" name="step" value="otp">
                 <input type="hidden" name="wallet" value="{{ wallet }}">
-                <input class="bk-input bk-input--code" type="text" name="otp" maxlength="6" required autofocus placeholder="123456" inputmode="numeric">
-                <p class="bk-caption">Sandbox OTP is always <code>{{ sandbox_otp }}</code>.</p>
+                <input class="bk-input bk-input--code" type="text" name="otp" maxlength="6" required autofocus placeholder="bKash Verification Code" inputmode="numeric">
+                <p class="bk-panel__resend">Didn't receive code? <a href="#" onclick="return false;">Resend Code</a></p>
+                <p class="bk-caption">Sandbox OTP is <code>{{ sandbox_otp }}</code></p>
                 {% if error %}<p class="bk-error">{{ error }}</p>{% endif %}
                 <div class="bk-actions">
-                    <a href="{{ request.path }}?step=wallet" class="bk-btn bk-btn--ghost">Back</a>
+                    <a href="{{ request.path }}?step=wallet" class="bk-btn bk-btn--ghost">Close</a>
                     <button type="submit" class="bk-btn bk-btn--primary">Next</button>
                 </div>
             </form>
         </section>
         {% endif %}
 
-        {# ==== Step 4: PIN ==== #}
         {% if step == 'pin' %}
-        <section class="bk-body">
-            <label class="bk-label">Enter bKash PIN</label>
-            <form method="post" class="bk-form">
+        <section class="bk-panel">
+            <div class="bk-panel__label">Enter PIN</div>
+            <form method="post" class="bk-panel__form">
                 {% csrf_token %}
                 <input type="hidden" name="step" value="pin">
                 <input type="hidden" name="wallet" value="{{ wallet }}">
-                <input class="bk-input bk-input--code" type="password" name="pin" maxlength="6" required autofocus placeholder="•••••" inputmode="numeric">
-                <p class="bk-caption">Wallet: <code>{{ wallet }}</code> — use the PIN listed for it.</p>
+                <input class="bk-input bk-input--code" type="password" name="pin" maxlength="6" required autofocus placeholder="bKash PIN" inputmode="numeric">
+                <p class="bk-caption">Wallet: <code>{{ wallet }}</code> — enter the matching PIN.</p>
                 {% if error %}<p class="bk-error">{{ error }}</p>{% endif %}
                 <div class="bk-actions">
-                    <a href="{{ request.path }}?step=otp&wallet={{ wallet }}" class="bk-btn bk-btn--ghost">Back</a>
-                    <button type="submit" class="bk-btn bk-btn--primary">Confirm Payment</button>
+                    <a href="{{ request.path }}?step=otp&wallet={{ wallet }}" class="bk-btn bk-btn--ghost">Close</a>
+                    <button type="submit" class="bk-btn bk-btn--primary">Next</button>
                 </div>
             </form>
         </section>
         {% endif %}
 
-        <footer class="bk-frame__foot">
-            <span>📞 16247</span>
-            <span>© 2026 All rights reserved by bKash</span>
+        {# ==== Footer ==== #}
+        <footer class="bk-foot">
+            <span class="bk-foot__phone">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="#E2136E"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.03-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.58l2.2-2.21c.28-.27.36-.66.25-1.01C8.7 6.45 8.5 5.25 8.5 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1zM12 3v10l3-3h6V3h-9z"/></svg>
+                16247
+            </span>
+            <span class="bk-foot__copy">&copy; 2026 All rights reserved by <strong>bKash</strong></span>
         </footer>
+
     </div>
+
+    {% if step != 'consent' %}
+        <div class="bk-frame__note">
+            <span class="bk-frame__note-badge">SANDBOX</span>
+            Sandbox simulator — no real payment is processed.
+        </div>
+    {% endif %}
 </div>
 
 <style>
+/* Kill our layout wrappers just for this modal-style page */
+.mc-page-bar, .mc-lang-pill { display: none !important; }
+body { background: #FCE7F3; }
+
 .bk-page {
     min-height: 100vh;
-    background: linear-gradient(180deg, #FCE7F3 0%, #F9A8D4 100%);
-    display: grid;
-    place-items: center;
-    padding: 1.5rem;
-    position: relative;
+    background: linear-gradient(160deg, #FCE7F3 0%, #FBB6CE 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #231F20;
 }
-.bk-page__scrim { display: none; }
 
 .bk-frame {
-    max-width: 400px;
+    max-width: 380px;
     width: 100%;
-    background: #fff;
-    border-radius: 14px;
+    background: #FFFFFF;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 24px 60px -12px rgba(157, 23, 77, 0.35);
-    color: #1F2937;
+    box-shadow: 0 22px 60px -14px rgba(157, 23, 77, 0.4);
 }
-.bk-frame__head {
-    background: #fff;
-    padding: 1rem 1.25rem;
+
+/* ==== Brand bar ==== */
+.bk-brand {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid #F472B6;
-}
-.bk-frame__logo {
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: #E11D74;
-    font-family: sans-serif;
-}
-.bk-frame__logo span { background: #E11D74; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; margin-left: 4px; }
-.bk-frame__badge {
-    font-family: ui-monospace, monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.16em;
-    padding: 3px 8px;
-    background: #FCE7F3;
-    color: #9F1239;
-    border-radius: 999px;
-    border: 1px dashed #E11D74;
-}
-
-.bk-summary {
-    background: #F9FAFB;
-    padding: 1rem 1.25rem;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 16px 12px;
+    background: #fff;
     border-bottom: 1px solid #F3F4F6;
 }
-.bk-summary__row {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.85rem;
-    padding: 5px 0;
-    color: #4B5563;
-}
-.bk-summary__row strong { color: #111827; }
-
-.bk-body {
-    background: linear-gradient(180deg, #E11D74 0%, #C11D6C 100%);
+.bk-brand__mark svg { display: block; }
+.bk-brand__pill {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 14px 4px 24px;
+    background: #E2136E;
     color: #fff;
-    padding: 1.5rem 1.25rem;
+    font-weight: 800;
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    border-radius: 4px;
+}
+.bk-brand__pill-arrow {
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0; height: 0;
+    border-left: 8px solid #fff;
+    border-top: 6px solid transparent;
+    border-bottom: 6px solid transparent;
 }
 
-.bk-terms { margin: 0 0 1rem; padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.5; }
-.bk-terms li { margin-bottom: 6px; }
+/* ==== Merchant row ==== */
+.bk-merchant {
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px;
+    background: #FAFAFA;
+    border-bottom: 1px solid #F3F4F6;
+    font-size: 0.78rem;
+    color: #4B5563;
+    align-items: center;
+}
+.bk-merchant__icon {
+    width: 30px; height: 30px;
+    background: #EDEDED;
+    border-radius: 4px;
+    display: grid; place-items: center;
+    flex-shrink: 0;
+}
+.bk-merchant__body strong { color: #231F20; font-weight: 700; }
+.bk-merchant__body > div + div { margin-top: 3px; }
 
-.bk-label { display: block; font-size: 0.8rem; margin-bottom: 0.5rem; color: rgba(255,255,255,0.85); }
-.bk-form { margin: 0; }
+/* ==== Facts grid (Amount / Start Date etc.) ==== */
+.bk-facts {
+    padding: 12px 16px 14px;
+    background: #fff;
+    color: #4B5563;
+    font-size: 0.75rem;
+    line-height: 1.7;
+    border-bottom: 1px solid #F3F4F6;
+}
+.bk-facts__row {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    gap: 0 8px;
+}
+.bk-facts__row strong { color: #231F20; font-weight: 700; }
+
+/* ==== Pink action panel ==== */
+.bk-panel {
+    background: #E2136E;
+    color: #fff;
+    padding: 18px 18px 6px;
+}
+.bk-panel__label {
+    font-size: 0.82rem;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #fff;
+}
+.bk-panel__note {
+    color: #FCE7F3;
+    font-size: 0.75rem;
+    margin: 0 0 10px;
+    text-align: left;
+}
+.bk-panel__list {
+    margin: 0 0 12px;
+    padding-left: 1rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: #fff;
+}
+.bk-panel__list li { margin-bottom: 6px; }
+
+.bk-panel__form { margin: 0; }
+.bk-panel__resend {
+    text-align: center;
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.85);
+    margin: -6px 0 8px;
+}
+.bk-panel__resend a { color: #fff; text-decoration: underline; font-weight: 700; }
+
 .bk-input {
     width: 100%;
-    padding: 0.85rem 1rem;
-    border-radius: 6px;
-    border: 1px solid rgba(255,255,255,0.3);
-    background: rgba(255,255,255,0.15);
+    padding: 12px 14px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.4);
+    background: rgba(255,255,255,0.12);
     color: #fff;
-    font-size: 1rem;
-    font-family: ui-monospace, monospace;
+    font-size: 0.95rem;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
     outline: none;
-    margin-bottom: 0.75rem;
+    margin-bottom: 10px;
+    box-sizing: border-box;
 }
 .bk-input::placeholder { color: rgba(255,255,255,0.55); }
-.bk-input:focus { border-color: #fff; background: rgba(255,255,255,0.25); }
-.bk-input--code { text-align: center; letter-spacing: 0.4em; font-size: 1.25rem; }
+.bk-input:focus { border-color: #fff; background: rgba(255,255,255,0.2); }
+.bk-input--code { text-align: center; letter-spacing: 0.35em; font-size: 1.1rem; }
 
 .bk-error {
-    background: rgba(0,0,0,0.25);
+    background: rgba(0,0,0,0.28);
     padding: 8px 12px;
     border-radius: 4px;
-    font-size: 0.85rem;
-    margin: 0 0 0.75rem;
+    font-size: 0.78rem;
+    margin: 0 0 10px;
+    color: #fff;
 }
-.bk-caption { font-size: 0.72rem; margin: -0.25rem 0 0.75rem; opacity: 0.85; }
-.bk-caption code, .bk-hint code { background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 3px; font-size: 0.72rem; }
+.bk-caption {
+    font-size: 0.7rem;
+    margin: -4px 0 8px;
+    color: rgba(255,255,255,0.85);
+    text-align: center;
+}
+.bk-caption code, .bk-hint code {
+    background: rgba(255,255,255,0.25);
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-family: ui-monospace, monospace;
+    font-size: 0.75rem;
+    color: #fff;
+}
 .bk-hint {
-    background: rgba(0,0,0,0.2);
+    background: rgba(0,0,0,0.18);
     border-radius: 6px;
     padding: 8px 12px;
-    font-size: 0.75rem;
-    margin-bottom: 0.75rem;
-    cursor: pointer;
+    font-size: 0.72rem;
+    margin-bottom: 10px;
+    color: #fff;
 }
-.bk-hint summary { cursor: pointer; font-weight: 600; }
-.bk-hint ul { margin: 8px 0 0; padding-left: 1.2rem; }
-.bk-hint li { margin-bottom: 4px; }
+.bk-hint summary { cursor: pointer; font-weight: 700; }
+.bk-hint ul { margin: 6px 0 0; padding-left: 1rem; list-style: none; }
+.bk-hint li { margin-bottom: 3px; }
 
 .bk-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin: 12px -18px -6px;
+    background: #fff;
 }
 .bk-btn {
-    flex: 1;
-    padding: 0.75rem 1rem;
-    border-radius: 999px;
+    padding: 14px 10px;
     border: none;
     font-weight: 700;
+    font-size: 0.9rem;
     cursor: pointer;
     text-align: center;
     text-decoration: none;
-    font-size: 0.9rem;
-    transition: transform 100ms ease;
+    transition: opacity 0.15s ease;
+    font-family: inherit;
 }
-.bk-btn:hover { transform: translateY(-1px); }
+.bk-btn:hover { opacity: 0.85; }
 .bk-btn--ghost {
-    background: rgba(0,0,0,0.25);
-    color: #fff;
+    background: #E5E5E5;
+    color: #6B7280;
 }
 .bk-btn--primary {
-    background: #fff;
-    color: #C11D6C;
+    background: #E2136E;
+    color: #fff;
 }
 
-.bk-frame__foot {
-    background: #fff;
-    padding: 0.75rem 1.25rem;
+/* ==== Footer ==== */
+.bk-foot {
     display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
-    color: #9CA3AF;
-    border-top: 1px solid #F3F4F6;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 16px 14px;
+    background: #fff;
+    font-size: 0.72rem;
+    color: #6B7280;
 }
+.bk-foot__phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 700;
+    color: #E2136E;
+}
+.bk-foot__copy strong { color: #E2136E; font-weight: 900; }
 
-/* Hide our global page-bar / lang-pill overlays behind this modal-style page */
-.mc-page-bar, .mc-lang-pill { display: none !important; }
+/* Small sandbox chip outside the frame — clearly a simulator */
+.bk-frame__note {
+    margin-top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(6px);
+    color: #9F1239;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    border: 1px dashed #E2136E;
+}
+.bk-frame__note-badge {
+    background: #E2136E;
+    color: #fff;
+    font-family: ui-monospace, monospace;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    font-size: 0.6rem;
+}
 </style>
 {% endblock %}

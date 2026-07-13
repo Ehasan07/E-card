@@ -2684,6 +2684,8 @@ def bkash_mock_checkout(request, request_id):
     step = request.GET.get('step') or 'consent'
     wallet = request.GET.get('wallet') or ''
 
+    from datetime import date, timedelta
+    today = date.today()
     return render(request, 'cards/bkash_mock_checkout.html', {
         'payment': payment,
         'step': step,
@@ -2691,6 +2693,9 @@ def bkash_mock_checkout(request, request_id):
         'error': error,
         'sandbox_wallets': _BKASH_SANDBOX_WALLETS,
         'sandbox_otp': _BKASH_SANDBOX_OTP,
+        'today_iso': today.strftime('%Y-%m-%d'),
+        'next_year_iso': (today + timedelta(days=365)).strftime('%Y-%m-%d'),
+        'expiry_iso': (today + timedelta(days=730)).strftime('%Y-%m-%d'),
     })
 
 
