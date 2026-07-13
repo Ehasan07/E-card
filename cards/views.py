@@ -2525,6 +2525,34 @@ def _bkash_ready() -> bool:
     return bool(getattr(settings, 'FEATURE_BKASH', False))
 
 
+def _bkash_mock_mode() -> bool:
+    """Mock mode kicks in when either BKASH_MODE=mock is set explicitly
+    or the sandbox credentials haven't been provisioned yet. It lets us
+    exercise the full customer journey (redirect, wallet, OTP, PIN,
+    return, webhook) without a live bKash API — the app pretends to be
+    bKash internally."""
+    mode = (getattr(settings, 'BKASH_MODE', '') or '').lower()
+    if mode == 'mock':
+        return True
+    if mode == 'live':
+        return False
+    return not bool(
+        getattr(settings, 'BKASH_APP_KEY', '')
+        and getattr(settings, 'BKASH_MERCHANT_SHORT_CODE', '')
+    )
+
+
+_BKASH_SANDBOX_WALLETS = {
+    '01770618575': '12121',
+    '01929918378': '12121',
+    '01770618576': '21212',
+    '01877722345': '13131',
+    '01619777282': '21212',
+    '01619777283': '13131',
+}
+_BKASH_SANDBOX_OTP = '123456'
+
+
 @login_required
 @require_POST
 def bkash_initiate(request):
@@ -2533,14 +2561,6 @@ def bkash_initiate(request):
     POST body fields:
       - plan: 'pro' | 'free_renewal' | 'reactivate:<card_slug>'
     """
-    if not _bkash_ready():
-        messages.info(
-            request,
-            'bKash payments are launching very soon. Meanwhile, submit a '
-            'reactivation request and the admin will approve it manually.',
-        )
-        return redirect('pricing')
-
     from .gateways import bkash
     from datetime import date
 
@@ -2565,6 +2585,14 @@ def bkash_initiate(request):
         raw_payload={'plan': plan, 'yearly': yearly},
     )
 
+    # --- MOCK MODE ---
+    # No live bKash credentials on file → send the user to our own
+    # simulator page that behaves like bKash's consent screen. Uses
+    # the six sandbox wallet numbers + OTP '123456'.
+    if _bkash_mock_mode():
+        return redirect('bkash_mock_checkout', request_id=subscription_request_id)
+
+    # --- LIVE / SANDBOX MODE ---
     try:
         client = bkash.BkashClient()
         result = client.create_subscription(
@@ -2590,6 +2618,80 @@ def bkash_initiate(request):
     return redirect(redirect_url)
 
 
+@login_required
+def bkash_mock_checkout(request, request_id):
+    """Local simulator of the bKash secure payment page.
+
+    Behaves like the real bKash intent screen: shows subscription
+    details, prompts for wallet / OTP / PIN using the sandbox test
+    values, and on success grants the subscription + redirects to the
+    return page just like production would.
+    """
+    payment = get_object_or_404(
+        Payment,
+        bkash_subscription_request_id=request_id,
+        user=request.user,
+    )
+
+    error = None
+
+    if request.method == 'POST':
+        step = request.POST.get('step') or ''
+        wallet = (request.POST.get('wallet') or '').strip()
+        otp    = (request.POST.get('otp') or '').strip()
+        pin    = (request.POST.get('pin') or '').strip()
+
+        if step == 'consent':
+            # Nothing to validate — just move to wallet entry via GET
+            return redirect(request.path + '?step=wallet')
+
+        if step == 'wallet':
+            if wallet not in _BKASH_SANDBOX_WALLETS:
+                error = 'Unknown wallet. Try one of the sandbox test numbers.'
+            else:
+                return redirect(f'{request.path}?step=otp&wallet={wallet}')
+
+        if step == 'otp':
+            if otp != _BKASH_SANDBOX_OTP:
+                error = 'Invalid OTP. The sandbox OTP is 123456.'
+            else:
+                return redirect(f'{request.path}?step=pin&wallet={wallet}')
+
+        if step == 'pin':
+            expected_pin = _BKASH_SANDBOX_WALLETS.get(wallet)
+            if not expected_pin or pin != expected_pin:
+                error = 'Incorrect PIN for that wallet.'
+            else:
+                # Success: mark payment succeeded + grant subscription
+                payment.bkash_subscription_id = f'MOCK-{payment.pk}'
+                payment.bkash_payment_id = f'MOCKPAY-{payment.pk}'
+                payment.bkash_trx_id = f'MOCKTRX-{payment.pk}'
+                payment.bkash_payer_msisdn = wallet
+                payment.status = Payment.STATUS_SUCCESS
+                payment.raw_payload = {
+                    **(payment.raw_payload or {}),
+                    'mock': True,
+                    'mock_wallet': wallet,
+                }
+                payment.save()
+                _grant_subscription(payment)
+                return redirect(
+                    f"{reverse('bkash_return')}?subscriptionRequestId={payment.bkash_subscription_request_id}&status=SUCCEEDED"
+                )
+
+    step = request.GET.get('step') or 'consent'
+    wallet = request.GET.get('wallet') or ''
+
+    return render(request, 'cards/bkash_mock_checkout.html', {
+        'payment': payment,
+        'step': step,
+        'wallet': wallet,
+        'error': error,
+        'sandbox_wallets': _BKASH_SANDBOX_WALLETS,
+        'sandbox_otp': _BKASH_SANDBOX_OTP,
+    })
+
+
 def bkash_return(request):
     """Landing page after bKash sends the customer back."""
     subscription_request_id = (request.GET.get('subscriptionRequestId') or '').strip()
@@ -2607,10 +2709,14 @@ def bkash_return(request):
         'bkash_ready': _bkash_ready(),
     }
 
-    # If credentials are live, query bKash for the authoritative status
-    # (mandatory per Note-3 of the guide — merchant must not rely solely
-    # on the webhook arriving on time).
-    if _bkash_ready() and payment:
+    # If mock mode is active, `status` comes from the mock checkout query
+    # string. Otherwise (real sandbox / live), call the mandatory Query
+    # API — bKash Note-3 says the merchant must not rely solely on the
+    # webhook arriving on time.
+    if _bkash_mock_mode():
+        context['status'] = (request.GET.get('status') or 'SUCCEEDED').upper()
+        context['is_mock'] = True
+    elif _bkash_ready() and payment:
         from .gateways import bkash
         try:
             info = bkash.BkashClient().query_by_request_id(subscription_request_id)

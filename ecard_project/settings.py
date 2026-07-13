@@ -197,7 +197,7 @@ CARD_GRACE_PERIOD_DAYS    = config('CARD_GRACE_PERIOD_DAYS', default=7, cast=int
 # ---- bKash Recurring Payment Gateway ----
 # Sandbox: https://gateway.sbrecurring.pay.bka.sh
 # Live:    filled in after bKash provisions production credentials.
-BKASH_MODE                = config('BKASH_MODE', default='sandbox')  # 'sandbox' | 'live'
+BKASH_MODE                = config('BKASH_MODE', default='sandbox')  # 'mock' | 'sandbox' | 'live'
 BKASH_BASE_URL            = config('BKASH_BASE_URL', default='https://gateway.sbrecurring.pay.bka.sh')
 BKASH_APP_KEY             = config('BKASH_APP_KEY', default='')
 BKASH_MERCHANT_SHORT_CODE = config('BKASH_MERCHANT_SHORT_CODE', default='')
@@ -210,7 +210,7 @@ BKASH_REDIRECT_URL        = config('BKASH_REDIRECT_URL', default='https://mycard
 BKASH_WEBHOOK_URL         = config('BKASH_WEBHOOK_URL', default='https://mycard.dupno.com/pay/bkash/webhook/')
 # Feature flag: True when all required credentials are filled, so views
 # can hide the bKash CTA until integration is live-ready.
-FEATURE_BKASH             = bool(BKASH_APP_KEY and BKASH_MERCHANT_SHORT_CODE)
+FEATURE_BKASH             = bool(BKASH_APP_KEY and BKASH_MERCHANT_SHORT_CODE) or BKASH_MODE == 'mock'
 
 
 # ZeptoMail — transactional email for OTP password reset

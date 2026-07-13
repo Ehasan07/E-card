@@ -114,9 +114,11 @@
                     {% elif plan.slug == 'team' %}
                         <button type="button" class="mc-btn mc-btn--outline mc-btn--block" data-team-soon>{{ plan.cta }}</button>
                     {% elif request.user.is_authenticated %}
-                        <form method="post" action="{% url 'pricing_checkout' plan.slug %}">
+                        <form method="post" action="{% url 'bkash_initiate' %}">
                             {% csrf_token %}
+                            <input type="hidden" name="plan" value="{{ plan.slug }}">
                             <button type="submit" class="mc-btn mc-btn--{% if plan.featured %}primary{% else %}outline{% endif %} mc-btn--block">
+                                <i data-lucide="smartphone"></i>
                                 {{ plan.cta }}
                             </button>
                         </form>

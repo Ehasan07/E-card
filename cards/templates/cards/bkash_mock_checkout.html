@@ -1,0 +1,262 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}bKash Payment (Sandbox) — MY-Card{% endblock %}
+{% block page_icon %}smartphone{% endblock %}
+{% block page_label %}bKash{% endblock %}
+
+{% block content %}
+<div class="bk-page">
+    <div class="bk-page__scrim" aria-hidden="true"></div>
+
+    <div class="bk-frame">
+        <header class="bk-frame__head">
+            <span class="bk-frame__logo">bKash <span>Payment</span></span>
+            <span class="bk-frame__badge">SANDBOX</span>
+        </header>
+
+        <section class="bk-summary">
+            <div class="bk-summary__row"><span>Merchant</span><strong>MY-Card by Dupno</strong></div>
+            <div class="bk-summary__row"><span>Invoice</span><strong>{{ payment.bkash_subscription_request_id|truncatechars:24 }}</strong></div>
+            <div class="bk-summary__row"><span>Amount</span><strong>৳ {{ payment.amount }}</strong></div>
+            <div class="bk-summary__row"><span>Cycle</span><strong>Calendar Year</strong></div>
+        </section>
+
+        {# ==== Step 1: Consent ==== #}
+        {% if step == 'consent' %}
+        <section class="bk-body">
+            <ul class="bk-terms">
+                <li>By continuing, ৳{{ payment.amount }} will be deducted from your bKash Account each year on this date.</li>
+                <li>You'll receive an SMS notification before each cycle deduction.</li>
+                <li>You may cancel this subscription anytime from your MY-Card dashboard.</li>
+            </ul>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="consent">
+                <div class="bk-actions">
+                    <a href="{% url 'pricing' %}" class="bk-btn bk-btn--ghost">Close</a>
+                    <button type="submit" class="bk-btn bk-btn--primary">I Agree</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        {# ==== Step 2: Wallet ==== #}
+        {% if step == 'wallet' %}
+        <section class="bk-body">
+            <label class="bk-label">Your bKash Account Number</label>
+            <form method="post" class="bk-form">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="wallet">
+                <input class="bk-input" type="tel" name="wallet" placeholder="01XXXXXXXXX" maxlength="11" required autofocus value="{{ wallet }}">
+                {% if error %}<p class="bk-error">{{ error }}</p>{% endif %}
+                <details class="bk-hint">
+                    <summary>Sandbox test wallets</summary>
+                    <ul>
+                        {% for w, p in sandbox_wallets.items %}
+                            <li><code>{{ w }}</code> PIN <code>{{ p }}</code></li>
+                        {% endfor %}
+                    </ul>
+                </details>
+                <div class="bk-actions">
+                    <a href="{% url 'pricing' %}" class="bk-btn bk-btn--ghost">Close</a>
+                    <button type="submit" class="bk-btn bk-btn--primary">Next</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        {# ==== Step 3: OTP ==== #}
+        {% if step == 'otp' %}
+        <section class="bk-body">
+            <label class="bk-label">Enter Verification Code (OTP)</label>
+            <form method="post" class="bk-form">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="otp">
+                <input type="hidden" name="wallet" value="{{ wallet }}">
+                <input class="bk-input bk-input--code" type="text" name="otp" maxlength="6" required autofocus placeholder="123456" inputmode="numeric">
+                <p class="bk-caption">Sandbox OTP is always <code>{{ sandbox_otp }}</code>.</p>
+                {% if error %}<p class="bk-error">{{ error }}</p>{% endif %}
+                <div class="bk-actions">
+                    <a href="{{ request.path }}?step=wallet" class="bk-btn bk-btn--ghost">Back</a>
+                    <button type="submit" class="bk-btn bk-btn--primary">Next</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        {# ==== Step 4: PIN ==== #}
+        {% if step == 'pin' %}
+        <section class="bk-body">
+            <label class="bk-label">Enter bKash PIN</label>
+            <form method="post" class="bk-form">
+                {% csrf_token %}
+                <input type="hidden" name="step" value="pin">
+                <input type="hidden" name="wallet" value="{{ wallet }}">
+                <input class="bk-input bk-input--code" type="password" name="pin" maxlength="6" required autofocus placeholder="•••••" inputmode="numeric">
+                <p class="bk-caption">Wallet: <code>{{ wallet }}</code> — use the PIN listed for it.</p>
+                {% if error %}<p class="bk-error">{{ error }}</p>{% endif %}
+                <div class="bk-actions">
+                    <a href="{{ request.path }}?step=otp&wallet={{ wallet }}" class="bk-btn bk-btn--ghost">Back</a>
+                    <button type="submit" class="bk-btn bk-btn--primary">Confirm Payment</button>
+                </div>
+            </form>
+        </section>
+        {% endif %}
+
+        <footer class="bk-frame__foot">
+            <span>📞 16247</span>
+            <span>© 2026 All rights reserved by bKash</span>
+        </footer>
+    </div>
+</div>
+
+<style>
+.bk-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #FCE7F3 0%, #F9A8D4 100%);
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    position: relative;
+}
+.bk-page__scrim { display: none; }
+
+.bk-frame {
+    max-width: 400px;
+    width: 100%;
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px -12px rgba(157, 23, 77, 0.35);
+    color: #1F2937;
+}
+.bk-frame__head {
+    background: #fff;
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #F472B6;
+}
+.bk-frame__logo {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: #E11D74;
+    font-family: sans-serif;
+}
+.bk-frame__logo span { background: #E11D74; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 0.85rem; margin-left: 4px; }
+.bk-frame__badge {
+    font-family: ui-monospace, monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
+    padding: 3px 8px;
+    background: #FCE7F3;
+    color: #9F1239;
+    border-radius: 999px;
+    border: 1px dashed #E11D74;
+}
+
+.bk-summary {
+    background: #F9FAFB;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid #F3F4F6;
+}
+.bk-summary__row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    padding: 5px 0;
+    color: #4B5563;
+}
+.bk-summary__row strong { color: #111827; }
+
+.bk-body {
+    background: linear-gradient(180deg, #E11D74 0%, #C11D6C 100%);
+    color: #fff;
+    padding: 1.5rem 1.25rem;
+}
+
+.bk-terms { margin: 0 0 1rem; padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.5; }
+.bk-terms li { margin-bottom: 6px; }
+
+.bk-label { display: block; font-size: 0.8rem; margin-bottom: 0.5rem; color: rgba(255,255,255,0.85); }
+.bk-form { margin: 0; }
+.bk-input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 1rem;
+    font-family: ui-monospace, monospace;
+    outline: none;
+    margin-bottom: 0.75rem;
+}
+.bk-input::placeholder { color: rgba(255,255,255,0.55); }
+.bk-input:focus { border-color: #fff; background: rgba(255,255,255,0.25); }
+.bk-input--code { text-align: center; letter-spacing: 0.4em; font-size: 1.25rem; }
+
+.bk-error {
+    background: rgba(0,0,0,0.25);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin: 0 0 0.75rem;
+}
+.bk-caption { font-size: 0.72rem; margin: -0.25rem 0 0.75rem; opacity: 0.85; }
+.bk-caption code, .bk-hint code { background: rgba(255,255,255,0.2); padding: 1px 6px; border-radius: 3px; font-size: 0.72rem; }
+.bk-hint {
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+    cursor: pointer;
+}
+.bk-hint summary { cursor: pointer; font-weight: 600; }
+.bk-hint ul { margin: 8px 0 0; padding-left: 1.2rem; }
+.bk-hint li { margin-bottom: 4px; }
+
+.bk-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+.bk-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 999px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: transform 100ms ease;
+}
+.bk-btn:hover { transform: translateY(-1px); }
+.bk-btn--ghost {
+    background: rgba(0,0,0,0.25);
+    color: #fff;
+}
+.bk-btn--primary {
+    background: #fff;
+    color: #C11D6C;
+}
+
+.bk-frame__foot {
+    background: #fff;
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #9CA3AF;
+    border-top: 1px solid #F3F4F6;
+}
+
+/* Hide our global page-bar / lang-pill overlays behind this modal-style page */
+.mc-page-bar, .mc-lang-pill { display: none !important; }
+</style>
+{% endblock %}

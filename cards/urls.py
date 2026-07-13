@@ -31,6 +31,7 @@ urlpatterns = [
     path('pay/bkash/return/', views.bkash_return, name='bkash_return'),
     path('pay/bkash/webhook/', views.bkash_webhook, name='bkash_webhook'),
     path('pay/bkash/journey/', views.bkash_journey_mockup, name='bkash_journey_mockup'),
+    path('pay/bkash/mock/checkout/<str:request_id>/', views.bkash_mock_checkout, name='bkash_mock_checkout'),
     path('api/ai/bio/', views.ai_bio, name='ai_bio'),
     path('my-admin/login/', views.admin_login_view, name='admin_login'),
     path('my-admin/dashboard/', views.admin_dashboard, name='admin_dashboard'),
