@@ -1,0 +1,141 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Billing & receipts — MY-Card{% endblock %}
+{% block page_icon %}receipt{% endblock %}
+{% block page_label %}Billing{% endblock %}
+
+{% block content %}
+<div class="dash-shell" data-dash-shell>
+    {% include 'cards/_sidebar.html' with active='billing' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="{% trans 'Open menu' %}">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'index' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark"></span>
+                MY-Card
+            </a>
+            <span></span>
+        </header>
+
+<div class="pay-page">
+    <div class="mc-container pay-container">
+        <header class="pay-hero">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    Billing
+                </span>
+                <h1>Your payments &amp; receipts</h1>
+                <p class="mc-text-muted">
+                    Every renewal on this account. Click any invoice to open a printable receipt.
+                </p>
+            </div>
+            {% if paid_until %}
+            <div class="pay-hero__status">
+                <div class="pay-hero__status-label">Subscription active until</div>
+                <div class="pay-hero__status-date">{{ paid_until|date:"F j, Y" }}</div>
+                <div class="pay-hero__status-note">All of your cards stay online. Next auto-renewal on this date.</div>
+            </div>
+            {% else %}
+            <div class="pay-hero__status pay-hero__status--muted">
+                <div class="pay-hero__status-label">Trial in progress</div>
+                <div class="pay-hero__status-note">You're on the free 12-month trial. Renewals will appear here.</div>
+            </div>
+            {% endif %}
+        </header>
+
+        <section class="pay-table-card">
+            <div class="pay-table-wrap">
+                <table class="pay-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>Date</th>
+                            <th>Gateway</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Wallet / txn</th>
+                            <th style="text-align:right;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in payments %}
+                        <tr>
+                            <td><code>{{ row.invoice }}</code></td>
+                            <td>{{ row.obj.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ row.obj.get_gateway_display }}</td>
+                            <td><strong>৳ {{ row.obj.amount }}</strong></td>
+                            <td>
+                                {% if row.obj.status == 'success' %}
+                                    <span class="pay-pill pay-pill--ok">Success</span>
+                                {% elif row.obj.status == 'pending' %}
+                                    <span class="pay-pill pay-pill--warn">Pending</span>
+                                {% elif row.obj.status == 'failed' %}
+                                    <span class="pay-pill pay-pill--danger">Failed</span>
+                                {% else %}
+                                    <span class="pay-pill">{{ row.obj.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.obj.bkash_payer_msisdn %}<div>{{ row.obj.bkash_payer_msisdn }}</div>{% endif %}
+                                {% if row.obj.bkash_trx_id %}<div class="pay-mono">{{ row.obj.bkash_trx_id }}</div>{% endif %}
+                            </td>
+                            <td style="text-align:right;">
+                                <a href="{% url 'payment_receipt' row.obj.pk %}" class="pay-btn pay-btn--ghost">
+                                    <i data-lucide="receipt"></i> Receipt
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="7" class="pay-empty">No payments yet — your renewals and upgrades will show up here.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>
+
+    </main>
+</div>
+
+<style>
+.pay-page  { min-height:calc(100vh - 60px); padding:2rem 1rem 3rem; }
+.pay-container { max-width:1080px; margin:0 auto; }
+.pay-hero { display:flex; flex-wrap:wrap; gap:1.5rem; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; }
+.pay-hero h1 { margin:.35rem 0 .35rem; font-size:1.75rem; }
+.pay-hero__status {
+    background: linear-gradient(140deg, #059669 0%, #10b981 100%);
+    color:#fff; padding:1rem 1.25rem; border-radius:14px; min-width:260px;
+    box-shadow: 0 12px 30px -12px rgba(16,185,129,.5);
+}
+.pay-hero__status--muted { background: linear-gradient(140deg,#334155,#475569); box-shadow:none; }
+.pay-hero__status-label { text-transform:uppercase; font-size:.7rem; letter-spacing:.08em; opacity:.85; }
+.pay-hero__status-date  { font-size:1.35rem; font-weight:800; margin:.1rem 0; }
+.pay-hero__status-note  { font-size:.8rem; opacity:.9; line-height:1.4; }
+
+.pay-table-card { background:var(--mc-surface); border:1px solid var(--mc-border); border-radius:14px; overflow:hidden; }
+.pay-table-wrap { overflow-x:auto; }
+.pay-table { width:100%; border-collapse:collapse; font-size:.9rem; min-width:820px; }
+.pay-table th, .pay-table td { padding:.85rem 1rem; border-bottom:1px solid var(--mc-border); text-align:left; vertical-align:middle; }
+.pay-table thead th { background:var(--mc-bg-elev); font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--mc-text-muted); }
+.pay-table tbody tr:last-child td { border-bottom:none; }
+.pay-mono { font-family: ui-monospace, "SF Mono", monospace; font-size:.75rem; color:var(--mc-text-muted); }
+
+.pay-pill { display:inline-block; padding:.2rem .6rem; border-radius:999px; font-size:.7rem; font-weight:700; background:var(--mc-bg-elev); color:var(--mc-text-muted); }
+.pay-pill--ok     { background:rgba(16,185,129,.15); color:#059669; }
+.pay-pill--warn   { background:rgba(245,158,11,.16); color:#b45309; }
+.pay-pill--danger { background:rgba(239,68,68,.16); color:#b91c1c; }
+
+.pay-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.4rem .8rem; border-radius:8px; font-size:.8rem; text-decoration:none; font-weight:600; }
+.pay-btn--ghost { border:1px solid var(--mc-border); color:var(--mc-text); background:transparent; }
+.pay-btn--ghost:hover { background:var(--mc-bg-elev); }
+.pay-btn i { width:14px; height:14px; }
+
+.pay-empty { text-align:center; padding:2.5rem 1rem; color:var(--mc-text-muted); }
+</style>
+{% endblock %}

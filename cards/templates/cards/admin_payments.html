@@ -1,0 +1,199 @@
+{% extends 'cards/base.html' %}
+
+{% block title %}Payments — MY-Card Control{% endblock %}
+{% block page_icon %}wallet{% endblock %}
+{% block page_label %}Admin{% endblock %}
+
+{% block content %}
+<div class="dash-shell dash-shell--admin" data-dash-shell>
+    {% include 'cards/_admin_sidebar.html' with active='payments' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="Open menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+                MY-Card CONTROL
+            </a>
+            <span></span>
+        </header>
+
+<div class="apay-page">
+    <div class="mc-container apay-container">
+
+        <header class="apay-hero apay-no-print">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    Payments statement
+                </span>
+                <h1>All customer payments</h1>
+                <p class="mc-text-muted">
+                    Every transaction across bKash, Stripe and manual entries.
+                    Filter, then print for records — this page is admin-only.
+                </p>
+            </div>
+            <div class="apay-hero__stat">
+                <div class="apay-hero__stat-label">Total settled (visible)</div>
+                <div class="apay-hero__stat-amount">৳ {{ total_success|floatformat:2 }}</div>
+                <button type="button" onclick="window.print()" class="apay-btn apay-btn--primary">
+                    <i data-lucide="printer"></i> Print statement
+                </button>
+            </div>
+        </header>
+
+        <form method="get" class="apay-filters apay-no-print">
+            <input type="search" name="q" value="{{ q }}" placeholder="Search username, email, wallet, txn ID..." class="apay-input">
+            <select name="status" class="apay-input">
+                <option value="">All statuses</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="gateway" class="apay-input">
+                <option value="">All gateways</option>
+                {% for value, label in gateway_choices %}
+                    <option value="{{ value }}" {% if gateway == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="apay-btn apay-btn--ghost">
+                <i data-lucide="filter"></i> Apply
+            </button>
+            {% if q or status or gateway %}
+                <a href="{% url 'admin_payments' %}" class="apay-btn apay-btn--ghost">
+                    <i data-lucide="x"></i> Clear
+                </a>
+            {% endif %}
+        </form>
+
+        <section class="apay-print-head" style="display:none;">
+            <h1>MY-Card by Dupno — Payments Statement</h1>
+            <div>Generated: <strong>{% now "F j, Y H:i" %}</strong></div>
+            <div>Total settled (visible rows): <strong>৳ {{ total_success|floatformat:2 }} BDT</strong></div>
+        </section>
+
+        <section class="apay-card">
+            <div class="apay-table-wrap">
+                <table class="apay-table">
+                    <thead>
+                        <tr>
+                            <th>Invoice</th>
+                            <th>User</th>
+                            <th>Date</th>
+                            <th>Gateway</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Wallet / txn</th>
+                            <th style="text-align:right;" class="apay-no-print">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in payments %}
+                        <tr>
+                            <td><code>{{ row.invoice }}</code></td>
+                            <td>
+                                <div><strong>{{ row.obj.user.username }}</strong></div>
+                                {% if row.obj.user.email %}<div class="apay-mono">{{ row.obj.user.email }}</div>{% endif %}
+                            </td>
+                            <td>{{ row.obj.created_at|date:"Y-m-d H:i" }}</td>
+                            <td>{{ row.obj.get_gateway_display }}</td>
+                            <td><strong>৳ {{ row.obj.amount }}</strong> {{ row.obj.currency }}</td>
+                            <td>
+                                {% if row.obj.status == 'success' %}
+                                    <span class="apay-pill apay-pill--ok">Success</span>
+                                {% elif row.obj.status == 'pending' %}
+                                    <span class="apay-pill apay-pill--warn">Pending</span>
+                                {% elif row.obj.status == 'failed' %}
+                                    <span class="apay-pill apay-pill--danger">Failed</span>
+                                {% else %}
+                                    <span class="apay-pill">{{ row.obj.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if row.obj.bkash_payer_msisdn %}<div>{{ row.obj.bkash_payer_msisdn }}</div>{% endif %}
+                                {% if row.obj.bkash_trx_id %}<div class="apay-mono">{{ row.obj.bkash_trx_id }}</div>{% endif %}
+                            </td>
+                            <td style="text-align:right;" class="apay-no-print">
+                                <a href="{% url 'admin_payment_receipt' row.obj.pk %}" class="apay-btn apay-btn--ghost apay-btn--sm">
+                                    <i data-lucide="receipt"></i> Receipt
+                                </a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr><td colspan="8" class="apay-empty">No payments found for the current filters.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer class="apay-print-foot" style="display:none;">
+            <div>Generated by MY-Card Admin — mycard.dupno.com</div>
+        </footer>
+
+    </div>
+</div>
+
+    </main>
+</div>
+
+<style>
+.apay-page { min-height:calc(100vh - 60px); padding:2rem 1rem 3rem; }
+.apay-container { max-width:1240px; margin:0 auto; }
+
+.apay-hero { display:flex; flex-wrap:wrap; gap:1.5rem; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; }
+.apay-hero h1 { margin:.35rem 0; font-size:1.75rem; }
+.apay-hero__stat {
+    background: linear-gradient(140deg,#7c3aed 0%,#a855f7 100%);
+    color:#fff; padding:1rem 1.25rem; border-radius:14px; min-width:240px; text-align:right;
+    box-shadow: 0 12px 30px -12px rgba(124,58,237,.5);
+}
+.apay-hero__stat-label  { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; opacity:.85; }
+.apay-hero__stat-amount { font-size:1.5rem; font-weight:800; margin:.15rem 0 .5rem; }
+
+.apay-filters { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+.apay-input {
+    padding:.55rem .75rem; border-radius:8px; border:1px solid var(--mc-border);
+    background:var(--mc-surface); color:var(--mc-text); font-size:.85rem;
+}
+.apay-input:focus { outline:2px solid #7c3aed; outline-offset:1px; }
+.apay-input[type="search"] { min-width:260px; flex:1; }
+
+.apay-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.5rem .9rem; border-radius:8px; text-decoration:none; font-size:.85rem; font-weight:600; border:1px solid transparent; cursor:pointer; }
+.apay-btn--ghost { border-color:var(--mc-border); color:var(--mc-text); background:transparent; }
+.apay-btn--ghost:hover { background:var(--mc-bg-elev); }
+.apay-btn--primary { background:#fff; color:#7c3aed; border-color:transparent; }
+.apay-btn--sm { padding:.35rem .7rem; font-size:.78rem; }
+.apay-btn i { width:14px; height:14px; }
+
+.apay-card { background:var(--mc-surface); border:1px solid var(--mc-border); border-radius:14px; overflow:hidden; }
+.apay-table-wrap { overflow-x:auto; }
+.apay-table { width:100%; border-collapse:collapse; font-size:.87rem; min-width:960px; }
+.apay-table th, .apay-table td { padding:.75rem 1rem; border-bottom:1px solid var(--mc-border); text-align:left; vertical-align:middle; }
+.apay-table thead th { background:var(--mc-bg-elev); font-weight:700; font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(--mc-text-muted); }
+.apay-mono { font-family: ui-monospace, "SF Mono", monospace; font-size:.75rem; color:var(--mc-text-muted); }
+.apay-empty { text-align:center; padding:2.5rem 1rem; color:var(--mc-text-muted); }
+
+.apay-pill { display:inline-block; padding:.18rem .55rem; border-radius:999px; font-size:.7rem; font-weight:700; background:var(--mc-bg-elev); color:var(--mc-text-muted); }
+.apay-pill--ok     { background:rgba(16,185,129,.15); color:#059669; }
+.apay-pill--warn   { background:rgba(245,158,11,.16); color:#b45309; }
+.apay-pill--danger { background:rgba(239,68,68,.16); color:#b91c1c; }
+
+@media print {
+    body * { visibility: hidden; }
+    .apay-print-head, .apay-print-head *,
+    .apay-card, .apay-card *,
+    .apay-print-foot, .apay-print-foot * { visibility: visible; }
+    .apay-print-head, .apay-print-foot { display:block !important; }
+    .apay-print-head { position:relative; text-align:center; margin-bottom:.8rem; }
+    .apay-print-head h1 { font-size:1.2rem; margin:0 0 .3rem; }
+    .apay-card { position:absolute; left:0; top:80px; border:none; box-shadow:none; width:100%; }
+    .apay-page { background:#fff; padding:0; }
+    .apay-no-print { display:none !important; }
+    .apay-table { min-width:0; font-size:.75rem; }
+    .apay-table th, .apay-table td { padding:.35rem .5rem; }
+}
+</style>
+{% endblock %}

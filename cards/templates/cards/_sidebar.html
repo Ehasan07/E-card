@@ -48,6 +48,12 @@ Context vars supplied by the `sidebar` context processor:
             <span>{% trans "Notifications" %}</span>
             {% if sidebar_unread_notifications %}<span class="dash-sidebar__badge">{{ sidebar_unread_notifications }}</span>{% endif %}
         </a>
+        <a href="{% url 'payment_history' %}"
+           class="dash-sidebar__link{% if active == 'billing' %} is-active{% endif %}"
+           {% if active == 'billing' %}aria-current="page"{% endif %}>
+            <i data-lucide="receipt"></i>
+            <span>{% trans "Billing" %}</span>
+        </a>
         {% if sidebar_first_card_slug %}
         <a href="{% url 'card_analytics' sidebar_first_card_slug %}"
            class="dash-sidebar__link{% if active == 'analytics' %} is-active{% endif %}"

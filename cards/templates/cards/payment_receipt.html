@@ -1,0 +1,219 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Receipt {{ invoice }} — MY-Card{% endblock %}
+{% block page_icon %}receipt{% endblock %}
+{% block page_label %}Receipt{% endblock %}
+
+{% block content %}
+<div class="rcpt-page">
+
+    <div class="rcpt-toolbar rcpt-no-print">
+        {% if is_admin_view %}
+            <a href="{% url 'admin_payments' %}" class="rcpt-btn rcpt-btn--ghost">
+                <i data-lucide="arrow-left"></i> All payments
+            </a>
+        {% else %}
+            <a href="{% url 'payment_history' %}" class="rcpt-btn rcpt-btn--ghost">
+                <i data-lucide="arrow-left"></i> Billing history
+            </a>
+        {% endif %}
+        <button type="button" onclick="window.print()" class="rcpt-btn rcpt-btn--primary">
+            <i data-lucide="printer"></i> Print / Save PDF
+        </button>
+    </div>
+
+    <article class="rcpt-slip">
+        <header class="rcpt-slip__head">
+            <div class="rcpt-brand">
+                <span class="rcpt-brand__mark"></span>
+                <div>
+                    <div class="rcpt-brand__name">MY-Card by Dupno</div>
+                    <div class="rcpt-brand__sub">mycard.dupno.com</div>
+                </div>
+            </div>
+            <div class="rcpt-tag">
+                <div class="rcpt-tag__label">INVOICE</div>
+                <div class="rcpt-tag__no">{{ invoice }}</div>
+            </div>
+        </header>
+
+        <section class="rcpt-two-col">
+            <div>
+                <div class="rcpt-title">Billed to</div>
+                <div class="rcpt-value">{{ payment.user.get_full_name|default:payment.user.username }}</div>
+                {% if payment.user.email %}<div class="rcpt-value rcpt-value--muted">{{ payment.user.email }}</div>{% endif %}
+                {% if payment.bkash_payer_msisdn %}<div class="rcpt-value rcpt-value--muted">bKash: {{ payment.bkash_payer_msisdn }}</div>{% endif %}
+            </div>
+            <div>
+                <div class="rcpt-title">Payment date</div>
+                <div class="rcpt-value">{{ payment.created_at|date:"F j, Y" }}</div>
+                <div class="rcpt-value rcpt-value--muted">{{ payment.created_at|date:"H:i" }} · Asia/Dhaka</div>
+                <div class="rcpt-title" style="margin-top:.8rem;">Status</div>
+                <div class="rcpt-value">
+                    {% if payment.status == 'success' %}
+                        <span class="rcpt-pill rcpt-pill--ok">PAID</span>
+                    {% elif payment.status == 'pending' %}
+                        <span class="rcpt-pill rcpt-pill--warn">PENDING</span>
+                    {% elif payment.status == 'failed' %}
+                        <span class="rcpt-pill rcpt-pill--danger">FAILED</span>
+                    {% else %}
+                        <span class="rcpt-pill">{{ payment.get_status_display|upper }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </section>
+
+        <table class="rcpt-lines">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th style="text-align:right;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>
+                        <div class="rcpt-line-name">
+                            {% if payment.plan %}{{ payment.plan.name }} plan{% else %}MY-Card yearly subscription{% endif %}
+                        </div>
+                        <div class="rcpt-line-sub">
+                            Cycle: Calendar year · Includes every card on the account for the next 12 months.
+                        </div>
+                    </td>
+                    <td style="text-align:right;">৳ {{ payment.amount }}</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td style="text-align:right;"><strong>Total ({{ payment.currency }})</strong></td>
+                    <td style="text-align:right;"><strong>৳ {{ payment.amount }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <section class="rcpt-meta">
+            <div class="rcpt-meta__grid">
+                <div>
+                    <div class="rcpt-title">Gateway</div>
+                    <div class="rcpt-value">{{ payment.get_gateway_display }}</div>
+                </div>
+                {% if payment.bkash_trx_id %}
+                <div>
+                    <div class="rcpt-title">Transaction ID</div>
+                    <div class="rcpt-value rcpt-mono">{{ payment.bkash_trx_id }}</div>
+                </div>
+                {% endif %}
+                {% if payment.bkash_subscription_id %}
+                <div>
+                    <div class="rcpt-title">Subscription ID</div>
+                    <div class="rcpt-value rcpt-mono">{{ payment.bkash_subscription_id }}</div>
+                </div>
+                {% endif %}
+                {% if payment.bkash_subscription_request_id %}
+                <div>
+                    <div class="rcpt-title">Request ID</div>
+                    <div class="rcpt-value rcpt-mono">{{ payment.bkash_subscription_request_id }}</div>
+                </div>
+                {% endif %}
+                {% if payment.bkash_next_payment_date %}
+                <div>
+                    <div class="rcpt-title">Next auto-renewal</div>
+                    <div class="rcpt-value">{{ payment.bkash_next_payment_date|date:"F j, Y" }}</div>
+                </div>
+                {% endif %}
+                {% if payment.bkash_expiry_date %}
+                <div>
+                    <div class="rcpt-title">Subscription expires</div>
+                    <div class="rcpt-value">{{ payment.bkash_expiry_date|date:"F j, Y" }}</div>
+                </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <footer class="rcpt-slip__foot">
+            <div>
+                <strong>MY-Card by Dupno</strong> · Dhaka, Bangladesh<br>
+                Support: <a href="mailto:shubham@speedotrack.com">shubham@speedotrack.com</a>
+            </div>
+            <div class="rcpt-thanks">Thank you for staying with us.</div>
+        </footer>
+    </article>
+
+</div>
+
+<style>
+.rcpt-page {
+    background: var(--mc-bg, #f5f6fa);
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    color: var(--mc-text, #1f2937);
+}
+.rcpt-toolbar {
+    max-width: 780px; margin: 0 auto 1rem;
+    display:flex; justify-content:space-between; gap:1rem;
+}
+.rcpt-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.5rem 1rem; border-radius:8px; text-decoration:none; font-size:.85rem; font-weight:600; border:1px solid var(--mc-border); background:transparent; color:var(--mc-text); cursor:pointer; }
+.rcpt-btn--ghost:hover { background:var(--mc-bg-elev); }
+.rcpt-btn--primary { background: linear-gradient(135deg,#4f46e5,#7c3aed); color:#fff; border-color:transparent; }
+.rcpt-btn i { width:14px; height:14px; }
+
+.rcpt-slip {
+    max-width:780px; margin:0 auto; background:#fff; color:#1f2937;
+    border-radius:14px; padding:2.25rem 2rem;
+    box-shadow: 0 30px 60px -30px rgba(0,0,0,.25);
+    border: 1px solid #e5e7eb;
+}
+.rcpt-slip__head {
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding-bottom:1.25rem; border-bottom:2px solid #111827;
+}
+.rcpt-brand { display:flex; gap:.65rem; align-items:center; }
+.rcpt-brand__mark { width:38px; height:38px; border-radius:9px; background:linear-gradient(135deg,#4f46e5,#7c3aed); }
+.rcpt-brand__name { font-weight:800; font-size:1.15rem; }
+.rcpt-brand__sub  { color:#6b7280; font-size:.78rem; }
+
+.rcpt-tag { text-align:right; }
+.rcpt-tag__label { font-size:.72rem; letter-spacing:.1em; color:#6b7280; }
+.rcpt-tag__no { font-family: ui-monospace, "SF Mono", monospace; font-size:.85rem; font-weight:700; }
+
+.rcpt-two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin:1.5rem 0; }
+.rcpt-title { font-size:.7rem; text-transform:uppercase; letter-spacing:.08em; color:#6b7280; margin-bottom:.15rem; }
+.rcpt-value { font-size:.95rem; font-weight:600; }
+.rcpt-value--muted { color:#6b7280; font-weight:500; font-size:.85rem; }
+.rcpt-mono { font-family: ui-monospace, "SF Mono", monospace; font-size:.8rem; }
+
+.rcpt-lines { width:100%; border-collapse:collapse; margin:1.25rem 0 1rem; font-size:.9rem; }
+.rcpt-lines th, .rcpt-lines td { padding:.75rem .75rem; border-bottom:1px solid #e5e7eb; }
+.rcpt-lines thead th { background:#f9fafb; text-transform:uppercase; font-size:.7rem; letter-spacing:.06em; color:#6b7280; text-align:left; }
+.rcpt-lines tfoot td { border-bottom:none; padding-top:1rem; font-size:1rem; }
+.rcpt-line-name { font-weight:700; }
+.rcpt-line-sub  { font-size:.78rem; color:#6b7280; margin-top:.15rem; }
+
+.rcpt-meta { margin-top:1rem; padding:1rem; background:#f9fafb; border-radius:10px; }
+.rcpt-meta__grid { display:grid; grid-template-columns:repeat(2,1fr); gap:.8rem 1.25rem; }
+
+.rcpt-slip__foot { margin-top:1.5rem; padding-top:1rem; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; gap:1rem; font-size:.8rem; color:#6b7280; }
+.rcpt-thanks { font-style:italic; color:#059669; }
+
+.rcpt-pill { display:inline-block; padding:.2rem .7rem; border-radius:999px; font-size:.7rem; font-weight:800; letter-spacing:.05em; }
+.rcpt-pill--ok     { background:#d1fae5; color:#059669; }
+.rcpt-pill--warn   { background:#fef3c7; color:#b45309; }
+.rcpt-pill--danger { background:#fee2e2; color:#b91c1c; }
+
+@media (max-width: 600px) {
+    .rcpt-two-col, .rcpt-meta__grid { grid-template-columns:1fr; }
+    .rcpt-slip__head { flex-direction:column; align-items:flex-start; gap:.75rem; }
+    .rcpt-tag { text-align:left; }
+}
+
+/* Print — hide chrome, show only the slip */
+@media print {
+    body * { visibility: hidden; }
+    .rcpt-slip, .rcpt-slip * { visibility: visible; }
+    .rcpt-page { background:#fff; padding:0; }
+    .rcpt-slip { position:absolute; left:0; top:0; margin:0; box-shadow:none; border:none; width:100%; max-width:none; }
+    .rcpt-no-print { display:none !important; }
+}
+</style>
+{% endblock %}

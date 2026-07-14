@@ -4,6 +4,7 @@ import logging
 import re
 import zipfile
 import random
+from decimal import Decimal
 from functools import lru_cache
 from io import BytesIO, StringIO
 
@@ -2877,6 +2878,7 @@ def _grant_subscription(payment: Payment):
             notes=f'bKash subscription success. Paid until {profile.subscription_paid_until:%Y-%m-%d}.',
         )
 
+    receipt_url = reverse('payment_receipt', args=[payment.pk])
     UserNotification.objects.create(
         user=payment.user,
         kind=UserNotification.KIND_PAYMENT_RECEIVED,
@@ -2884,8 +2886,10 @@ def _grant_subscription(payment: Payment):
         body=(
             f'Your yearly subscription is live until '
             f'{profile.subscription_paid_until:%Y-%m-%d}. '
-            f'All of your cards are online.'
+            f'All of your cards are online. '
+            f'View / print your receipt: {receipt_url}'
         ),
+        action_url=receipt_url,
     )
 
 
@@ -2895,6 +2899,100 @@ def bkash_journey_mockup(request):
     Public URL — not linked from any nav — so bKash reviewers can open
     it directly to validate the customer flow."""
     return render(request, 'cards/bkash_journey_mockup.html')
+
+
+def _invoice_number(payment: Payment) -> str:
+    return f"MYC-INV-{payment.created_at:%Y%m%d}-{payment.pk:06d}"
+
+
+@login_required
+def payment_history(request):
+    payments = (
+        Payment.objects
+        .filter(user=request.user)
+        .order_by('-created_at')
+    )
+    profile = getattr(request.user, 'profile', None)
+    return render(request, 'cards/payment_history.html', {
+        'active': 'billing',
+        'payments': [
+            {
+                'obj': p,
+                'invoice': _invoice_number(p),
+            }
+            for p in payments
+        ],
+        'paid_until': profile.subscription_paid_until if profile else None,
+    })
+
+
+@login_required
+def payment_receipt(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id, user=request.user)
+    return render(request, 'cards/payment_receipt.html', {
+        'payment': payment,
+        'invoice': _invoice_number(payment),
+        'is_admin_view': False,
+    })
+
+
+def _staff_required(user):
+    return user.is_authenticated and (user.is_staff or user.is_superuser)
+
+
+@login_required
+def admin_payments(request):
+    if not _staff_required(request.user):
+        return redirect('dashboard')
+
+    q = (request.GET.get('q') or '').strip()
+    status = (request.GET.get('status') or '').strip()
+    gateway = (request.GET.get('gateway') or '').strip()
+
+    qs = Payment.objects.select_related('user', 'plan').order_by('-created_at')
+    if q:
+        qs = qs.filter(
+            Q(user__username__icontains=q) |
+            Q(user__email__icontains=q) |
+            Q(bkash_payer_msisdn__icontains=q) |
+            Q(bkash_trx_id__icontains=q) |
+            Q(bkash_subscription_request_id__icontains=q)
+        )
+    if status:
+        qs = qs.filter(status=status)
+    if gateway:
+        qs = qs.filter(gateway=gateway)
+
+    payments = list(qs[:500])
+    total_success = sum(
+        (p.amount for p in payments if p.status == Payment.STATUS_SUCCESS),
+        Decimal('0'),
+    )
+
+    rows = [{'obj': p, 'invoice': _invoice_number(p)} for p in payments]
+
+    return render(request, 'cards/admin_payments.html', {
+        'active': 'payments',
+        'payments': rows,
+        'total_success': total_success,
+        'q': q,
+        'status': status,
+        'gateway': gateway,
+        'status_choices': Payment.STATUS_CHOICES,
+        'gateway_choices': Payment.GATEWAY_CHOICES,
+    })
+
+
+@login_required
+def admin_payment_receipt(request, payment_id):
+    if not _staff_required(request.user):
+        return redirect('dashboard')
+    payment = get_object_or_404(Payment, pk=payment_id)
+    return render(request, 'cards/payment_receipt.html', {
+        'payment': payment,
+        'invoice': _invoice_number(payment),
+        'is_admin_view': True,
+    })
 
 
 def _mark_subscription_cancelled(payment: Payment):
