@@ -207,13 +207,21 @@
     .rcpt-tag { text-align:left; }
 }
 
-/* Print — hide chrome, show only the slip */
+/* Print — hide chrome, show only the slip. No absolute positioning
+ * (broke layout in Chrome); rely on display:none + document flow. */
 @media print {
-    body * { visibility: hidden; }
-    .rcpt-slip, .rcpt-slip * { visibility: visible; }
-    .rcpt-page { background:#fff; padding:0; }
-    .rcpt-slip { position:absolute; left:0; top:0; margin:0; box-shadow:none; border:none; width:100%; max-width:none; }
+    @page { margin: 12mm; }
+    html, body { background:#fff !important; margin:0 !important; }
     .rcpt-no-print { display:none !important; }
+    .rcpt-page { background:#fff; padding:0; }
+    .rcpt-slip { margin:0; box-shadow:none; border:none; max-width:none;
+        padding:0; color:#111; }
+    .rcpt-slip__head { border-color:#111; }
+    .rcpt-lines thead th { background:#f2f2f2 !important; color:#111 !important;
+        -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .rcpt-meta { background:#f7f7f7 !important;
+        -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .rcpt-pill { border:1px solid #999; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
 }
 </style>
 {% endblock %}

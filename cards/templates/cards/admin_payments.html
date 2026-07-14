@@ -182,18 +182,33 @@
 .apay-pill--danger { background:rgba(239,68,68,.16); color:#b91c1c; }
 
 @media print {
-    body * { visibility: hidden; }
-    .apay-print-head, .apay-print-head *,
-    .apay-card, .apay-card *,
-    .apay-print-foot, .apay-print-foot * { visibility: visible; }
-    .apay-print-head, .apay-print-foot { display:block !important; }
-    .apay-print-head { position:relative; text-align:center; margin-bottom:.8rem; }
-    .apay-print-head h1 { font-size:1.2rem; margin:0 0 .3rem; }
-    .apay-card { position:absolute; left:0; top:80px; border:none; box-shadow:none; width:100%; }
-    .apay-page { background:#fff; padding:0; }
+    @page { margin: 12mm 10mm; }
+    html, body { background:#fff !important; margin:0 !important; }
+    .dash-shell { display:block !important; }
+    .dash-sidebar, .dash-scrim, .dash-topbar { display:none !important; }
+    .dash-main { padding:0 !important; margin:0 !important; }
     .apay-no-print { display:none !important; }
-    .apay-table { min-width:0; font-size:.75rem; }
-    .apay-table th, .apay-table td { padding:.35rem .5rem; }
+    .apay-page { background:#fff; padding:0; }
+    .apay-container { max-width:none; }
+
+    .apay-print-head { display:block !important; text-align:center;
+        margin:0 0 12px; padding:0 0 8px; border-bottom:2px solid #111; color:#111; }
+    .apay-print-head h1 { font-size:16pt; margin:0 0 4px; font-weight:800; }
+    .apay-print-head div { font-size:10pt; color:#333; }
+
+    .apay-card { border:none; box-shadow:none; background:#fff; border-radius:0; }
+    .apay-table-wrap { overflow:visible; }
+    .apay-table { min-width:0; font-size:9pt; color:#111; page-break-inside:auto; }
+    .apay-table thead { display:table-header-group; background:#f2f2f2 !important; }
+    .apay-table tr { page-break-inside:avoid; }
+    .apay-table th, .apay-table td { padding:5px 7px; border-bottom:1px solid #ccc; }
+    .apay-table thead th { color:#111 !important; background:#f2f2f2 !important;
+        -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .apay-mono, code { color:#111; }
+    .apay-pill { border:1px solid #999; background:#fff !important; color:#111 !important; }
+
+    .apay-print-foot { display:block !important; margin-top:12px; padding-top:6px;
+        border-top:1px solid #ccc; font-size:9pt; color:#555; text-align:center; }
 }
 </style>
 {% endblock %}
