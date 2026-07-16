@@ -2657,45 +2657,54 @@
 .ob-modal.is-open { display:block; }
 .ob-modal__scrim {
     position:absolute; inset:0;
-    background:radial-gradient(60% 60% at 50% 40%, rgba(15,23,42,.7), rgba(2,6,23,.85));
+    background:radial-gradient(60% 60% at 50% 40%,
+        color-mix(in oklab, var(--mc-bg-0) 82%, transparent),
+        color-mix(in oklab, var(--mc-bg-0) 94%, transparent));
     backdrop-filter:blur(8px);
     animation: obFadeIn .22s ease-out both;
 }
 .ob-modal__box {
     position:relative; margin:8vh auto 0; max-width:640px;
-    background:var(--mc-surface,#0b1220); border:1px solid var(--mc-border,rgba(148,163,184,.2));
-    border-radius:20px; padding:2rem 1.75rem 1.5rem; color:var(--mc-text,#e5e7eb);
-    box-shadow: 0 40px 80px -20px rgba(0,0,0,.6);
+    background:var(--mc-bg-1); border:1px solid var(--mc-border-hi);
+    border-radius:20px; padding:2rem 1.75rem 1.5rem; color:var(--mc-text-hi);
+    box-shadow: 0 40px 80px -20px color-mix(in oklab, var(--mc-text-hi) 30%, transparent);
     animation: obPop .28s cubic-bezier(.2,.9,.3,1.2) both;
 }
 .ob-modal__x {
     position:absolute; top:14px; right:14px; width:34px; height:34px;
-    border:1px solid var(--mc-border,rgba(148,163,184,.2)); background:transparent;
-    color:var(--mc-text-muted); border-radius:10px; cursor:pointer;
+    border:1px solid var(--mc-border-hi); background:transparent;
+    color:var(--mc-text-md); border-radius:10px; cursor:pointer;
     display:grid; place-items:center;
 }
-.ob-modal__x:hover { background:rgba(148,163,184,.1); color:var(--mc-text); }
+.ob-modal__x:hover { background:var(--mc-bg-3); color:var(--mc-text-hi); }
 .ob-modal__head { text-align:center; margin-bottom:1.4rem; }
-.ob-modal__head h2 { font-size:1.55rem; margin:.5rem 0 .4rem; }
+.ob-modal__head h2 { font-size:1.55rem; margin:.5rem 0 .4rem; color:var(--mc-text-hi); }
 .ob-modal__grid { display:grid; grid-template-columns:1fr 1fr; gap:.9rem; }
 .ob-card {
     display:flex; flex-direction:column; gap:.4rem;
-    padding:1.25rem; border-radius:14px; text-decoration:none; color:inherit;
-    border:1px solid var(--mc-border,rgba(148,163,184,.25));
-    background: linear-gradient(140deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    padding:1.25rem; border-radius:14px; text-decoration:none; color:var(--mc-text-hi);
+    border:1px solid var(--mc-border-hi);
+    background: var(--mc-bg-2);
     transition: transform .18s ease, border-color .18s ease, background .18s ease;
 }
-.ob-card:hover { transform:translateY(-3px); border-color:rgba(139,92,246,.6); background:linear-gradient(140deg, rgba(139,92,246,.09), rgba(59,130,246,.05)); }
+.ob-card:hover {
+    transform:translateY(-3px);
+    border-color:var(--mc-accent);
+    background: color-mix(in oklab, var(--mc-accent) 10%, var(--mc-bg-2));
+}
 .ob-card__icon {
     width:44px; height:44px; border-radius:12px; display:grid; place-items:center;
-    background:linear-gradient(135deg, #7c3aed, #4f46e5); color:#fff;
+    background:linear-gradient(135deg, var(--mc-accent-strong), var(--mc-accent));
+    color:var(--mc-text-inv);
     margin-bottom:.35rem;
 }
-.ob-card--business .ob-card__icon { background:linear-gradient(135deg, #059669, #10b981); }
-.ob-card h3 { margin:0; font-size:1.1rem; font-weight:800; }
-.ob-card p { margin:0; color:var(--mc-text-muted); font-size:.85rem; }
-.ob-card__cta { margin-top:.6rem; font-weight:700; font-size:.85rem; color:var(--mc-text-accent, #a78bfa); }
-.ob-modal__foot { text-align:center; margin-top:1.25rem; font-size:.85rem; }
+.ob-card--business .ob-card__icon {
+    background:linear-gradient(135deg, #059669, #10b981); color:#fff;
+}
+.ob-card h3 { margin:0; font-size:1.1rem; font-weight:800; color:var(--mc-text-hi); }
+.ob-card p { margin:0; color:var(--mc-text-md); font-size:.85rem; }
+.ob-card__cta { margin-top:.6rem; font-weight:700; font-size:.85rem; color:var(--mc-accent-strong); }
+.ob-modal__foot { text-align:center; margin-top:1.25rem; font-size:.85rem; color:var(--mc-text-md); }
 
 @keyframes obFadeIn { from { opacity:0; } to { opacity:1; } }
 @keyframes obPop { from { transform:translateY(-16px) scale(.95); opacity:0; } to { transform:none; opacity:1; } }

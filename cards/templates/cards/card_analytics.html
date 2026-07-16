@@ -291,53 +291,55 @@
     // Area fill (close path to bottom)
     var area = d + ' L' + points[points.length - 1][0].toFixed(1) + ',' + (H - P) + ' L' + points[0][0].toFixed(1) + ',' + (H - P) + ' Z';
 
+    var accent = getComputedStyle(document.documentElement).getPropertyValue('--mc-accent').trim() || '#7CFFB2';
     svg.innerHTML =
         '<defs>' +
             '<linearGradient id="anGrad" x1="0" y1="0" x2="0" y2="1">' +
-                '<stop offset="0%" stop-color="#7CFFB2" stop-opacity="0.35"/>' +
-                '<stop offset="100%" stop-color="#7CFFB2" stop-opacity="0"/>' +
+                '<stop offset="0%" stop-color="' + accent + '" stop-opacity="0.35"/>' +
+                '<stop offset="100%" stop-color="' + accent + '" stop-opacity="0"/>' +
             '</linearGradient>' +
         '</defs>' +
         '<path d="' + area + '" fill="url(#anGrad)"/>' +
-        '<path d="' + d + '" fill="none" stroke="#7CFFB2" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+        '<path d="' + d + '" fill="none" stroke="' + accent + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
         points.map(function(p, i) {
-            return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="#7CFFB2"><title>' + data[i].date + ': ' + data[i].count + '</title></circle>';
+            return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="' + accent + '"><title>' + data[i].date + ': ' + data[i].count + '</title></circle>';
         }).join('');
 })();
 </script>
 
 <style>
-/* Metric buttons → make them look tappable */
+/* Metric buttons — theme-aware */
 .an-metric--btn {
     all: unset; cursor: pointer;
     display: flex; flex-direction: column; gap: .35rem;
     padding: 1rem 1.1rem;
-    background: var(--mc-surface);
-    border: 1px solid var(--mc-border);
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    color: var(--mc-text-hi);
     border-radius: 14px;
     position: relative;
     transition: transform .18s ease, border-color .18s ease, background .18s ease;
 }
-.an-metric--btn:hover { transform: translateY(-2px); border-color: rgba(139,92,246,.55); }
-.an-metric--btn:focus-visible { outline: 2px solid rgba(139,92,246,.6); outline-offset: 2px; }
+.an-metric--btn:hover { transform: translateY(-2px); border-color: var(--mc-accent); }
+.an-metric--btn:focus-visible { outline: 2px solid var(--mc-accent-glow); outline-offset: 2px; }
 .an-metric--btn[aria-expanded="true"] {
-    border-color: rgba(139,92,246,.7);
-    background: linear-gradient(140deg, rgba(139,92,246,.10), rgba(59,130,246,.05));
+    border-color: var(--mc-accent);
+    background: color-mix(in oklab, var(--mc-accent) 10%, var(--mc-bg-2));
 }
 .an-metric__hint {
     position: absolute; top: 12px; right: 12px;
-    color: var(--mc-text-muted);
+    color: var(--mc-text-md);
     transition: transform .2s ease;
 }
-.an-metric--btn[aria-expanded="true"] .an-metric__hint { transform: rotate(180deg); color: var(--mc-text-accent, #a78bfa); }
+.an-metric--btn[aria-expanded="true"] .an-metric__hint { transform: rotate(180deg); color: var(--mc-accent-strong); }
 .an-metric__hint i { width: 15px; height: 15px; }
 
 .an-drill { margin: 0 0 var(--mc-s-5); }
 .an-drill[hidden] { display: none; }
 .an-drill__card { padding: 1.25rem 1.35rem; animation: anSlide .3s ease-out both; }
 .an-drill__card header { margin-bottom: .75rem; }
-.an-drill__card h2 { margin: 0; display: flex; align-items: center; gap: .5rem; font-size: 1.05rem; }
-.an-drill__h { margin: 0 0 .5rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mc-text-muted); font-weight: 700; }
+.an-drill__card h2 { margin: 0; display: flex; align-items: center; gap: .5rem; font-size: 1.05rem; color: var(--mc-text-hi); }
+.an-drill__h { margin: 0 0 .5rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mc-text-md); font-weight: 700; }
 @keyframes anSlide {
     from { opacity: 0; transform: translateY(-4px); }
     to   { opacity: 1; transform: none; }

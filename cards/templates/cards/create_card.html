@@ -1425,48 +1425,49 @@
 
 .hidden { display: none !important; }
 
-/* ===== Signup block (anonymous flow) ===== */
+/* ===== Signup block (anonymous flow) — theme-aware ===== */
 .ed-signup {
-    background: linear-gradient(140deg, rgba(139,92,246,.10), rgba(59,130,246,.06));
-    border: 1px solid rgba(139,92,246,.35);
+    background: color-mix(in oklab, var(--mc-accent) 8%, var(--mc-bg-2));
+    border: 1px solid color-mix(in oklab, var(--mc-accent) 30%, var(--mc-border-hi));
     border-radius: 14px;
     padding: 1.1rem 1.15rem 1rem;
 }
 .ed-signup .ed-section__head { margin-bottom: .8rem; }
-.ed-signup__hint { font-size: .8rem; }
+.ed-signup__hint { font-size: .8rem; color: var(--mc-text-md); }
 .ed-signup input[type="text"],
 .ed-signup input[type="email"],
 .ed-signup input[type="password"] {
     width: 100%; padding: .55rem .8rem;
-    border: 1px solid var(--mc-border);
-    background: var(--mc-surface);
-    border-radius: 8px; color: var(--mc-text); font-size: .9rem;
+    border: 1px solid var(--mc-border-hi);
+    background: var(--mc-bg-1);
+    border-radius: 8px; color: var(--mc-text-hi); font-size: .9rem;
 }
 .ed-signup input:focus {
-    outline: 2px solid rgba(139,92,246,.45); outline-offset: 1px;
-    border-color: rgba(139,92,246,.6);
+    outline: 2px solid var(--mc-accent-glow); outline-offset: 1px;
+    border-color: var(--mc-accent);
 }
-.ed-signup__foot { font-size: .8rem; margin: .8rem 0 0; text-align: right; }
+.ed-signup__foot { font-size: .8rem; margin: .8rem 0 0; text-align: right; color: var(--mc-text-md); }
 
-/* ===== Journey stepper ===== */
+/* ===== Journey stepper — theme-aware ===== */
 .ed-journey {
     position: sticky; top: 66px; z-index: 50;
     margin: 1.25rem 0 1.5rem;
     padding: 1rem 1.15rem .9rem;
-    background: linear-gradient(180deg, var(--mc-surface,#0b1220) 88%, transparent);
+    background: color-mix(in oklab, var(--mc-bg-1) 92%, transparent);
     backdrop-filter: saturate(1.1) blur(8px);
-    border: 1px solid var(--mc-border);
+    border: 1px solid var(--mc-border-hi);
     border-radius: 14px;
+    box-shadow: 0 4px 12px -6px color-mix(in oklab, var(--mc-text-hi) 12%, transparent);
 }
 .ed-journey__bar {
     position: relative; height: 4px; border-radius: 4px;
-    background: rgba(148,163,184,.18);
+    background: var(--mc-bg-3);
     margin-bottom: .85rem;
     overflow: hidden;
 }
 .ed-journey__fill {
     position: absolute; inset: 0 auto 0 0; width: 0%;
-    background: linear-gradient(90deg, #4f46e5, #7c3aed, #10b981);
+    background: linear-gradient(90deg, var(--mc-accent-strong), var(--mc-accent));
     border-radius: 4px;
     transition: width .35s cubic-bezier(.2,.9,.3,1);
 }
@@ -1480,30 +1481,30 @@
 .ed-journey__step {
     display: flex; align-items: center; gap: .5rem;
     font-size: .8rem; font-weight: 600;
-    color: var(--mc-text-muted);
+    color: var(--mc-text-md);
     cursor: pointer; padding: .25rem; border-radius: 8px;
     transition: color .18s ease, transform .18s ease;
 }
-.ed-journey__step:hover { color: var(--mc-text); transform: translateY(-1px); }
-.ed-journey__step.is-active { color: var(--mc-text-accent, #a78bfa); }
-.ed-journey__step.is-done   { color: #10b981; }
+.ed-journey__step:hover { color: var(--mc-text-hi); transform: translateY(-1px); }
+.ed-journey__step.is-active { color: var(--mc-accent-strong); }
+.ed-journey__step.is-done   { color: var(--mc-accent-strong); }
 .ed-journey__dot {
     width: 26px; height: 26px; border-radius: 50%;
     display: grid; place-items: center;
-    background: rgba(148,163,184,.15);
-    border: 1px solid var(--mc-border);
-    font-weight: 800; font-size: .8rem; color: var(--mc-text);
+    background: var(--mc-bg-3);
+    border: 1px solid var(--mc-border-hi);
+    font-weight: 800; font-size: .8rem; color: var(--mc-text-hi);
     transition: all .25s ease;
     flex-shrink: 0;
 }
 .ed-journey__step.is-active .ed-journey__dot {
-    background: linear-gradient(135deg, #7c3aed, #4f46e5);
-    color: #fff; border-color: transparent;
+    background: linear-gradient(135deg, var(--mc-accent-strong), var(--mc-accent));
+    color: var(--mc-text-inv); border-color: transparent;
     transform: scale(1.12);
-    box-shadow: 0 8px 20px -6px rgba(124,58,237,.5);
+    box-shadow: 0 8px 20px -6px var(--mc-accent-glow);
 }
 .ed-journey__step.is-done .ed-journey__dot {
-    background: #10b981; color: #fff; border-color: transparent;
+    background: var(--mc-accent-strong); color: var(--mc-text-inv); border-color: transparent;
 }
 .ed-journey__step.is-done .ed-journey__dot::before {
     content: '✓'; font-size: .9rem;
