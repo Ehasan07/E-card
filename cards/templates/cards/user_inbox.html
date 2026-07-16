@@ -61,7 +61,10 @@
                                 </span>
                             {% endif %}
                         </div>
-                        <form method="post" action="{% url 'mark_notification_read' n.id %}" class="ib-item__cta">
+                        <form method="post" action="{% url 'mark_notification_read' n.id %}" class="ib-item__cta"
+                              data-notif-form
+                              data-notif-id="{{ n.id }}"
+                              data-notif-action="{{ n.action_url }}">
                             {% csrf_token %}
                             <button type="submit" class="mc-btn mc-btn--{% if n.is_read %}outline{% else %}primary{% endif %} mc-btn--sm">
                                 {% if n.action_url %}
@@ -143,5 +146,42 @@
     .ib-item { flex-direction: column; align-items: stretch; }
     .ib-item__cta { align-self: flex-end; }
 }
+.ib-item.is-read { opacity: .75; }
+.ib-item.is-read .ib-item__badge { display: none; }
 </style>
+
+<script>
+/* Notification mark-as-read via AJAX — no page reload, no scroll jump. */
+(function() {
+    document.querySelectorAll('[data-notif-form]').forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var actionUrl = form.getAttribute('data-notif-action') || '';
+            var url = form.getAttribute('action');
+            var csrf = form.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrf
+                },
+                credentials: 'same-origin'
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (!data || !data.ok) return;
+                var li = form.closest('.ib-item');
+                if (li) li.classList.add('is-read');
+                /* If notification has a target URL (like a receipt), go there. */
+                if (actionUrl) {
+                    window.location = actionUrl;
+                } else if (window.mcToast) {
+                    window.mcToast('Marked as read.', { kind: 'success' });
+                }
+            }).catch(function() {
+                if (window.mcToast) window.mcToast('Could not update — please retry.', { kind: 'error' });
+            });
+        });
+    });
+})();
+</script>
 {% endblock %}

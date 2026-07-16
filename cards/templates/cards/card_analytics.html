@@ -58,25 +58,100 @@
         {% endif %}
 
         <section class="an-metrics mc-fade-up mc-fade-up--d1">
-            <div class="mc-metric">
+            <button type="button" class="mc-metric an-metric--btn" data-metric-toggle="views" aria-expanded="false">
                 <span class="mc-metric__label"><i data-lucide="eye"></i> {% trans "Views" %}</span>
                 <span class="mc-metric__value mc-mono">{{ totals.views }}</span>
                 <span class="mc-metric__delta"><i data-lucide="trending-up"></i> {% trans "unique visitors" %}</span>
-            </div>
-            <div class="mc-metric">
+                <span class="an-metric__hint"><i data-lucide="chevron-down"></i></span>
+            </button>
+            <button type="button" class="mc-metric an-metric--btn" data-metric-toggle="clicks" aria-expanded="false">
                 <span class="mc-metric__label"><i data-lucide="mouse-pointer-click"></i> {% trans "Clicks" %}</span>
                 <span class="mc-metric__value mc-mono">{{ totals.clicks }}</span>
                 <span class="mc-metric__delta"><i data-lucide="link"></i> {% trans "socials + contacts" %}</span>
-            </div>
-            <div class="mc-metric">
+                <span class="an-metric__hint"><i data-lucide="chevron-down"></i></span>
+            </button>
+            <button type="button" class="mc-metric an-metric--btn" data-metric-toggle="saves" aria-expanded="false">
                 <span class="mc-metric__label"><i data-lucide="user-plus"></i> {% trans "Contact saves" %}</span>
                 <span class="mc-metric__value mc-mono">{{ totals.saves }}</span>
                 <span class="mc-metric__delta"><i data-lucide="download"></i> vCard {% trans "downloads" %}</span>
-            </div>
-            <div class="mc-metric">
+                <span class="an-metric__hint"><i data-lucide="chevron-down"></i></span>
+            </button>
+            <button type="button" class="mc-metric an-metric--btn" data-metric-toggle="leads" aria-expanded="false">
                 <span class="mc-metric__label"><i data-lucide="inbox"></i> {% trans "Leads" %}</span>
                 <span class="mc-metric__value mc-mono">{{ totals.leads }}</span>
                 <span class="mc-metric__delta"><i data-lucide="mail"></i> {% trans "form submissions" %}</span>
+                <span class="an-metric__hint"><i data-lucide="chevron-down"></i></span>
+            </button>
+        </section>
+
+        {# --- Drill-down panels (hidden until metric clicked) --- #}
+        <section class="an-drill" data-metric-panel="views" hidden>
+            <div class="mc-card an-drill__card">
+                <header><h2><i data-lucide="eye"></i> {% trans "Views detail" %}</h2></header>
+                <p class="mc-text-muted">
+                    {% blocktrans with n=totals.views %}Your card has been viewed {{ n }} times in this window.{% endblocktrans %}
+                    {% trans "Unique per browser session — repeat scrolls don't inflate the number." %}
+                </p>
+                <p class="mc-caption">{% trans "Peak days are shown in the trend chart below." %}</p>
+            </div>
+        </section>
+        <section class="an-drill" data-metric-panel="clicks" hidden>
+            <div class="mc-card an-drill__card">
+                <header><h2><i data-lucide="mouse-pointer-click"></i> {% trans "Click breakdown" %}</h2></header>
+                {% if social_top %}
+                    <h3 class="an-drill__h">{% trans "Top social buttons" %}</h3>
+                    <ul class="an-clicks__list">
+                        {% for row in social_top %}
+                            <li class="an-clicks__row">
+                                <span class="an-clicks__label an-clicks__label--brand" data-social="{{ row.target|lower }}">
+                                    <i data-lucide="{{ row.target|lower }}"></i>
+                                    {{ row.target|capfirst }}
+                                </span>
+                                <div class="an-clicks__bar">
+                                    <span style="width:{{ row.pct }}%;"></span>
+                                </div>
+                                <span class="an-clicks__count mc-mono">{{ row.n }} ({{ row.pct }}%)</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="mc-text-muted">{% trans "No social CTA clicks yet — share your card to start tracking." %}</p>
+                {% endif %}
+
+                {% if contact_clicks %}
+                    <h3 class="an-drill__h" style="margin-top:1.25rem;">{% trans "Contact channels" %}</h3>
+                    <ul class="an-clicks__list">
+                        {% for row in contact_clicks %}
+                            <li class="an-clicks__row">
+                                <span class="an-clicks__label"><i data-lucide="phone"></i> {{ row.target|capfirst }}</span>
+                                <div class="an-clicks__bar">
+                                    <span style="width:{% widthratio row.n contact_clicks.0.n 100 %}%;"></span>
+                                </div>
+                                <span class="an-clicks__count mc-mono">{{ row.n }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </section>
+        <section class="an-drill" data-metric-panel="saves" hidden>
+            <div class="mc-card an-drill__card">
+                <header><h2><i data-lucide="user-plus"></i> {% trans "Contact saves detail" %}</h2></header>
+                <p class="mc-text-muted">
+                    {% blocktrans with n=totals.saves %}{{ n }} visitors downloaded your vCard to their phone contacts.{% endblocktrans %}
+                </p>
+                <p class="mc-caption">{% trans "This is the strongest engagement signal — someone kept your details for later." %}</p>
+            </div>
+        </section>
+        <section class="an-drill" data-metric-panel="leads" hidden>
+            <div class="mc-card an-drill__card">
+                <header><h2><i data-lucide="inbox"></i> {% trans "Leads detail" %}</h2></header>
+                <p class="mc-text-muted">
+                    {% blocktrans with n=totals.leads %}{{ n }} people submitted the lead-capture form.{% endblocktrans %}
+                </p>
+                <a href="{% url 'leads_inbox' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                    <i data-lucide="mail"></i> {% trans "Open leads inbox" %}
+                </a>
             </div>
         </section>
 
@@ -228,6 +303,88 @@
         points.map(function(p, i) {
             return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="2.5" fill="#7CFFB2"><title>' + data[i].date + ': ' + data[i].count + '</title></circle>';
         }).join('');
+})();
+</script>
+
+<style>
+/* Metric buttons → make them look tappable */
+.an-metric--btn {
+    all: unset; cursor: pointer;
+    display: flex; flex-direction: column; gap: .35rem;
+    padding: 1rem 1.1rem;
+    background: var(--mc-surface);
+    border: 1px solid var(--mc-border);
+    border-radius: 14px;
+    position: relative;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+.an-metric--btn:hover { transform: translateY(-2px); border-color: rgba(139,92,246,.55); }
+.an-metric--btn:focus-visible { outline: 2px solid rgba(139,92,246,.6); outline-offset: 2px; }
+.an-metric--btn[aria-expanded="true"] {
+    border-color: rgba(139,92,246,.7);
+    background: linear-gradient(140deg, rgba(139,92,246,.10), rgba(59,130,246,.05));
+}
+.an-metric__hint {
+    position: absolute; top: 12px; right: 12px;
+    color: var(--mc-text-muted);
+    transition: transform .2s ease;
+}
+.an-metric--btn[aria-expanded="true"] .an-metric__hint { transform: rotate(180deg); color: var(--mc-text-accent, #a78bfa); }
+.an-metric__hint i { width: 15px; height: 15px; }
+
+.an-drill { margin: 0 0 var(--mc-s-5); }
+.an-drill[hidden] { display: none; }
+.an-drill__card { padding: 1.25rem 1.35rem; animation: anSlide .3s ease-out both; }
+.an-drill__card header { margin-bottom: .75rem; }
+.an-drill__card h2 { margin: 0; display: flex; align-items: center; gap: .5rem; font-size: 1.05rem; }
+.an-drill__h { margin: 0 0 .5rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .08em; color: var(--mc-text-muted); font-weight: 700; }
+@keyframes anSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to   { opacity: 1; transform: none; }
+}
+
+/* Brand-tinted social labels */
+.an-clicks__label--brand i { color: #94a3b8; }
+.an-clicks__label--brand[data-social="facebook"]  i { color: #1877F2; }
+.an-clicks__label--brand[data-social="instagram"] i { color: #E1306C; }
+.an-clicks__label--brand[data-social="linkedin"]  i { color: #0A66C2; }
+.an-clicks__label--brand[data-social="twitter"]   i,
+.an-clicks__label--brand[data-social="x"]         i { color: #1DA1F2; }
+.an-clicks__label--brand[data-social="youtube"]   i { color: #FF0000; }
+.an-clicks__label--brand[data-social="whatsapp"]  i { color: #25D366; }
+.an-clicks__label--brand[data-social="telegram"]  i { color: #229ED9; }
+.an-clicks__label--brand[data-social="tiktok"]    i { color: #010101; }
+.an-clicks__label--brand[data-social="github"]    i { color: #6b7280; }
+.an-clicks__label--brand[data-social="discord"]   i { color: #5865F2; }
+</style>
+
+<script>
+/* Click a metric card → toggle its drill-down panel below. */
+(function() {
+    var buttons = document.querySelectorAll('[data-metric-toggle]');
+    var panels  = document.querySelectorAll('[data-metric-panel]');
+
+    function closeAll() {
+        buttons.forEach(function(b) { b.setAttribute('aria-expanded', 'false'); });
+        panels.forEach(function(p) { p.setAttribute('hidden', ''); });
+    }
+
+    buttons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var key = btn.getAttribute('data-metric-toggle');
+            var wasOpen = btn.getAttribute('aria-expanded') === 'true';
+            closeAll();
+            if (!wasOpen) {
+                btn.setAttribute('aria-expanded', 'true');
+                var panel = document.querySelector('[data-metric-panel="' + key + '"]');
+                if (panel) {
+                    panel.removeAttribute('hidden');
+                    if (window.lucide) window.lucide.createIcons();
+                    panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }
+        });
+    });
 })();
 </script>
 {% endblock %}

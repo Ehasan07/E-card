@@ -13,7 +13,9 @@
             MY-Card
         </a>
         <ul class="mc-nav__links">
-            <li><a href="{% url 'dashboard' %}" class="mc-nav-link">{% trans "Dashboard" %}</a></li>
+            {% if request.user.is_authenticated %}
+                <li><a href="{% url 'dashboard' %}" class="mc-nav-link">{% trans "Dashboard" %}</a></li>
+            {% endif %}
             <li><a href="#" class="mc-nav-link" aria-current="page">{% if card %}{% trans "Edit card" %}{% else %}{% trans "New card" %}{% endif %}</a></li>
         </ul>
         <div class="mc-nav__actions">
@@ -21,9 +23,15 @@
                 <i data-lucide="moon" data-mc-theme-icon="moon"></i>
                 <i data-lucide="sun"  data-mc-theme-icon="sun" style="display:none;"></i>
             </button>
-            <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">
-                <i data-lucide="arrow-left"></i> {% trans "Back" %}
-            </a>
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                    <i data-lucide="arrow-left"></i> {% trans "Back" %}
+                </a>
+            {% else %}
+                <a href="{% url 'index' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                    <i data-lucide="arrow-left"></i> {% trans "Home" %}
+                </a>
+            {% endif %}
         </div>
     </div>
 </nav>
@@ -53,6 +61,37 @@
             </div>
         </header>
 
+        {# ===== Journey Stepper — animated section-tracker ===== #}
+        <div class="ed-journey" data-journey aria-label="Card builder journey">
+            <div class="ed-journey__bar">
+                <div class="ed-journey__fill" data-journey-fill></div>
+            </div>
+            <ol class="ed-journey__steps">
+                {% if show_signup_block %}
+                    <li class="ed-journey__step" data-journey-step="signup" data-anchor="signup">
+                        <span class="ed-journey__dot"><i data-lucide="user-plus"></i></span>
+                        <span class="ed-journey__label">{% trans "Account" %}</span>
+                    </li>
+                {% endif %}
+                <li class="ed-journey__step" data-journey-step="basics" data-anchor="basics">
+                    <span class="ed-journey__dot">1</span>
+                    <span class="ed-journey__label">{% trans "Basics" %}</span>
+                </li>
+                <li class="ed-journey__step" data-journey-step="brand" data-anchor="brand">
+                    <span class="ed-journey__dot">2</span>
+                    <span class="ed-journey__label">{% trans "Brand" %}</span>
+                </li>
+                <li class="ed-journey__step" data-journey-step="theme" data-anchor="theme">
+                    <span class="ed-journey__dot">3</span>
+                    <span class="ed-journey__label">{% trans "Theme" %}</span>
+                </li>
+                <li class="ed-journey__step" data-journey-step="social" data-anchor="social">
+                    <span class="ed-journey__dot">4</span>
+                    <span class="ed-journey__label">{% trans "Social" %}</span>
+                </li>
+            </ol>
+        </div>
+
         <div class="ed-grid mc-fade-up mc-fade-up--d1">
             {# ===== LEFT: Form ===== #}
             <section class="ed-form-shell">
@@ -63,6 +102,48 @@
                         <div class="mc-auth__errors">
                             {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
                         </div>
+                    {% endif %}
+
+                    {% if show_signup_block %}
+                    {# ---- Section: Account (only for anonymous flow) ---- #}
+                    <section class="ed-section ed-signup" id="signup" data-journey-anchor="signup">
+                        <header class="ed-section__head">
+                            <span class="ed-step"><i data-lucide="user-plus"></i></span>
+                            <h2>{% trans "Your account" %}</h2>
+                            <span class="ed-signup__hint mc-text-muted">
+                                {% trans "Fill this once — we'll auto-create your studio." %}
+                            </span>
+                        </header>
+                        <div class="ed-row">
+                            <label class="mc-label">
+                                <span><i data-lucide="at-sign"></i> {% trans "Username" %} *</span>
+                                {{ signup_form.username }}
+                                {% if signup_form.username.errors %}
+                                    <span class="mc-field-error">{{ signup_form.username.errors|striptags }}</span>
+                                {% endif %}
+                            </label>
+                            <label class="mc-label">
+                                <span><i data-lucide="mail"></i> {% trans "Email" %} *</span>
+                                {{ signup_form.email }}
+                                {% if signup_form.email.errors %}
+                                    <span class="mc-field-error">{{ signup_form.email.errors|striptags }}</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                        <label class="mc-label">
+                            <span><i data-lucide="key-round"></i> {% trans "Password" %} *</span>
+                            {{ signup_form.password }}
+                            {% if signup_form.password.errors %}
+                                <span class="mc-field-error">{{ signup_form.password.errors|striptags }}</span>
+                            {% else %}
+                                <span class="mc-field-hint">{% trans "At least 8 characters — pick something you'll remember." %}</span>
+                            {% endif %}
+                        </label>
+                        <p class="ed-signup__foot mc-text-muted">
+                            {% trans "Already have an account?" %}
+                            <a href="{% url 'login' %}" class="mc-text-accent">{% trans "Sign in →" %}</a>
+                        </p>
+                    </section>
                     {% endif %}
 
                     {% if card %}
@@ -137,7 +218,7 @@
                     {% endif %}
 
                     {# ---- Section 1: Personal ---- #}
-                    <section class="ed-section">
+                    <section class="ed-section" id="basics" data-journey-anchor="basics">
                         <header class="ed-section__head">
                             <span class="ed-step">1</span>
                             <h2>{% trans "Personal details" %}</h2>
@@ -238,7 +319,7 @@
                     </section>
 
                     {# ---- Section 2: Media ---- #}
-                    <section class="ed-section">
+                    <section class="ed-section" id="brand" data-journey-anchor="brand">
                         <header class="ed-section__head">
                             <span class="ed-step">2</span>
                             <h2>{% trans "Avatar &amp; brand" %}</h2>
@@ -263,7 +344,7 @@
 
                     {# ---- Section 3: Themes ---- #}
                     {% if themes %}
-                    <section class="ed-section">
+                    <section class="ed-section" id="theme" data-journey-anchor="theme">
                         <header class="ed-section__head">
                             <span class="ed-step">3</span>
                             <h2>{% trans "Curated themes" %}</h2>
@@ -303,7 +384,7 @@
                     <div class="hidden">{{ form.background_style }}</div>
 
                     {# ---- Section 4: Socials ---- #}
-                    <section class="ed-section">
+                    <section class="ed-section" id="social" data-journey-anchor="social">
                         <header class="ed-section__head">
                             <span class="ed-step">4</span>
                             <h2>{% trans "Social connections" %}</h2>
@@ -1343,6 +1424,109 @@
 .ed-preview-social i { width: 0.95rem; height: 0.95rem; }
 
 .hidden { display: none !important; }
+
+/* ===== Signup block (anonymous flow) ===== */
+.ed-signup {
+    background: linear-gradient(140deg, rgba(139,92,246,.10), rgba(59,130,246,.06));
+    border: 1px solid rgba(139,92,246,.35);
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem 1rem;
+}
+.ed-signup .ed-section__head { margin-bottom: .8rem; }
+.ed-signup__hint { font-size: .8rem; }
+.ed-signup input[type="text"],
+.ed-signup input[type="email"],
+.ed-signup input[type="password"] {
+    width: 100%; padding: .55rem .8rem;
+    border: 1px solid var(--mc-border);
+    background: var(--mc-surface);
+    border-radius: 8px; color: var(--mc-text); font-size: .9rem;
+}
+.ed-signup input:focus {
+    outline: 2px solid rgba(139,92,246,.45); outline-offset: 1px;
+    border-color: rgba(139,92,246,.6);
+}
+.ed-signup__foot { font-size: .8rem; margin: .8rem 0 0; text-align: right; }
+
+/* ===== Journey stepper ===== */
+.ed-journey {
+    position: sticky; top: 66px; z-index: 50;
+    margin: 1.25rem 0 1.5rem;
+    padding: 1rem 1.15rem .9rem;
+    background: linear-gradient(180deg, var(--mc-surface,#0b1220) 88%, transparent);
+    backdrop-filter: saturate(1.1) blur(8px);
+    border: 1px solid var(--mc-border);
+    border-radius: 14px;
+}
+.ed-journey__bar {
+    position: relative; height: 4px; border-radius: 4px;
+    background: rgba(148,163,184,.18);
+    margin-bottom: .85rem;
+    overflow: hidden;
+}
+.ed-journey__fill {
+    position: absolute; inset: 0 auto 0 0; width: 0%;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed, #10b981);
+    border-radius: 4px;
+    transition: width .35s cubic-bezier(.2,.9,.3,1);
+}
+.ed-journey__steps {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    gap: .4rem;
+    list-style: none; padding: 0; margin: 0;
+}
+.ed-journey__step {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .8rem; font-weight: 600;
+    color: var(--mc-text-muted);
+    cursor: pointer; padding: .25rem; border-radius: 8px;
+    transition: color .18s ease, transform .18s ease;
+}
+.ed-journey__step:hover { color: var(--mc-text); transform: translateY(-1px); }
+.ed-journey__step.is-active { color: var(--mc-text-accent, #a78bfa); }
+.ed-journey__step.is-done   { color: #10b981; }
+.ed-journey__dot {
+    width: 26px; height: 26px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: rgba(148,163,184,.15);
+    border: 1px solid var(--mc-border);
+    font-weight: 800; font-size: .8rem; color: var(--mc-text);
+    transition: all .25s ease;
+    flex-shrink: 0;
+}
+.ed-journey__step.is-active .ed-journey__dot {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: #fff; border-color: transparent;
+    transform: scale(1.12);
+    box-shadow: 0 8px 20px -6px rgba(124,58,237,.5);
+}
+.ed-journey__step.is-done .ed-journey__dot {
+    background: #10b981; color: #fff; border-color: transparent;
+}
+.ed-journey__step.is-done .ed-journey__dot::before {
+    content: '✓'; font-size: .9rem;
+}
+.ed-journey__step.is-done .ed-journey__dot > * { display: none; }
+.ed-journey__dot i { width: 14px; height: 14px; }
+
+/* Reveal-on-scroll for sections */
+.ed-form .ed-section {
+    scroll-margin-top: 160px;
+    opacity: .55;
+    transform: translateY(6px);
+    transition: opacity .35s ease, transform .35s ease;
+}
+.ed-form .ed-section.is-in {
+    opacity: 1; transform: none;
+}
+
+@media (max-width: 720px) {
+    .ed-journey { top: 60px; padding: .8rem .8rem .7rem; }
+    .ed-journey__label { display: none; }
+    .ed-journey__steps { gap: .25rem; }
+}
 </style>
 
 <script>
@@ -1750,6 +1934,61 @@
         highlightSelect.addEventListener('change', updateHighlight);
         updateHighlight();
     }
+})();
+</script>
+
+<script>
+/* ===== Journey stepper — active section tracking + click-to-scroll ===== */
+(function() {
+    var journey = document.querySelector('[data-journey]');
+    if (!journey) return;
+    var steps = Array.prototype.slice.call(journey.querySelectorAll('.ed-journey__step'));
+    var fill  = journey.querySelector('[data-journey-fill]');
+    var anchors = steps.map(function(s) {
+        var name = s.getAttribute('data-anchor');
+        return { name: name, el: document.getElementById(name), step: s };
+    }).filter(function(a) { return a.el; });
+
+    var order = anchors.map(function(a) { return a.name; });
+
+    function setActive(name) {
+        var idx = order.indexOf(name);
+        if (idx < 0) return;
+        anchors.forEach(function(a, i) {
+            a.step.classList.toggle('is-active', i === idx);
+            a.step.classList.toggle('is-done',   i <  idx);
+        });
+        if (fill) {
+            var pct = order.length > 1 ? (idx / (order.length - 1)) * 100 : 0;
+            fill.style.width = pct + '%';
+        }
+    }
+
+    /* IntersectionObserver: which section is the "current" one */
+    if ('IntersectionObserver' in window) {
+        var opts = { root: null, rootMargin: '-30% 0px -55% 0px', threshold: 0 };
+        var io = new IntersectionObserver(function(entries) {
+            entries.forEach(function(e) {
+                if (e.isIntersecting) setActive(e.target.id);
+                if (e.isIntersecting) e.target.classList.add('is-in');
+            });
+        }, opts);
+        anchors.forEach(function(a) { io.observe(a.el); });
+    } else {
+        anchors.forEach(function(a) { a.el.classList.add('is-in'); });
+        setActive(order[0]);
+    }
+
+    /* Click stepper → smooth scroll to section */
+    steps.forEach(function(step) {
+        step.addEventListener('click', function() {
+            var target = document.getElementById(step.getAttribute('data-anchor'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+
+    /* First one is active on load */
+    if (order.length) setActive(order[0]);
 })();
 </script>
 {% endblock %}

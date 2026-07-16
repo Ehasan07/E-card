@@ -511,6 +511,88 @@ def create_business_card(request):
     return _handle_card_creation(request, Card.TYPE_BUSINESS)
 
 
+def start_free(request, card_type):
+    """One-step onboarding: card-type popup on the landing sends users here.
+
+    - Authenticated users → normal create-card flow (skips signup block).
+    - Anonymous users → same create-card page BUT with an inline
+      username/email/password block. On POST we create the User + Profile
+      + Card in one atomic transaction, then auto-login and redirect to
+      the public card. No 'go register first, then come back' bounce."""
+    if card_type == 'business':
+        chosen_type = Card.TYPE_BUSINESS
+    else:
+        chosen_type = Card.TYPE_PERSONAL
+
+    if request.user.is_authenticated:
+        return _handle_card_creation(request, chosen_type)
+
+    return _handle_anonymous_onboard(request, chosen_type)
+
+
+def _handle_anonymous_onboard(request, card_type: str):
+    """Anonymous variant of the card builder. Renders create_card.html
+    with the signup block visible and creates user + card together."""
+    variant = CARD_VARIANT_CONFIG.get(card_type, CARD_VARIANT_CONFIG[Card.TYPE_PERSONAL])
+    form_class = CARD_FORM_BY_TYPE.get(card_type, CardForm)
+
+    signup_form = UserForm(request.POST or None)
+    form = form_class(request.POST or None, request.FILES or None)
+
+    if request.method == 'POST':
+        card_ok = form.is_valid()
+        signup_ok = signup_form.is_valid()
+        if card_ok and signup_ok:
+            try:
+                with transaction.atomic():
+                    user = signup_form.save(commit=False)
+                    user.set_password(signup_form.cleaned_data['password'])
+                    user.email = user.email.lower()
+                    user.save()
+
+                    profile, _ = Profile.objects.get_or_create(user=user)
+                    if not profile.card_limit:
+                        profile.card_limit = DEFAULT_CARD_LIMIT
+                        profile.save(update_fields=['card_limit'])
+
+                    card = form.save(commit=False)
+                    card.user = user
+                    card.card_type = card_type
+                    card.card_data = _extract_card_form_payload(form)
+                    theme_slug = _sanitize_theme_slug(
+                        user, (request.POST.get('theme_slug') or '').strip()[:60]
+                    )
+                    if theme_slug:
+                        card.card_data['theme_slug'] = theme_slug
+                    card.save()
+
+                try:
+                    _send_welcome_email(user)
+                except Exception as exc:
+                    logger.warning("Welcome email dispatch failed: %s", exc)
+
+                login(request, user)
+                messages.success(request, variant['success_message'])
+                return redirect('view_card', slug=card.slug)
+            except Exception as exc:
+                logger.exception("Anonymous onboard failed: %s", exc)
+                messages.error(request, 'We could not save your card right now. Please try again.')
+        else:
+            messages.error(request, 'Fix the highlighted details so we can create your card.')
+
+    context = {
+        'form': form,
+        'signup_form': signup_form,
+        'show_signup_block': True,
+        'card_limit': DEFAULT_CARD_LIMIT,
+        'cards_remaining': DEFAULT_CARD_LIMIT,
+        'builder_variant': variant,
+        'themes': themes_for_user(list(CardTheme.objects.filter(is_active=True)), None),
+        'feature_ai': settings.FEATURE_AI,
+    }
+    return render(request, 'cards/create_card.html', context)
+
+
 def _handle_card_creation(request, card_type: str):
     profile = getattr(request.user, 'profile', None)
     card_limit = getattr(profile, 'card_limit', DEFAULT_CARD_LIMIT)
@@ -1990,9 +2072,36 @@ def card_analytics(request, slug):
         qs.filter(kind=CardInteraction.KIND_CLICK)
         .values('target')
         .annotate(n=Count('id'))
-        .order_by('-n')[:8]
+        .order_by('-n')[:12]
     )
     top_clicks = list(top_clicks_qs)
+
+    # Split clicks into "social platforms" vs "contact channels" for the
+    # drill-down analytics panel.
+    SOCIAL_TARGETS = {
+        'facebook', 'instagram', 'linkedin', 'twitter', 'x', 'youtube',
+        'tiktok', 'whatsapp', 'telegram', 'discord', 'twitch', 'pinterest',
+        'snapchat', 'reddit', 'medium', 'github', 'behance', 'dribbble',
+        'threads', 'mastodon',
+    }
+    CONTACT_TARGETS = {'email', 'phone', 'website', 'wa', 'sms'}
+
+    social_clicks = []
+    contact_clicks = []
+    other_clicks = []
+    for row in top_clicks:
+        t = (row.get('target') or '').lower()
+        if t in SOCIAL_TARGETS:
+            social_clicks.append(row)
+        elif t in CONTACT_TARGETS:
+            contact_clicks.append(row)
+        else:
+            other_clicks.append(row)
+
+    social_top = sorted(social_clicks, key=lambda r: -r['n'])[:6]
+    social_total = sum(r['n'] for r in social_clicks) or 0
+    for row in social_top:
+        row['pct'] = round((row['n'] / social_total * 100), 1) if social_total else 0
 
     # Overall totals
     totals = {
@@ -2006,6 +2115,10 @@ def card_analytics(request, slug):
         'card': card,
         'sparkline_json': json.dumps(sparkline),
         'top_clicks': top_clicks,
+        'social_top': social_top,
+        'social_total': social_total,
+        'contact_clicks': contact_clicks,
+        'other_clicks': other_clicks,
         'totals': totals,
         'analytics_is_capped': analytics_is_capped,
         'analytics_window_days': window_days,
@@ -2344,6 +2457,16 @@ def mark_notification_read(request, notification_id):
     if not note.is_read:
         note.is_read = True
         note.save(update_fields=['is_read'])
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        from django.http import JsonResponse
+        return JsonResponse({
+            'ok': True,
+            'id': note.id,
+            'is_read': note.is_read,
+            'action_url': note.action_url or '',
+        })
+
     if note.action_url:
         return redirect(note.action_url)
     return redirect('user_inbox')

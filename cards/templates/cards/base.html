@@ -174,34 +174,136 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
-    {# Server messages -> SweetAlert toast, now themed via MY-Card tokens #}
+    {# ============ Global toast (top-center, no reload) ============ #}
+    <div id="mcToastRoot" class="mc-toaster" aria-live="polite" aria-atomic="true"></div>
+
+    <style>
+    .mc-toaster {
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+        z-index: 9000; pointer-events: none;
+        display: flex; flex-direction: column; gap: .5rem;
+        max-width: 92vw;
+    }
+    .mc-toast-card {
+        pointer-events: auto;
+        display: flex; align-items: flex-start; gap: .7rem;
+        min-width: 260px; max-width: 460px;
+        padding: .85rem 1rem .85rem .95rem;
+        border-radius: 12px;
+        background: linear-gradient(140deg, rgba(15,23,42,.98), rgba(30,41,59,.96));
+        color: #f1f5f9;
+        border: 1px solid rgba(148,163,184,.22);
+        box-shadow: 0 20px 40px -18px rgba(0,0,0,.55);
+        backdrop-filter: saturate(1.2) blur(10px);
+        animation: mcToastDrop .28s cubic-bezier(.2,.9,.3,1.2) both;
+        position: relative; overflow: hidden;
+    }
+    .mc-toast-card::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 4px; background: var(--mc-accent, #7c3aed);
+    }
+    .mc-toast-card.is-leaving { animation: mcToastLeave .22s ease-in forwards; }
+    .mc-toast-card--success::before { background: #10b981; }
+    .mc-toast-card--error::before   { background: #ef4444; }
+    .mc-toast-card--warn::before    { background: #f59e0b; }
+    .mc-toast-card--info::before    { background: #3b82f6; }
+    .mc-toast-card__ico {
+        flex-shrink: 0;
+        width: 28px; height: 28px; border-radius: 50%;
+        display: grid; place-items: center; color: #fff;
+        background: rgba(139,92,246,.35);
+    }
+    .mc-toast-card--success .mc-toast-card__ico { background: rgba(16,185,129,.28); }
+    .mc-toast-card--error   .mc-toast-card__ico { background: rgba(239,68,68,.28); }
+    .mc-toast-card--warn    .mc-toast-card__ico { background: rgba(245,158,11,.28); }
+    .mc-toast-card--info    .mc-toast-card__ico { background: rgba(59,130,246,.28); }
+    .mc-toast-card__ico i { width: 15px; height: 15px; }
+    .mc-toast-card__body { flex: 1; font-size: .87rem; line-height: 1.4; }
+    .mc-toast-card__x {
+        background: transparent; border: none; color: #94a3b8;
+        cursor: pointer; padding: 2px 4px; margin: -2px -4px 0 0;
+        font-size: 1rem; line-height: 1;
+    }
+    .mc-toast-card__x:hover { color: #f1f5f9; }
+    .mc-toast-card__bar {
+        position: absolute; left: 0; right: 0; bottom: 0;
+        height: 2px; background: linear-gradient(90deg, transparent, rgba(148,163,184,.35), transparent);
+        transform-origin: left;
+        animation: mcToastBar 4.5s linear both;
+    }
+    @keyframes mcToastDrop {
+        from { opacity: 0; transform: translate(-50%, -18px) scale(.96); }
+        to   { opacity: 1; transform: translate(-50%, 0)      scale(1);   }
+    }
+    @keyframes mcToastLeave {
+        to { opacity: 0; transform: translate(-50%, -12px) scale(.96); }
+    }
+    @keyframes mcToastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+    @media (prefers-color-scheme: light) {
+        .mc-toast-card {
+            background: linear-gradient(140deg, #ffffff, #f8fafc);
+            color: #0f172a;
+            border-color: rgba(15,23,42,.08);
+            box-shadow: 0 20px 40px -18px rgba(15,23,42,.2);
+        }
+    }
+    </style>
+
     <script>
-        (function() {
+    /* Exposes window.mcToast(text, {kind}) — call from anywhere.
+       Server-side Django messages also feed in via the stack below.
+       kind ∈ 'success' | 'error' | 'warn' | 'info' (default: 'info'). */
+    (function() {
+        var root = document.getElementById('mcToastRoot');
+        var icons = {
+            success: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
+            error:   '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+            warn:    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9"  x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+            info:    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+        };
+
+        function show(text, opts) {
+            if (!root) return;
+            opts = opts || {};
+            var kind = opts.kind || 'info';
+            var card = document.createElement('div');
+            card.className = 'mc-toast-card mc-toast-card--' + kind;
+            card.innerHTML =
+                '<div class="mc-toast-card__ico">' + (icons[kind] || icons.info) + '</div>' +
+                '<div class="mc-toast-card__body"></div>' +
+                '<button type="button" class="mc-toast-card__x" aria-label="Dismiss">×</button>' +
+                '<div class="mc-toast-card__bar"></div>';
+            card.querySelector('.mc-toast-card__body').textContent = text;
+            root.appendChild(card);
+
+            var dismiss = function() {
+                if (card.classList.contains('is-leaving')) return;
+                card.classList.add('is-leaving');
+                setTimeout(function() { card.remove(); }, 250);
+            };
+            card.querySelector('.mc-toast-card__x').addEventListener('click', dismiss);
+            var t = setTimeout(dismiss, opts.timeout || 4500);
+            card.addEventListener('mouseenter', function() { clearTimeout(t); });
+            card.addEventListener('mouseleave', function() { t = setTimeout(dismiss, 2000); });
+        }
+
+        window.mcToast = show;
+
+        /* Bootstrap Django-flashed messages into the same toast system. */
+        document.addEventListener('DOMContentLoaded', function() {
             var stack = document.querySelectorAll('.mc-toast-stack > div[data-message]');
-            if (!stack.length || !window.Swal) return;
-            var toast = Swal.mixin({
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 4500,
-                timerProgressBar: true,
-                background: 'var(--mc-bg-2)',
-                color: 'var(--mc-text-hi)',
-                iconColor: 'var(--mc-accent)',
-                customClass: { popup: 'mc-toast' },
-                showClass: { popup: 'swal2-noanimation', backdrop: 'swal2-noanimation' },
-                hideClass: { popup: '', backdrop: '' }
-            });
             stack.forEach(function(el) {
                 var text = el.dataset.message || '';
-                var tags = el.dataset.tags || '';
-                var icon = 'info';
-                if (tags.indexOf('success') !== -1) icon = 'success';
-                else if (tags.indexOf('error') !== -1) icon = 'error';
-                else if (tags.indexOf('warning') !== -1) icon = 'warning';
-                toast.fire({ icon: icon, title: text });
+                var tags = el.dataset.tags || 'info';
+                var kind = 'info';
+                if (tags.indexOf('success') !== -1) kind = 'success';
+                else if (tags.indexOf('error') !== -1) kind = 'error';
+                else if (tags.indexOf('warning') !== -1) kind = 'warn';
+                if (text) show(text, { kind: kind });
             });
-        })();
+        });
+    })();
     </script>
 
     {# ---------- Global back button + hidden admin trigger ---------- #}

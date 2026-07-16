@@ -13,6 +13,63 @@
 {% endblock %}
 
 {% block content %}
+{% if is_owner %}
+{# ============ OWNER-ONLY floating bar: back to dashboard + quick edit ============ #}
+<div class="vc-owner-bar" role="navigation" aria-label="Card owner controls">
+    <a href="{% url 'dashboard' %}" class="vc-owner-bar__btn vc-owner-bar__btn--primary">
+        <i data-lucide="layout-dashboard"></i>
+        <span>{% trans "Back to dashboard" %}</span>
+    </a>
+    <a href="{% url 'edit_card' card.slug %}" class="vc-owner-bar__btn">
+        <i data-lucide="pencil"></i>
+        <span>{% trans "Edit card" %}</span>
+    </a>
+    <a href="{% url 'card_analytics' card.slug %}" class="vc-owner-bar__btn">
+        <i data-lucide="line-chart"></i>
+        <span>{% trans "Analytics" %}</span>
+    </a>
+    <span class="vc-owner-bar__note">
+        <i data-lucide="eye"></i>
+        {% trans "You are viewing your own public card" %}
+    </span>
+</div>
+<style>
+.vc-owner-bar {
+    position: sticky; top: 0; z-index: 60;
+    display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
+    padding: .55rem .85rem;
+    background: linear-gradient(90deg, rgba(15,23,42,.92), rgba(30,41,59,.92));
+    border-bottom: 1px solid rgba(148,163,184,.22);
+    backdrop-filter: saturate(1.2) blur(10px);
+}
+.vc-owner-bar__btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    padding: .45rem .8rem; border-radius: 8px;
+    text-decoration: none; font-weight: 600; font-size: .82rem;
+    color: #e5e7eb; border: 1px solid rgba(148,163,184,.28);
+    background: rgba(30,41,59,.6);
+    transition: transform .15s ease, background .15s ease, border-color .15s ease;
+}
+.vc-owner-bar__btn:hover { transform: translateY(-1px); background: rgba(51,65,85,.85); border-color: rgba(139,92,246,.6); }
+.vc-owner-bar__btn--primary {
+    background: linear-gradient(135deg,#4f46e5,#7c3aed);
+    border-color: transparent; color: #fff;
+    box-shadow: 0 6px 16px -6px rgba(124,58,237,.55);
+}
+.vc-owner-bar__btn--primary:hover { transform: translateY(-1px); }
+.vc-owner-bar__btn i { width: 15px; height: 15px; }
+.vc-owner-bar__note {
+    margin-left: auto; display: inline-flex; align-items: center; gap: .3rem;
+    color: #cbd5e1; font-size: .75rem; font-style: italic;
+}
+.vc-owner-bar__note i { width: 13px; height: 13px; }
+@media (max-width: 720px) {
+    .vc-owner-bar__btn span { display: none; }
+    .vc-owner-bar__note { display: none; }
+}
+</style>
+{% endif %}
+
 <div class="vc-page"{% if theme %} style="--mc-accent: {{ theme.accent_color }}; --mc-accent-halo: {{ theme.accent_color }}22; --mc-accent-glow: {{ theme.accent_color }}55; --vc-hero-bg: {{ theme.background }};"{% endif %}>
 
     {# ================ ATMOSPHERIC BACKDROP ================ #}

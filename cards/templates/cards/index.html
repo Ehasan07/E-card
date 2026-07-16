@@ -30,7 +30,7 @@
                 <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
             </button>
             <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
-            <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
+            <a href="#" data-open-onboard class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
         </div>
     </div>
 </nav>
@@ -56,7 +56,7 @@
                 {% trans "Ship a stunning digital identity in minutes. Track how people engage, capture leads on the spot, and save straight to Apple & Google Wallet." %}
             </p>
             <div class="lp-hero__cta mc-fade-up mc-fade-up--d3">
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
+                <a href="#" data-open-onboard class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
                     <i data-lucide="rocket"></i>
                     {% trans "Create your card — free" %}
                 </a>
@@ -662,7 +662,7 @@
                     </ul>
                 </div>
 
-                <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
+                <a href="#" data-open-onboard class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
                     <i data-lucide="user-plus"></i>
                     {% trans "Start free for 12 months" %}
                 </a>
@@ -844,7 +844,7 @@
                 <h2>{% trans "Your next handshake starts with a tap." %}</h2>
                 <p class="mc-text-muted">{% trans "Ship a professional identity in minutes — free forever, no credit card." %}</p>
             </div>
-            <a href="{% url 'register' %}" class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
+            <a href="#" data-open-onboard class="mc-btn mc-btn--primary mc-btn--lg mc-neon-pulse">
                 <i data-lucide="rocket"></i>
                 {% trans "Start building" %}
             </a>
@@ -957,7 +957,7 @@
                 <div class="mc-footer__col-title">{% trans "Account" %}</div>
                 <ul class="mc-footer__links">
                     <li><a href="{% url 'login' %}">{% trans "Log in" %}</a></li>
-                    <li><a href="{% url 'register' %}">{% trans "Start free" %}</a></li>
+                    <li><a href="#" data-open-onboard>{% trans "Start free" %}</a></li>
                 </ul>
             </div>
         </div>
@@ -2600,4 +2600,137 @@
     });
 </script>
 {% endif %}
+
+{# ===================== ONBOARD MODAL (Personal / Business) ===================== #}
+<div class="ob-modal" id="obModal" role="dialog" aria-modal="true" aria-labelledby="obTitle" aria-hidden="true">
+    <div class="ob-modal__scrim" data-ob-close></div>
+    <div class="ob-modal__box">
+        <button type="button" class="ob-modal__x" data-ob-close aria-label="Close">
+            <i data-lucide="x"></i>
+        </button>
+        <div class="ob-modal__head">
+            <span class="mc-badge mc-badge--accent">
+                <span class="mc-badge__dot"></span>
+                {% trans "Two steps. Zero paperwork." %}
+            </span>
+            <h2 id="obTitle">{% trans "What kind of card do you want?" %}</h2>
+            <p class="mc-text-muted">{% trans "Pick a template — we'll open the builder and register your account together." %}</p>
+        </div>
+        <div class="ob-modal__grid">
+            {% if request.user.is_authenticated %}
+                <a href="{% url 'create_card' %}" class="ob-card ob-card--personal">
+                    <div class="ob-card__icon"><i data-lucide="user"></i></div>
+                    <h3>{% trans "Personal" %}</h3>
+                    <p>{% trans "For freelancers, creators, and individuals." %}</p>
+                    <span class="ob-card__cta">{% trans "Choose personal" %} →</span>
+                </a>
+                <a href="{% url 'create_business_card' %}" class="ob-card ob-card--business">
+                    <div class="ob-card__icon"><i data-lucide="briefcase"></i></div>
+                    <h3>{% trans "Business" %}</h3>
+                    <p>{% trans "For companies, teams, and brand identities." %}</p>
+                    <span class="ob-card__cta">{% trans "Choose business" %} →</span>
+                </a>
+            {% else %}
+                <a href="{% url 'start_free' 'personal' %}" class="ob-card ob-card--personal">
+                    <div class="ob-card__icon"><i data-lucide="user"></i></div>
+                    <h3>{% trans "Personal" %}</h3>
+                    <p>{% trans "For freelancers, creators, and individuals." %}</p>
+                    <span class="ob-card__cta">{% trans "Choose personal" %} →</span>
+                </a>
+                <a href="{% url 'start_free' 'business' %}" class="ob-card ob-card--business">
+                    <div class="ob-card__icon"><i data-lucide="briefcase"></i></div>
+                    <h3>{% trans "Business" %}</h3>
+                    <p>{% trans "For companies, teams, and brand identities." %}</p>
+                    <span class="ob-card__cta">{% trans "Choose business" %} →</span>
+                </a>
+            {% endif %}
+        </div>
+        <p class="ob-modal__foot mc-text-muted">
+            {% trans "Already have an account?" %}
+            <a href="{% url 'login' %}" class="mc-text-accent">{% trans "Log in →" %}</a>
+        </p>
+    </div>
+</div>
+
+<style>
+.ob-modal { position:fixed; inset:0; z-index:2000; display:none; }
+.ob-modal.is-open { display:block; }
+.ob-modal__scrim {
+    position:absolute; inset:0;
+    background:radial-gradient(60% 60% at 50% 40%, rgba(15,23,42,.7), rgba(2,6,23,.85));
+    backdrop-filter:blur(8px);
+    animation: obFadeIn .22s ease-out both;
+}
+.ob-modal__box {
+    position:relative; margin:8vh auto 0; max-width:640px;
+    background:var(--mc-surface,#0b1220); border:1px solid var(--mc-border,rgba(148,163,184,.2));
+    border-radius:20px; padding:2rem 1.75rem 1.5rem; color:var(--mc-text,#e5e7eb);
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,.6);
+    animation: obPop .28s cubic-bezier(.2,.9,.3,1.2) both;
+}
+.ob-modal__x {
+    position:absolute; top:14px; right:14px; width:34px; height:34px;
+    border:1px solid var(--mc-border,rgba(148,163,184,.2)); background:transparent;
+    color:var(--mc-text-muted); border-radius:10px; cursor:pointer;
+    display:grid; place-items:center;
+}
+.ob-modal__x:hover { background:rgba(148,163,184,.1); color:var(--mc-text); }
+.ob-modal__head { text-align:center; margin-bottom:1.4rem; }
+.ob-modal__head h2 { font-size:1.55rem; margin:.5rem 0 .4rem; }
+.ob-modal__grid { display:grid; grid-template-columns:1fr 1fr; gap:.9rem; }
+.ob-card {
+    display:flex; flex-direction:column; gap:.4rem;
+    padding:1.25rem; border-radius:14px; text-decoration:none; color:inherit;
+    border:1px solid var(--mc-border,rgba(148,163,184,.25));
+    background: linear-gradient(140deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+.ob-card:hover { transform:translateY(-3px); border-color:rgba(139,92,246,.6); background:linear-gradient(140deg, rgba(139,92,246,.09), rgba(59,130,246,.05)); }
+.ob-card__icon {
+    width:44px; height:44px; border-radius:12px; display:grid; place-items:center;
+    background:linear-gradient(135deg, #7c3aed, #4f46e5); color:#fff;
+    margin-bottom:.35rem;
+}
+.ob-card--business .ob-card__icon { background:linear-gradient(135deg, #059669, #10b981); }
+.ob-card h3 { margin:0; font-size:1.1rem; font-weight:800; }
+.ob-card p { margin:0; color:var(--mc-text-muted); font-size:.85rem; }
+.ob-card__cta { margin-top:.6rem; font-weight:700; font-size:.85rem; color:var(--mc-text-accent, #a78bfa); }
+.ob-modal__foot { text-align:center; margin-top:1.25rem; font-size:.85rem; }
+
+@keyframes obFadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes obPop { from { transform:translateY(-16px) scale(.95); opacity:0; } to { transform:none; opacity:1; } }
+
+@media (max-width: 560px) {
+    .ob-modal__box { margin:6vh 1rem 0; }
+    .ob-modal__grid { grid-template-columns:1fr; }
+}
+</style>
+
+<script>
+(function() {
+    var modal = document.getElementById('obModal');
+    if (!modal) return;
+    var openers = document.querySelectorAll('[data-open-onboard]');
+    var closers = modal.querySelectorAll('[data-ob-close]');
+
+    function open() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    }
+    function close() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    openers.forEach(function(a) {
+        a.addEventListener('click', function(e) { e.preventDefault(); open(); });
+    });
+    closers.forEach(function(c) { c.addEventListener('click', close); });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) close();
+    });
+})();
+</script>
 {% endblock %}
