@@ -34,13 +34,22 @@
     </span>
 </div>
 <style>
+/* Owner bar dominates the top strip on the owner's own public page —
+   hide the global page-bar + lang-pill (they'd overlap the back /
+   edit buttons and the owner already has a proper back-to-dashboard
+   button in-bar). */
+body:has(.vc-owner-bar) .mc-page-bar,
+body:has(.vc-owner-bar) .mc-lang-pill { display: none !important; }
+body:has(.vc-owner-bar) .mc-nav .mc-nav__inner { padding-left: 0 !important; }
+
 .vc-owner-bar {
-    position: sticky; top: 0; z-index: 60;
+    position: sticky; top: 0; z-index: 250;
     display: flex; flex-wrap: wrap; align-items: center; gap: .5rem;
     padding: .55rem .85rem;
-    background: color-mix(in oklab, var(--mc-bg-1) 92%, transparent);
+    background: color-mix(in oklab, var(--mc-bg-1) 96%, transparent);
     border-bottom: 1px solid var(--mc-border-hi);
     backdrop-filter: saturate(1.2) blur(10px);
+    box-shadow: 0 2px 8px -4px color-mix(in oklab, var(--mc-text-hi) 20%, transparent);
 }
 .vc-owner-bar__btn {
     display: inline-flex; align-items: center; gap: .4rem;
