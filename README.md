@@ -351,6 +351,6 @@ MIT — see [LICENSE](LICENSE).
 
 <div align="center">
 
-Built by [Shubham](mailto:shubham@speedotrack.com) at **Dupno**
+Built by **Dupno**
 
 </div>
