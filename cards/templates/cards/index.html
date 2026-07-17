@@ -2219,9 +2219,19 @@
     flex-direction: column;
     align-items: center;
     gap: var(--mc-s-2);
+    width: 100%;
+    max-width: var(--card-w);
 }
-@media (max-width: 480px) {
-    .lp-mini { --card-w: 280px; --card-h: 176px; }
+@media (max-width: 560px) {
+    /* Full-width on phones — the mini card scales to the viewport
+       instead of being pinned at 280px and clipping tall content. */
+    .lp-mini {
+        --card-w: min(340px, calc(100vw - 40px));
+        --card-h: auto;
+    }
+}
+@media (max-width: 380px) {
+    .lp-mini { --card-w: calc(100vw - 32px); }
 }
 
 .lp-mini__label {
@@ -2238,7 +2248,7 @@
 
 .lp-mini__card {
     width: var(--card-w);
-    height: var(--card-h);
+    min-height: var(--card-h);
     background: var(--pc-bg);
     color: var(--pc-text);
     border-radius: 14px;
@@ -2253,6 +2263,9 @@
     flex-direction: column;
     isolation: isolate;
     transition: transform 0.6s var(--mc-ease), box-shadow 0.6s var(--mc-ease);
+}
+@media (max-width: 560px) {
+    .lp-mini__card { padding: 14px 16px; min-height: 190px; }
 }
 .lp-mini__card::after {
     content: '';
@@ -2460,9 +2473,18 @@
     border-top: 1px solid rgba(255,255,255,0.08);
     font-size: 0.6rem;
     color: rgba(255,255,255,0.65);
+    flex-wrap: wrap;
 }
-.lp-mini__mono { font-family: var(--mc-font-mono); }
+.lp-mini__mono { font-family: var(--mc-font-mono); word-break: break-all; }
 .lp-mini__slogan { color: var(--pc-accent); font-weight: 600; font-style: italic; }
+
+@media (max-width: 380px) {
+    .lp-mini__back-body { flex-direction: column; align-items: stretch; gap: 10px; }
+    .lp-mini__qr { width: 78px; height: 78px; margin: 0 auto; }
+    .lp-mini__back-info p { font-size: 0.62rem; }
+    .lp-mini__contacts { font-size: 0.7rem; }
+    .lp-mini__name { font-size: 1rem; }
+}
 
 /* ---- Right-side feature list ---- */
 .lp-live__side {

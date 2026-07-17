@@ -1026,3 +1026,255 @@ msgid ""
 "save."
 msgstr ""
 "ইমেইলে ৬-সংখ্যার কোড, রিসেটের পর অটো লগইন। গুগল-স্টাইলে পাসওয়ার্ড সেভ।"
+
+# ============ Billing / receipt ============
+msgid "Billing"
+msgstr "বিলিং"
+
+msgid "Your payments & receipts"
+msgstr "আপনার পেমেন্ট ও রশিদ"
+
+msgid "Every renewal on this account. Click any invoice to open a printable receipt."
+msgstr "এই অ্যাকাউন্টের প্রতিটি নবায়ন। যেকোনো ইনভয়েসে ক্লিক করে প্রিন্টযোগ্য রশিদ দেখুন।"
+
+msgid "Subscription active until"
+msgstr "সাবস্ক্রিপশন সচল আছে"
+
+msgid "All of your cards stay online. Next auto-renewal on this date."
+msgstr "আপনার সবগুলো কার্ড অনলাইন থাকবে। পরবর্তী অটো-নবায়ন এই তারিখে।"
+
+msgid "Trial in progress"
+msgstr "ট্রায়াল চলছে"
+
+msgid "You're on the free 12-month trial. Renewals will appear here."
+msgstr "আপনি ফ্রি ১২ মাসের ট্রায়ালে আছেন। নবায়ন এখানে দেখা যাবে।"
+
+msgid "Invoice"
+msgstr "ইনভয়েস"
+
+msgid "Date"
+msgstr "তারিখ"
+
+msgid "Gateway"
+msgstr "গেটওয়ে"
+
+msgid "Amount"
+msgstr "পরিমাণ"
+
+msgid "Status"
+msgstr "স্ট্যাটাস"
+
+msgid "Wallet / txn"
+msgstr "ওয়ালেট / লেনদেন"
+
+msgid "Action"
+msgstr "কাজ"
+
+msgid "Success"
+msgstr "সফল"
+
+msgid "Pending"
+msgstr "অপেক্ষমান"
+
+msgid "Failed"
+msgstr "ব্যর্থ"
+
+msgid "Receipt"
+msgstr "রশিদ"
+
+msgid "No payments yet — your renewals and upgrades will show up here."
+msgstr "এখনো কোনো পেমেন্ট নেই — আপনার নবায়ন ও আপগ্রেড এখানে দেখা যাবে।"
+
+msgid "All payments"
+msgstr "সব পেমেন্ট"
+
+msgid "Billing history"
+msgstr "বিলিং ইতিহাস"
+
+msgid "Print / Save PDF"
+msgstr "প্রিন্ট / PDF সেভ করুন"
+
+msgid "INVOICE"
+msgstr "ইনভয়েস"
+
+msgid "Billed to"
+msgstr "বিলড করা হয়েছে"
+
+msgid "Payment date"
+msgstr "পেমেন্টের তারিখ"
+
+msgid "PAID"
+msgstr "পরিশোধিত"
+
+msgid "PENDING"
+msgstr "অপেক্ষমান"
+
+msgid "FAILED"
+msgstr "ব্যর্থ"
+
+msgid "Description"
+msgstr "বিবরণ"
+
+msgid "plan"
+msgstr "প্ল্যান"
+
+msgid "MY-Card yearly subscription"
+msgstr "MY-Card বাৎসরিক সাবস্ক্রিপশন"
+
+msgid "Cycle: Calendar year · Includes every card on the account for the next 12 months."
+msgstr "চক্র: বাৎসরিক · এই অ্যাকাউন্টের প্রতিটি কার্ড পরবর্তী ১২ মাসের জন্য।"
+
+#, python-format
+msgid "Total (%(cur)s)"
+msgstr "মোট (%(cur)s)"
+
+msgid "Transaction ID"
+msgstr "ট্রানজেকশন আইডি"
+
+msgid "Subscription ID"
+msgstr "সাবস্ক্রিপশন আইডি"
+
+msgid "Request ID"
+msgstr "রিকোয়েস্ট আইডি"
+
+msgid "Next auto-renewal"
+msgstr "পরবর্তী অটো-নবায়ন"
+
+msgid "Subscription expires"
+msgstr "সাবস্ক্রিপশন শেষ হবে"
+
+msgid "Support"
+msgstr "সাপোর্ট"
+
+msgid "Thank you for staying with us."
+msgstr "আমাদের সাথে থাকার জন্য ধন্যবাদ।"
+
+# ============ Owner bar on public card ============
+msgid "Back to dashboard"
+msgstr "ড্যাশবোর্ডে ফিরুন"
+
+msgid "Edit card"
+msgstr "কার্ড সম্পাদনা"
+
+msgid "Analytics"
+msgstr "অ্যানালিটিক্স"
+
+msgid "You are viewing your own public card"
+msgstr "আপনি নিজের পাবলিক কার্ড দেখছেন"
+
+# ============ Onboarding modal ============
+msgid "Two steps. Zero paperwork."
+msgstr "দুই ধাপ। কোনো কাগজপত্র নয়।"
+
+msgid "What kind of card do you want?"
+msgstr "আপনি কেমন কার্ড চান?"
+
+msgid "Pick a template — we'll open the builder and register your account together."
+msgstr "একটা টেমপ্লেট বেছে নিন — আমরা বিল্ডার খুলবো আর একসাথে আপনার অ্যাকাউন্ট তৈরি করবো।"
+
+msgid "Personal"
+msgstr "ব্যক্তিগত"
+
+msgid "For freelancers, creators, and individuals."
+msgstr "ফ্রিল্যান্সার, ক্রিয়েটর ও ব্যক্তিদের জন্য।"
+
+msgid "Choose personal"
+msgstr "ব্যক্তিগত নির্বাচন করুন"
+
+msgid "Business"
+msgstr "বিজনেস"
+
+msgid "For companies, teams, and brand identities."
+msgstr "কোম্পানি, টিম ও ব্র্যান্ডের জন্য।"
+
+msgid "Choose business"
+msgstr "বিজনেস নির্বাচন করুন"
+
+msgid "Already have an account?"
+msgstr "আগে থেকেই অ্যাকাউন্ট আছে?"
+
+msgid "Log in →"
+msgstr "লগইন করুন →"
+
+# ============ Create card — signup block + journey stepper ============
+msgid "Your account"
+msgstr "আপনার অ্যাকাউন্ট"
+
+msgid "Fill this once — we'll auto-create your studio."
+msgstr "একবার পূরণ করুন — আমরা আপনার স্টুডিও তৈরি করে দেবো।"
+
+msgid "Username"
+msgstr "ইউজারনেম"
+
+msgid "Email"
+msgstr "ইমেইল"
+
+msgid "Password"
+msgstr "পাসওয়ার্ড"
+
+msgid "At least 8 characters — pick something you'll remember."
+msgstr "অন্তত ৮ অক্ষর — এমন কিছু নিন যা মনে রাখতে পারবেন।"
+
+msgid "Sign in →"
+msgstr "সাইন ইন →"
+
+msgid "Account"
+msgstr "অ্যাকাউন্ট"
+
+msgid "Basics"
+msgstr "মূল তথ্য"
+
+msgid "Brand"
+msgstr "ব্র্যান্ড"
+
+msgid "Theme"
+msgstr "থিম"
+
+msgid "Social"
+msgstr "সোশ্যাল"
+
+# ============ Analytics drill-down ============
+msgid "Views detail"
+msgstr "ভিউয়ের বিস্তারিত"
+
+#, python-format
+msgid "Your card has been viewed %(n)s times in this window."
+msgstr "এই সময়সীমায় আপনার কার্ড %(n)s বার দেখা হয়েছে।"
+
+msgid "Unique per browser session — repeat scrolls don't inflate the number."
+msgstr "প্রতি ব্রাউজার সেশনে ইউনিক — বারবার স্ক্রল করলে সংখ্যা বাড়ে না।"
+
+msgid "Peak days are shown in the trend chart below."
+msgstr "সর্বোচ্চ দিনগুলো নিচের চার্টে দেখানো হয়েছে।"
+
+msgid "Click breakdown"
+msgstr "ক্লিকের বিশ্লেষণ"
+
+msgid "Top social buttons"
+msgstr "সেরা সোশ্যাল বাটন"
+
+msgid "No social CTA clicks yet — share your card to start tracking."
+msgstr "এখনো কোনো সোশ্যাল ক্লিক নেই — কার্ড শেয়ার করে ট্র্যাক শুরু করুন।"
+
+msgid "Contact channels"
+msgstr "যোগাযোগ চ্যানেল"
+
+msgid "Contact saves detail"
+msgstr "কন্টাক্ট সেভের বিস্তারিত"
+
+#, python-format
+msgid "%(n)s visitors downloaded your vCard to their phone contacts."
+msgstr "%(n)s জন দর্শক তাদের ফোন কন্টাক্টে আপনার vCard সেভ করেছেন।"
+
+msgid "This is the strongest engagement signal — someone kept your details for later."
+msgstr "এটাই সবচেয়ে শক্তিশালী এনগেজমেন্ট সিগনাল — কেউ পরে ব্যবহারের জন্য আপনার তথ্য রেখেছে।"
+
+msgid "Leads detail"
+msgstr "লিডের বিস্তারিত"
+
+#, python-format
+msgid "%(n)s people submitted the lead-capture form."
+msgstr "%(n)s জন লিড-ক্যাপচার ফর্ম জমা দিয়েছেন।"
+
+msgid "Open leads inbox"
+msgstr "লিড ইনবক্স খুলুন"

@@ -27,23 +27,23 @@
             <div>
                 <span class="mc-badge mc-badge--accent">
                     <span class="mc-badge__dot"></span>
-                    Billing
+                    {% trans "Billing" %}
                 </span>
-                <h1>Your payments &amp; receipts</h1>
+                <h1>{% trans "Your payments & receipts" %}</h1>
                 <p class="mc-text-muted">
-                    Every renewal on this account. Click any invoice to open a printable receipt.
+                    {% trans "Every renewal on this account. Click any invoice to open a printable receipt." %}
                 </p>
             </div>
             {% if paid_until %}
             <div class="pay-hero__status">
-                <div class="pay-hero__status-label">Subscription active until</div>
+                <div class="pay-hero__status-label">{% trans "Subscription active until" %}</div>
                 <div class="pay-hero__status-date">{{ paid_until|date:"F j, Y" }}</div>
-                <div class="pay-hero__status-note">All of your cards stay online. Next auto-renewal on this date.</div>
+                <div class="pay-hero__status-note">{% trans "All of your cards stay online. Next auto-renewal on this date." %}</div>
             </div>
             {% else %}
             <div class="pay-hero__status pay-hero__status--muted">
-                <div class="pay-hero__status-label">Trial in progress</div>
-                <div class="pay-hero__status-note">You're on the free 12-month trial. Renewals will appear here.</div>
+                <div class="pay-hero__status-label">{% trans "Trial in progress" %}</div>
+                <div class="pay-hero__status-note">{% trans "You're on the free 12-month trial. Renewals will appear here." %}</div>
             </div>
             {% endif %}
         </header>
@@ -53,13 +53,13 @@
                 <table class="pay-table">
                     <thead>
                         <tr>
-                            <th>Invoice</th>
-                            <th>Date</th>
-                            <th>Gateway</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                            <th>Wallet / txn</th>
-                            <th style="text-align:right;">Action</th>
+                            <th>{% trans "Invoice" %}</th>
+                            <th>{% trans "Date" %}</th>
+                            <th>{% trans "Gateway" %}</th>
+                            <th>{% trans "Amount" %}</th>
+                            <th>{% trans "Status" %}</th>
+                            <th>{% trans "Wallet / txn" %}</th>
+                            <th style="text-align:right;">{% trans "Action" %}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -71,11 +71,11 @@
                             <td><strong>৳ {{ row.obj.amount }}</strong></td>
                             <td>
                                 {% if row.obj.status == 'success' %}
-                                    <span class="pay-pill pay-pill--ok">Success</span>
+                                    <span class="pay-pill pay-pill--ok">{% trans "Success" %}</span>
                                 {% elif row.obj.status == 'pending' %}
-                                    <span class="pay-pill pay-pill--warn">Pending</span>
+                                    <span class="pay-pill pay-pill--warn">{% trans "Pending" %}</span>
                                 {% elif row.obj.status == 'failed' %}
-                                    <span class="pay-pill pay-pill--danger">Failed</span>
+                                    <span class="pay-pill pay-pill--danger">{% trans "Failed" %}</span>
                                 {% else %}
                                     <span class="pay-pill">{{ row.obj.get_status_display }}</span>
                                 {% endif %}
@@ -86,12 +86,12 @@
                             </td>
                             <td style="text-align:right;">
                                 <a href="{% url 'payment_receipt' row.obj.pk %}" class="pay-btn pay-btn--ghost">
-                                    <i data-lucide="receipt"></i> Receipt
+                                    <i data-lucide="receipt"></i> {% trans "Receipt" %}
                                 </a>
                             </td>
                         </tr>
                     {% empty %}
-                        <tr><td colspan="7" class="pay-empty">No payments yet — your renewals and upgrades will show up here.</td></tr>
+                        <tr><td colspan="7" class="pay-empty">{% trans "No payments yet — your renewals and upgrades will show up here." %}</td></tr>
                     {% endfor %}
                     </tbody>
                 </table>
