@@ -351,6 +351,6 @@ MIT — see [LICENSE](LICENSE).
 
 <div align="center">
 
-Built by **Dupno**
+Built by [Ehasan](https://github.com/Ehasan07) at **Dupno**
 
 </div>
