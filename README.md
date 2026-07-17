@@ -1,162 +1,356 @@
-# MY-Card Studio
+<div align="center">
 
-MY-Card Studio is a Django-powered platform for designing and publishing cinematic digital cards. The experience pairs a marketing-grade landing page with a two-panel builder, real-time previewing, and a QR-first sharing flow. Users can craft **personal** or **business** cards, while admins manage the workspace, moderate cards, and export data for reporting.
+# MY-Card
+
+### Digital business card platform for the tap-and-share era
+
+**Live app →** [mycard.dupno.com](https://mycard.dupno.com) &nbsp;•&nbsp; **Demo card →** [/card/shiplu07/](https://mycard.dupno.com/card/shiplu07/) &nbsp;•&nbsp; **Docs →** [/documentation/](https://mycard.dupno.com/documentation/)
+
+[![Django](https://img.shields.io/badge/Django-5.2-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![bKash](https://img.shields.io/badge/bKash-Recurring%20Payment-E2136E)](https://www.bkash.com/)
+[![Deploy](https://img.shields.io/badge/Deploy-Hetzner%20VPS-D50C2D)](https://www.hetzner.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Production-brightgreen)](https://mycard.dupno.com)
+
+<br>
+
+*Replace paper cards with a live, trackable link. QR-first sharing. Real-time preview. bKash-native billing.*
+
+</div>
 
 ---
+
 ## Table of Contents
-1. [Feature Highlights](#feature-highlights)
-2. [Quick Start](#quick-start)
-3. [Application Walkthrough](#application-walkthrough)
-4. [Business vs Personal Cards](#business-vs-personal-cards)
-5. [Admin Capabilities](#admin-capabilities)
-6. [Architecture](#architecture)
-7. [Technology Stack](#technology-stack)
-8. [Testing](#testing)
-9. [Deployment Notes](#deployment-notes)
-10. [Troubleshooting](#troubleshooting)
+
+1. [What it does](#what-it-does)
+2. [Screens & flows](#screens--flows)
+3. [Features](#features)
+4. [Tech stack](#tech-stack)
+5. [Architecture](#architecture)
+6. [Quick start (local)](#quick-start-local)
+7. [Deployment](#deployment)
+8. [bKash integration](#bkash-integration)
+9. [Roadmap](#roadmap)
+10. [Repository layout](#repository-layout)
 11. [Contributing](#contributing)
 12. [License](#license)
 
 ---
-## Feature Highlights
-- **Immersive landing page** – Animated hero, glassmorphism surfaces, and scroll-triggered reveals showcase the product before signup.
-- **Dual card builders** – Choose between personal and business card flows, each with contextual copy and restrictions.
-- **Live preview** – The builder scrolls in sync with a live card preview, complete with gradient backgrounds, avatar/logo fallbacks, and responsive contact chips.
-- **Social deep links** – Support for Messenger, Discord, Parrale, and a wide range of social platforms with branded styling across preview and public views.
-- **Direct password recovery** – Skip email loops: users reset credentials with a minimalist three-step flow.
-- **QR-first sharing** – Published cards generate downloadable QR codes and quick actions for calls, SMS, saving contacts, or copying the public URL.
-- **Admin dashboard** – View usage stats, moderate cards, reactivate accounts, and export CSV/Excel bundles of user and card data.
+
+## What it does
+
+**One card. Every channel.** MY-Card gives every user a shareable page at
+`mycard.dupno.com/card/<username>` with:
+
+- Live avatar, job title, company, phone, email
+- Tap-to-save vCard (Apple Contacts / Google Contacts)
+- Wallet pass (Apple + Google Pay)
+- QR code that always points to the same URL
+- 30+ social & messaging links
+- Analytics: views, click-throughs per platform, contact saves, lead form submissions
+
+Everything is **updateable in place** — hand out one card, keep changing the details behind it for years.
+
+### Two product tracks
+
+| | Personal card | Business card |
+|---|---|---|
+| **Who** | Freelancers, creators, individuals | Companies, teams, brand identities |
+| **Fields** | First name, role, socials, personal bio | Company name, logo, team members, business highlight |
+| **Theme** | Colour-forward, portrait-first | Logo-forward, brand-consistent |
+| **Preview** | Portrait phone frame | Landscape business card frame |
 
 ---
-## Quick Start
-### Prerequisites
-- Python 3.10+
-- pip
-- SQLite (bundled) or PostgreSQL 12+ for production
 
-### Installation
+## Screens & flows
+
+Full end-to-end flows, all live:
+
+| Flow | URL | Description |
+|---|---|---|
+| Landing | [`/`](https://mycard.dupno.com/) | Animated hero, live demo preview, pricing, feature grid, testimonials |
+| Onboarding modal | (from landing) | Personal / Business chooser popup — one-tap into the builder |
+| Card builder | `/start/<type>/` | Journey stepper + live preview panel (blinq.me-style) with inline signup for new visitors |
+| Public card | `/card/<slug>/` | Owner sees back-to-dashboard bar; public visitors see the card + QR + wallet buttons |
+| Dashboard | `/dashboard/` | Sidebar layout with your cards, leads, notifications, billing, analytics |
+| Analytics | `/card/<slug>/analytics/` | Sparkline, click-through breakdown by social platform + contact channel |
+| Billing | `/billing/` | Every payment, printable QuickBooks-style receipt |
+| Admin | `/my-admin/dashboard/` | User + card + payment + card-lifecycle admin surface |
+| bKash checkout | `/pay/bkash/initiate/` | Real bKash Recurring Payment Platform integration (mock mode until sandbox creds land) |
+
+---
+
+## Features
+
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### Public card
+
+- 30+ social / contact CTAs
+- QR + shareable link
+- Apple & Google Wallet passes
+- vCard download
+- Owner-only sticky nav bar
+- Physical-card print layout
+- SEO + OpenGraph meta
+
+</td>
+<td width="33%" valign="top">
+
+### Builder
+
+- Journey stepper (5 steps)
+- Live preview updates on every keystroke
+- Curated theme picker
+- Custom public URL (Pro, one-time change)
+- Avatar + logo upload
+- Anonymous → auto-register on save
+
+</td>
+<td width="33%" valign="top">
+
+### Business layer
+
+- bKash Recurring Payment integration
+- 12-month free trial → yearly renewal
+- Card-lifecycle system with 30/7/1-day warnings
+- 7-day grace period after expiry
+- Admin dashboard + statements
+- Printable payment receipts
+- Leads inbox + lead-capture forms
+
+</td>
+</tr>
+</table>
+
+### Notable UX polish
+
+- **Toast system** — top-center, no-reload, hover-to-pause, JSON-driven `window.mcToast()` API
+- **Theme-aware everywhere** — every surface uses design tokens (`--mc-bg-*`, `--mc-text-*`, `--mc-accent-*`) so dark ↔ light switch is instant
+- **AJAX inbox** — mark-as-read updates in place, keeps scroll position
+- **Multilingual** — English + Bengali (বাংলা) with runtime switcher
+- **Print CSS** — receipts and admin statements produce clean paper output with repeating table headers
+
+---
+
+## Tech stack
+
+| Layer | Choice | Why |
+|---|---|---|
+| Backend | **Django 5.2** + Python 3.12 | Fast to iterate, mature ORM, admin scaffolding |
+| Database | **PostgreSQL 16** | JSONB for `card_data`, strong indexing |
+| Frontend | Server-rendered Django templates + vanilla JS | Zero build step, works everywhere |
+| Icons | [Lucide](https://lucide.dev/) | Consistent stroke, tree-shakeable |
+| Payments | **bKash Recurring Payment Platform (RPP) v2.1.2** + Stripe stubs | Bangladesh-first market |
+| Web server | Nginx + Gunicorn (systemd) | Battle-tested, HTTP/2 |
+| SSL | Let's Encrypt (auto-renew) | Free, TLS 1.2+ |
+| Hosting | Hetzner Cloud VPS | Cheap and fast |
+| Emails | SMTP (SendGrid/Google) | Password reset + welcome |
+| Media | Pillow + local FS | Simple for the current scale |
+| QR / vCard | `qrcode`, `vobject` | Standards-compliant output |
+
+---
+
+## Architecture
+
+```
+                                   ┌─────────────────────────────┐
+   Browser  ─── HTTPS ── Nginx ────►│  Gunicorn (systemd)         │
+   (mobile / desktop / QR scan)     │  ├─ MY-Card Django app      │
+                                    │  │  ├─ cards/               │  ← models, views, forms
+                                    │  │  ├─ gateways/bkash.py    │  ← RPP client + HMAC verify
+                                    │  │  └─ templates/           │
+                                    │  └─ Static + media          │
+                                    └────────────┬────────────────┘
+                                                 │
+                                    ┌────────────▼────────────────┐
+                                    │  PostgreSQL 16              │
+                                    │  ├─ Card (JSONB card_data)  │
+                                    │  ├─ Payment (bKash fields)  │
+                                    │  ├─ CardLifecycleLog        │
+                                    │  └─ UserNotification        │
+                                    └────────────┬────────────────┘
+                                                 │
+                    ┌────────────────────────────┼────────────────────────────┐
+                    │                            │                            │
+              ┌─────▼─────┐              ┌──────▼───────┐             ┌──────▼─────┐
+              │ bKash RPP │              │ SMTP relay   │             │ Cron       │
+              │ webhook + │              │ (welcome +   │             │ daily      │
+              │ redirect  │              │  password    │             │ lifecycle  │
+              │ endpoints │              │  reset)      │             │ tick 2:15  │
+              └───────────┘              └──────────────┘             └────────────┘
+```
+
+Detailed technical write-ups:
+- **[FEATURES.md](FEATURES.md)** — every product area, decision log, feature detail
+- **[PITCH.md](PITCH.md)** — customer-facing product pitch, why anyone should pay
+
+---
+
+## Quick start (local)
+
+**Prerequisites**
+
+- Python 3.12+
+- PostgreSQL 14+ (or use bundled SQLite for dev)
+- Git
+
 ```bash
-# Clone and enter the repo
+# 1. Clone
 git clone https://github.com/Ehasan07/E-card.git
 cd E-card
 
-# Set up a virtual environment
+# 2. Virtual env
 python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+source venv/bin/activate            # Windows: venv\Scripts\activate
 
-# Install requirements
+# 3. Dependencies
 pip install -r requirements.txt
 
-# Configure environment
-cp .env.example .env
-# Update SECRET_KEY, DATABASE_URL, email credentials, etc.
+# 4. Environment
+cp .env.example .env                # then edit SECRET_KEY, DATABASE_URL, BKASH_*, etc.
 
-# Apply migrations and create a superuser
+# 5. Database + admin user
 python manage.py migrate
 python manage.py createsuperuser
 
-# Collect static assets (optional for dev, required for prod)
+# 6. Static assets (optional for dev, required for prod)
 python manage.py collectstatic --noinput
 
-# Run the dev server
+# 7. Run
 python manage.py runserver
 ```
 
----
-## Application Walkthrough
-| Area | URL | Description |
-|------|-----|-------------|
-| Landing | `/` | Cinematic marketing page with feature grid, FAQ, statistics, and CTA deck. |
-| Documentation | `/documentation/` | Animated knowledge base rendering the README with callouts and gradient toggles. |
-| Auth | `/register/`, `/login/` | Branded forms that capture username, email, password, and phone. |
-| Builder | `/create/`, `/create/business/` | Two-panel editor with contextual helper text, gradient presets, and live preview. |
-| Public cards | `/card/<slug>/` | Responsive card layout with quick actions, unique slug, and QR download. |
-| Admin | `/my-admin/dashboard/` | Glass dashboard summarising users, cards, and pending requests. |
+Now open `http://localhost:8000/` — you should see the landing page.
+
+To test the bKash flow locally set `BKASH_MODE=mock` in `.env`; the mock checkout page accepts these sandbox test wallets:
+
+```
+01770618575  PIN 12121     01929918378  PIN 12121
+01770618576  PIN 21212     01877722345  PIN 13131
+01619777282  PIN 21212     01619777283  PIN 13131
+```
+
+OTP is `123456` for every wallet.
 
 ---
-## Business vs Personal Cards
-| Aspect | Personal Card | Business Card |
-|--------|---------------|---------------|
-| URL | `/create/` | `/create/business/` |
-| Spotlight | *None* – standard fields only | Optional **Business Spotlight** field with phone, email, or website highlight. |
-| CTA Copy | “Craft your interactive identity” | “Launch your business presence” |
-| Forms | Same core form, but business cards display additional guidance around the spotlight field. |
 
-Both card types share:
-- Avatar/logo uploads with instant preview.
-- Gradient palette with 16 presets + custom colour picker.
-- Social link fields for platforms including Messenger, Discord, Parrale, and more.
-- Real-time validation for usernames, emails, and duplicate phone numbers.
+## Deployment
 
----
-## Admin Capabilities
-- **Dashboard** – Stats for total users/cards, pending upgrade requests, and quick links back to cards.
-- **User management** – Adjust card limits, deactivate/reactivate cards, delete users.
-- **Exports** – Download CSV bundle (users + cards) or Excel workbook with dynamic card JSON columns.
-- **Moderation** – Toggle card visibility and respond to upgrade requests directly from the dashboard.
+Currently deployed on Hetzner Cloud VPS:
 
-Admin routes are protected by `user_passes_test` with redirects to `/my-admin/login/` for unauthorised access.
+- **Nginx** — reverse proxy, HTTP/2, HSTS
+- **Gunicorn** — 4 workers, systemd unit (`gunicorn-my-card.service`)
+- **PostgreSQL 16** — local socket
+- **Let's Encrypt** — auto-renew via certbot
+- **Cron** — `python manage.py card_lifecycle_tick` daily at 02:15
+
+Deploy = `git pull` on the server + `systemctl restart gunicorn-my-card mycard`. Zero-downtime because gunicorn drains old workers on `-HUP`.
 
 ---
-## Architecture
+
+## bKash integration
+
+Full end-to-end **bKash Recurring Payment Platform (RPP) v2.1.2** implementation.
+
+- `cards/gateways/bkash.py` — `BkashClient` with `create_subscription`, `query`, `cancel`, `refund` + module-level `verify_signature()` (HMAC-SHA256, base64url — matches guide page 19)
+- `cards/views.py` — `bkash_initiate`, `bkash_return`, `bkash_webhook`, `bkash_mock_checkout`, `_grant_subscription`
+- `cards/templates/cards/bkash_*.html` — mock checkout (real-bKash lookalike), return landing, journey mockup for S-2 milestone
+
+**Milestone status:**
+
+| Step | Task | Status |
+|---|---|---|
+| S-1 | API docs + Swagger + sandbox URL received | ✅ |
+| S-2 | Share Redirect / Webhook / Display Name / Journey URL | ✅ ready to send |
+| S-2 | Receive sandbox credentials from bKash | ⏳ waiting |
+| S-3 | Sandbox test + API responses shared with bKash | code complete, needs creds |
+| S-4 → S-7 | Production onboarding + UAT + go-live | not started |
+
+**Mock mode** (`BKASH_MODE=mock`) lets us demo the full flow without live credentials — the mock checkout page uses the six sandbox wallets from bKash's onboarding email + OTP `123456`.
+
+---
+
+## Roadmap
+
+**Shipping now (v1)**
+- [x] Personal + business card builder with live preview
+- [x] QR + wallet pass + vCard
+- [x] Analytics with per-CTA click ranking
+- [x] bKash Recurring Payment integration (mock + sandbox-ready)
+- [x] User + admin billing dashboards with printable receipts
+- [x] Card lifecycle (trial → paid → expiring → expired → deactivated) + 30/7/1 day warnings + inbox notifications
+- [x] Multi-language (English + Bengali)
+- [x] Owner-only sticky nav on public card
+- [x] Merged register-and-create onboarding
+
+**Next up (v1.1)**
+- [ ] Real bKash sandbox test (S-3 milestone)
+- [ ] Production bKash go-live (S-4 → S-7)
+- [ ] Team/multi-user accounts (business plan)
+- [ ] Bulk CSV import for enterprise onboarding
+- [ ] Custom domain support (Pro)
+
+**Later**
+- [ ] NFC tap support (physical card)
+- [ ] Mobile app (React Native)
+- [ ] Analytics: geographic heatmap
+- [ ] Webhook API for CRM sync
+
+---
+
+## Repository layout
+
 ```
 E-card/
-├── cards/
-│   ├── templates/cards/      # Landing, dashboard, builder, auth, documentation, public card views
-│   ├── forms.py              # CardForm, BusinessCardForm, User/Profile forms
-│   ├── views.py              # Builder flow, dashboards, exports, password reset
-│   ├── models.py             # Profile, Card, subscription-related models
-│   ├── tests.py              # Unit tests for card flows and auth
-│   └── migrations/
-├── ecard_project/            # Django settings, URL routing, ASGI/WSGI
-├── static/ / staticfiles/    # Static assets (collected)
-├── media/                    # Uploaded avatars, logos, QR codes
-├── scripts/                  # Helper scripts for deployment
-├── README.md / FEATURES.md   # Documentation
-└── manage.py
+├── cards/                          ← main Django app
+│   ├── gateways/bkash.py           ← BkashClient + HMAC verify
+│   ├── migrations/                 ← 25+ migrations, lifecycle-safe
+│   ├── models.py                   ← Card, Profile, Payment, UserNotification, ...
+│   ├── views.py                    ← 3000+ lines of view functions
+│   ├── urls.py
+│   ├── forms.py
+│   ├── context_processors.py       ← sidebar + plan-flag context
+│   ├── management/commands/
+│   │   └── card_lifecycle_tick.py  ← daily cron: warnings, expiry, deactivation
+│   ├── templates/cards/            ← 50+ templates (landing, builder, public card, admin)
+│   └── static/cards/               ← CSS design tokens, JS (tilt, sidebar, forms)
+├── ecard_project/                  ← Django project settings + wsgi
+├── requirements.txt
+├── manage.py
+├── README.md                       ← this file
+├── FEATURES.md                     ← every feature area, deeper detail
+└── PITCH.md                        ← customer pitch, why upgrade
 ```
 
 ---
-## Technology Stack
-- **Backend** – Django 5 (auth, ORM, admin tooling)
-- **Frontend** – Tailwind-inspired utility classes with custom CSS animations, Lucide icons
-- **Database** – SQLite by default; PostgreSQL recommended for production
-- **Tasking** – JSONField-powered card data, Pillow for images, `qrcode` for QR generation
-- **Tooling** – `dj-database-url`, `python-decouple`, Gunicorn systemd units, Nginx reverse proxy
 
----
-## Testing
-Run the suite locally before shipping changes:
-```bash
-python manage.py test cards.tests.CardViewTests cards.tests.BusinessCardCreationTests cards.tests.RegistrationFormTests
-```
-Additional dashboard tests live in `cards.test_dashboards`.
-
----
-## Deployment Notes
-- Configure `DATABASE_URL`, `SECRET_KEY`, and email/SMS providers in `.env`.
-- For production, point Nginx at `gunicorn.socket` (see `nginx.conf`).
-- Run `python manage.py collectstatic --noinput` before enabling the site.
-- `deploy.sh` documents Ubuntu provisioning (packages, systemd units, static directory permissions).
-- Optional: set up HTTPS via Let’s Encrypt; the provided Nginx sample includes SSL hints.
-
----
-## Troubleshooting
-| Issue | Fix |
-|-------|-----|
-| QR images not generating | Ensure Pillow and qrcode are installed; verify `media/qrcodes/` has write permissions. |
-| Duplicate username/phone errors | Validation is case-insensitive; choose unique values or update existing accounts. |
-| Static assets missing in production | Confirm `collectstatic` ran and Nginx is serving `/staticfiles`. |
-| Admin export failing | Check file write permissions and that `openpyxl` is installed. |
-
----
 ## Contributing
-We welcome pull requests! Please:
-1. Open an issue for large enhancements so we can align on the approach.
-2. Match the established glassmorphism aesthetic (gradients, blur, iconography).
-3. Include screenshots/Loom for major UI tweaks.
-4. Run the test suite and lint before submitting.
+
+This is a commercial product, so external PRs need alignment first — open an issue describing the change and expected behaviour before writing code.
+
+For internal contributors:
+
+1. Branch from `main` (`git checkout -b fix/short-title`)
+2. Match existing patterns — check surrounding code before introducing a new library
+3. Run `python manage.py check` before pushing
+4. Test locally with `BKASH_MODE=mock` for any payment-touching change
+5. PR into `main`; deploys go out via `git pull` on the server
 
 ---
+
 ## License
-Released under the MIT License. See [LICENSE](LICENSE) for details.
+
+MIT — see [LICENSE](LICENSE).
+
+---
+
+<div align="center">
+
+Built by [Shubham](mailto:shubham@speedotrack.com) at **Dupno**
+
+</div>
