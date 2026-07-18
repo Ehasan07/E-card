@@ -2134,9 +2134,9 @@ PLANS = [
         slug='free',
         name='Free',
         price_bdt=0,
-        price_usd=0,
+        price_usd=1,
         cards=1,
-        billing='12 months free, then ৳120 / year',
+        billing='12 months free, then ৳120 / year (international: $1/year + reactivation fee)',
         features=[
             '12 months free — no payment required',
             '1 personal card + auto-generated URL',
@@ -2145,6 +2145,7 @@ PLANS = [
             '7-day analytics',
             '5 leads / month',
             'Yearly renewal ৳120 (no reactivation penalty)',
+            'International: $1 / year + reactivation charge',
         ],
         cta='Start free for 12 months',
         featured=False,
@@ -2153,7 +2154,7 @@ PLANS = [
         slug='pro',
         name='Pro',
         price_bdt=500,
-        price_usd=4.99,
+        price_usd=5,
         cards=5,
         billing='৳500 / year — paid upfront, no free trial',
         features=[
@@ -2173,7 +2174,7 @@ PLANS = [
         slug='lifetime',
         name='Lifetime',
         price_bdt=5000,
-        price_usd=45,
+        price_usd=50,
         cards=5,
         billing='৳5000 one-time — no renewals, ever',
         features=[

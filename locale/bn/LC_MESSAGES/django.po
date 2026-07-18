@@ -1327,3 +1327,10 @@ msgstr "লাইফটাইম প্ল্যান আছে কি?"
 
 msgid "Yes. Pay ৳5,000 once and every card on your account stays online forever — no yearly renewal, no reminders. Includes 5 cards and every future feature."
 msgstr "হ্যাঁ। একবার ৳৫,০০০ দিন — আপনার সব কার্ড চিরকাল অনলাইন থাকবে, বাৎসরিক নবায়ন নেই, রিমাইন্ডার নেই। ৫ টি কার্ড + ভবিষ্যতের সব ফিচার।"
+
+# ============ Billing lifetime state ============
+msgid "Plan"
+msgstr "প্ল্যান"
+
+msgid "Every card on your account stays online forever. No renewals, no reminders."
+msgstr "আপনার সব কার্ড চিরকাল অনলাইন থাকবে। কোনো নবায়ন নেই, রিমাইন্ডার নেই।"

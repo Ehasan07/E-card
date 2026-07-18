@@ -34,7 +34,13 @@
                     {% trans "Every renewal on this account. Click any invoice to open a printable receipt." %}
                 </p>
             </div>
-            {% if paid_until %}
+            {% if paid_until and paid_until.year >= 9999 %}
+            <div class="pay-hero__status">
+                <div class="pay-hero__status-label">{% trans "Plan" %}</div>
+                <div class="pay-hero__status-date">{% trans "Lifetime" %}</div>
+                <div class="pay-hero__status-note">{% trans "Every card on your account stays online forever. No renewals, no reminders." %}</div>
+            </div>
+            {% elif paid_until %}
             <div class="pay-hero__status">
                 <div class="pay-hero__status-label">{% trans "Subscription active until" %}</div>
                 <div class="pay-hero__status-date">{{ paid_until|date:"F j, Y" }}</div>
