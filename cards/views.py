@@ -2170,20 +2170,25 @@ PLANS = [
         featured=True,
     ),
     dict(
-        slug='team',
-        name='Team',
-        price_bdt=1999,
-        price_usd=19.99,
-        cards=25,
-        billing='Launching soon',
+        slug='lifetime',
+        name='Lifetime',
+        price_bdt=5000,
+        price_usd=45,
+        cards=5,
+        billing='৳5000 one-time — no renewals, ever',
         features=[
-            '25 cards, 5 seats',
-            'Team branding lock',
-            'CRM webhook',
-            'Analytics export',
-            'SSO (on request)',
+            'One payment, forever access',
+            'Up to 5 cards (personal or business)',
+            'Every card stays online for life',
+            'Custom public URL on each card',
+            'All 14 themes + AI bio',
+            'Full 90-day analytics',
+            'Unlimited leads',
+            'Zero watermark',
+            'Priority support',
+            'All future features included',
         ],
-        cta='Talk to sales',
+        cta='Buy Lifetime — ৳5000 once',
         featured=False,
     ),
 ]
@@ -2692,23 +2697,33 @@ def bkash_initiate(request, plan=None):
 
     plan = (plan or request.POST.get('plan') or request.GET.get('plan') or '').strip()
     is_pro_upgrade = plan == 'pro'
-    yearly = (
-        settings.CARD_YEARLY_PRICE_PRO if is_pro_upgrade
-        else _yearly_price_for(request.user)
-    )
+    is_lifetime = plan == 'lifetime'
+    if is_lifetime:
+        amount = settings.CARD_LIFETIME_PRICE
+    elif is_pro_upgrade:
+        amount = settings.CARD_YEARLY_PRICE_PRO
+    else:
+        amount = _yearly_price_for(request.user)
+    yearly = amount  # kept for downstream naming compatibility
 
     subscription_request_id = bkash.new_subscription_request_id()
     start_date = date.today()
-    expiry_date = bkash.suggested_expiry_date(start=start_date, years=2)
+    # Lifetime is a one-shot payment — set a far-future expiry so the
+    # subscription doesn't recur. Yearly/pro still uses the normal
+    # 2-year window that bKash caps subscriptions at.
+    if is_lifetime:
+        expiry_date = bkash.suggested_expiry_date(start=start_date, years=2)
+    else:
+        expiry_date = bkash.suggested_expiry_date(start=start_date, years=2)
 
     Payment.objects.create(
         user=request.user,
         gateway=Payment.GATEWAY_BKASH,
-        amount=yearly,
+        amount=amount,
         currency='BDT',
         status=Payment.STATUS_PENDING,
         bkash_subscription_request_id=subscription_request_id,
-        raw_payload={'plan': plan, 'yearly': yearly},
+        raw_payload={'plan': plan, 'amount': amount, 'lifetime': is_lifetime},
     )
 
     # --- MOCK MODE ---
@@ -2960,18 +2975,38 @@ def _apply_webhook_event(payment: Payment, event_type: str, data: dict):
 
 
 def _grant_subscription(payment: Payment):
-    """Extend the payer's `Profile.subscription_paid_until` by 1 year and
-    lift all their cards out of `expired`/`admin_disabled` limbo. This
-    runs once per successful yearly cycle."""
+    """Grant paid access on the payer's account.
+
+    - Yearly / Pro: extend `Profile.subscription_paid_until` by 1 year.
+    - Lifetime:     set `subscription_paid_until` to year 9999 (effective
+                    permanent) and bump `Profile.card_limit` to the
+                    lifetime allowance so the user unlocks 5 cards.
+
+    Then reactivate every card the payer owns."""
     from django.utils import timezone
+    from datetime import datetime, timezone as _tz
 
     profile = getattr(payment.user, 'profile', None)
     if not profile:
         return
+
     now = timezone.now()
-    base = profile.subscription_paid_until or now
-    profile.subscription_paid_until = max(base, now) + timezone.timedelta(days=365)
-    profile.save(update_fields=['subscription_paid_until'])
+    is_lifetime = bool((payment.raw_payload or {}).get('lifetime'))
+
+    if is_lifetime:
+        # 9999-01-01 UTC — the card lifecycle tick will never mark this
+        # as expiring. Cheaper than a boolean field.
+        profile.subscription_paid_until = datetime(9999, 1, 1, tzinfo=_tz.utc)
+        # Unlock the 5-card allowance so create_card lets them add more.
+        if profile.card_limit < settings.CARD_LIFETIME_CARD_LIMIT:
+            profile.card_limit = settings.CARD_LIFETIME_CARD_LIMIT
+        profile.save(update_fields=['subscription_paid_until', 'card_limit'])
+    else:
+        base = profile.subscription_paid_until or now
+        # Yearly renewal never shortens an already-longer paid window.
+        if base.year < 9999:
+            profile.subscription_paid_until = max(base, now) + timezone.timedelta(days=365)
+            profile.save(update_fields=['subscription_paid_until'])
 
     # Reactivate every card owned by the payer that had gone offline.
     Card.objects.filter(
@@ -2998,20 +3033,35 @@ def _grant_subscription(payment: Payment):
             action=CardLifecycleLog.ACTION_RENEWED,
             actor=CardLifecycleLog.ACTOR_USER,
             actor_user=payment.user,
-            notes=f'bKash subscription success. Paid until {profile.subscription_paid_until:%Y-%m-%d}.',
+            notes=(
+                f'bKash lifetime success. All cards online forever.'
+                if is_lifetime else
+                f'bKash subscription success. Paid until {profile.subscription_paid_until:%Y-%m-%d}.'
+            ),
         )
 
     receipt_url = reverse('payment_receipt', args=[payment.pk])
-    UserNotification.objects.create(
-        user=payment.user,
-        kind=UserNotification.KIND_PAYMENT_RECEIVED,
-        subject='Payment received — every card active for another year',
-        body=(
+    if is_lifetime:
+        subject = 'Lifetime plan activated — every card online forever'
+        body = (
+            f'Thank you for buying the Lifetime plan. All of your cards '
+            f'stay online for the lifetime of the account, and you can '
+            f'add up to {settings.CARD_LIFETIME_CARD_LIMIT} cards. '
+            f'View / print your receipt: {receipt_url}'
+        )
+    else:
+        subject = 'Payment received — every card active for another year'
+        body = (
             f'Your yearly subscription is live until '
             f'{profile.subscription_paid_until:%Y-%m-%d}. '
             f'All of your cards are online. '
             f'View / print your receipt: {receipt_url}'
-        ),
+        )
+    UserNotification.objects.create(
+        user=payment.user,
+        kind=UserNotification.KIND_PAYMENT_RECEIVED,
+        subject=subject,
+        body=body,
         action_url=receipt_url,
     )
 

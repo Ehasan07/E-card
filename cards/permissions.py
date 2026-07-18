@@ -21,10 +21,12 @@ from django.urls import reverse
 TIER_ANON = 'anon'
 TIER_FREE = 'free'
 TIER_PRO = 'pro'
-TIER_TEAM = 'team'
+TIER_LIFETIME = 'lifetime'
 TIER_ADMIN = 'admin'
 
-PREMIUM_TIERS = {TIER_PRO, TIER_TEAM, TIER_ADMIN}
+PREMIUM_TIERS = {TIER_PRO, TIER_LIFETIME, TIER_ADMIN}
+
+LIFETIME_CARD_LIMIT = 5
 
 
 def user_plan_tier(user) -> str:
@@ -33,8 +35,8 @@ def user_plan_tier(user) -> str:
     Order:
       1. Anonymous → anon
       2. Superuser → admin (implicitly premium)
-      3. Active Subscription → pro/team
-      4. Profile.card_limit bumps → pro/team (admin-granted premium)
+      3. Active Subscription → pro / lifetime
+      4. Profile.card_limit bumps → pro / lifetime (admin-granted premium)
       5. Everyone else → free
     """
     if not getattr(user, 'is_authenticated', False):
@@ -55,14 +57,15 @@ def user_plan_tier(user) -> str:
     )
     if active_sub:
         plan_slug = (active_sub.plan.slug if active_sub.plan_id else '') or ''
-        if 'team' in plan_slug.lower():
-            return TIER_TEAM
+        if 'lifetime' in plan_slug.lower():
+            return TIER_LIFETIME
         return TIER_PRO
 
     profile = getattr(user, 'profile', None)
     card_limit = getattr(profile, 'card_limit', 1) if profile else 1
-    if card_limit >= 25:
-        return TIER_TEAM
+    if card_limit >= LIFETIME_CARD_LIMIT:
+        # Admin-granted 5-card allowance = lifetime tier
+        return TIER_LIFETIME
     if card_limit and card_limit > 1:
         return TIER_PRO
 

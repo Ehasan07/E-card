@@ -98,7 +98,7 @@
                         <span class="mc-caption {% if plan.featured %}mc-text-accent{% endif %}">{{ plan.name }}</span>
                         <div class="pr-plan__price">
                             <span class="mc-mono">৳{{ plan.price_bdt }}</span>
-                            <small>{% if plan.slug == 'team' %}/{% trans "month" %}{% else %}/{% trans "year" %}{% endif %}</small>
+                            <small>{% if plan.slug == 'lifetime' %}{% trans "one-time" %}{% else %}/{% trans "year" %}{% endif %}</small>
                         </div>
                         <p class="mc-text-muted">
                             {% if plan.billing %}{{ plan.billing }}{% else %}≈ ${{ plan.price_usd }}{% endif %}
@@ -111,8 +111,6 @@
                     </ul>
                     {% if plan.slug == 'free' %}
                         <a href="{% url 'register' %}" class="mc-btn mc-btn--outline mc-btn--block">{{ plan.cta }}</a>
-                    {% elif plan.slug == 'team' %}
-                        <button type="button" class="mc-btn mc-btn--outline mc-btn--block" data-team-soon>{{ plan.cta }}</button>
                     {% elif request.user.is_authenticated %}
                         <form method="post" action="{% url 'bkash_initiate' %}">
                             {% csrf_token %}
@@ -249,35 +247,4 @@
 .pr-faq__item p { color: var(--mc-text-md); margin: var(--mc-s-3) 0 0; font-size: var(--mc-fs-body-sm); }
 </style>
 
-<script>
-(function () {
-    document.querySelectorAll('[data-team-soon]').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            if (window.Swal) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Team plan — coming soon',
-                    html: 'The Team tier is still in preparation and hasn\'t launched yet. '
-                        + '<br><br>Interested? Drop us a note and we\'ll email the moment it goes live.',
-                    confirmButtonText: 'Email us',
-                    showCancelButton: true,
-                    cancelButtonText: 'Close',
-                    background: 'var(--mc-bg-2)',
-                    color: 'var(--mc-text-hi)',
-                    confirmButtonColor: 'var(--mc-accent)',
-                    cancelButtonColor: 'var(--mc-bg-3)',
-                    iconColor: 'var(--mc-accent)',
-                }).then(function (r) {
-                    if (r.isConfirmed) {
-                        window.location.href = 'mailto:mycard@dupno.com?subject=Team%20plan%20interest';
-                    }
-                });
-            } else {
-                alert('Team plan is not launched yet. Please email mycard@dupno.com');
-            }
-        });
-    });
-})();
-</script>
 {% endblock %}

@@ -732,38 +732,50 @@
                 </span>
             </article>
 
-            {# ========== TEAM ========== #}
-            <article class="mc-card lp-plan lp-plan--team mc-fade-up mc-fade-up--d3">
+            {# ========== LIFETIME ========== #}
+            <article class="mc-card lp-plan lp-plan--lifetime mc-fade-up mc-fade-up--d3">
                 <header>
-                    <span class="mc-caption">{% trans "Team" %}</span>
+                    <span class="mc-caption">{% trans "Lifetime" %}</span>
                     <div class="lp-plan__price">
-                        <span class="mc-mono">৳1,999</span>
-                        <small>/{% trans "month" %}</small>
+                        <span class="mc-mono">৳5,000</span>
+                        <small>{% trans "one-time" %}</small>
                     </div>
-                    <p class="mc-text-muted">≈ $19.99 · {% trans "5 seats included" %}</p>
+                    <p class="mc-text-muted">≈ $45 · {% trans "No renewals, ever" %}</p>
                 </header>
 
                 <div class="lp-plan__group">
                     <span class="lp-plan__group-label lp-plan__group-label--accent">
-                        <i data-lucide="users"></i> {% trans "Everything in Pro, plus:" %}
+                        <i data-lucide="infinity"></i> {% trans "Everything in Pro, forever:" %}
                     </span>
                     <ul class="lp-plan__list">
-                        <li><i data-lucide="id-card"></i> <span><strong>25 cards</strong>, <strong>{% trans "5 team seats" %}</strong></span></li>
-                        <li><i data-lucide="shield"></i> <span><strong>{% trans "Team branding lock" %}</strong> — consistent look across the org</span></li>
-                        <li><i data-lucide="webhook"></i> <span><strong>{% trans "CRM webhook" %}</strong> — HubSpot / Salesforce</span></li>
-                        <li><i data-lucide="download"></i> <span><strong>{% trans "Analytics export" %}</strong> — CSV / API</span></li>
-                        <li><i data-lucide="key-round"></i> <span><strong>SSO</strong> <span class="mc-text-muted">({% trans "on request" %})</span></span></li>
-                        <li><i data-lucide="user-cog"></i> <span><strong>{% trans "Dedicated account manager" %}</strong></span></li>
+                        <li><i data-lucide="id-card"></i> <span><strong>{% trans "Up to 5 cards" %}</strong> — personal or business</span></li>
+                        <li><i data-lucide="infinity"></i> <span><strong>{% trans "Every card online for life" %}</strong> — no yearly renewal</span></li>
+                        <li><i data-lucide="link-2"></i> <span><strong>{% trans "Custom public URL" %}</strong> {% trans "on each card" %}</span></li>
+                        <li><i data-lucide="palette"></i> <span><strong>{% trans "All 14 themes + AI bio" %}</strong></span></li>
+                        <li><i data-lucide="line-chart"></i> <span><strong>{% trans "Full 90-day analytics" %}</strong> — {% trans "Unlimited leads" %}</span></li>
+                        <li><i data-lucide="rocket"></i> <span><strong>{% trans "All future features included" %}</strong> — {% trans "free upgrades" %}</span></li>
                     </ul>
                 </div>
 
-                <button type="button" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta" data-team-soon>
-                    <i data-lucide="handshake"></i>
-                    {% trans "Talk to sales" %}
-                </button>
+                {% if request.user.is_authenticated %}
+                    <form method="post" action="{% url 'bkash_initiate' %}" class="lp-plan__cta-form">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan" value="lifetime">
+                        <button type="submit" class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
+                            <i data-lucide="infinity"></i>
+                            {% trans "Buy Lifetime — ৳5,000 once" %}
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'register' %}?next={% url 'bkash_start' 'lifetime' %}"
+                       class="mc-btn mc-btn--outline mc-btn--block lp-plan__cta">
+                        <i data-lucide="infinity"></i>
+                        {% trans "Buy Lifetime — ৳5,000 once" %}
+                    </a>
+                {% endif %}
                 <span class="lp-plan__foot">
-                    <i data-lucide="clock"></i>
-                    {% trans "Team plan launching soon" %}
+                    <i data-lucide="shield-check"></i>
+                    {% trans "Pay once. Zero renewal reminders." %}
                 </span>
             </article>
 
@@ -797,7 +809,7 @@
             <span class="lp-pricing-pay__label">{% trans "Pay however works:" %}</span>
             <span class="lp-pricing-pay__method"><i data-lucide="smartphone"></i> bKash</span>
             <span class="lp-pricing-pay__method"><i data-lucide="credit-card"></i> {% trans "Card" %} · Stripe</span>
-            <span class="lp-pricing-pay__method"><i data-lucide="mail"></i> {% trans "Invoice" %} (Team)</span>
+            <span class="lp-pricing-pay__method"><i data-lucide="infinity"></i> {% trans "One-time lifetime" %}</span>
             <span class="lp-pricing-pay__method"><i data-lucide="rotate-ccw"></i> {% trans "Cancel any time" %}</span>
         </div>
     </div>
@@ -828,8 +840,8 @@
                 <p class="mc-text-muted">{% trans "You own your card and can delete it any time. We never sell your data or share leads with third parties." %}</p>
             </details>
             <details class="mc-card lp-faq__item">
-                <summary>{% trans "Can teams use MY-Card?" %}</summary>
-                <p class="mc-text-muted">{% trans "Yes. The Team plan supports multi-seat access, enforced branding, and CRM webhooks for HubSpot/Salesforce." %}</p>
+                <summary>{% trans "Is there a lifetime plan?" %}</summary>
+                <p class="mc-text-muted">{% trans "Yes. Pay ৳5,000 once and every card on your account stays online forever — no yearly renewal, no reminders. Includes 5 cards and every future feature." %}</p>
             </details>
         </div>
     </div>
@@ -2538,39 +2550,6 @@
     padding-top: var(--mc-s-3);
 }
 </style>
-
-{# ---- Team plan "coming soon" popup ---- #}
-<script>
-(function () {
-    document.querySelectorAll('[data-team-soon]').forEach(function (btn) {
-        btn.addEventListener('click', function (e) {
-            e.preventDefault();
-            if (window.Swal) {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Team plan — coming soon',
-                    html: 'The Team tier is still in preparation and hasn\'t launched yet. '
-                        + '<br><br>Interested? Drop us a note and we\'ll email the moment it goes live.',
-                    confirmButtonText: 'Email us',
-                    showCancelButton: true,
-                    cancelButtonText: 'Close',
-                    background: 'var(--mc-bg-2)',
-                    color: 'var(--mc-text-hi)',
-                    confirmButtonColor: 'var(--mc-accent)',
-                    cancelButtonColor: 'var(--mc-bg-3)',
-                    iconColor: 'var(--mc-accent)',
-                }).then(function (r) {
-                    if (r.isConfirmed) {
-                        window.location.href = 'mailto:mycard@dupno.com?subject=Team%20plan%20interest';
-                    }
-                });
-            } else {
-                alert('Team plan is not launched yet. Please email mycard@dupno.com');
-            }
-        });
-    });
-})();
-</script>
 
 {# ---- Landing-page micro-animations: count-up on scroll ---- #}
 <script>

@@ -184,6 +184,9 @@ FEATURE_WALLET   = bool(APPLE_WALLET_CERT_PATH or GOOGLE_WALLET_SA_JSON)
 CARD_TRIAL_MONTHS         = config('CARD_TRIAL_MONTHS', default=12, cast=int)
 CARD_YEARLY_PRICE_FREE    = config('CARD_YEARLY_PRICE_FREE', default=120, cast=int)   # BDT
 CARD_YEARLY_PRICE_PRO     = config('CARD_YEARLY_PRICE_PRO', default=500, cast=int)    # BDT
+# One-time lifetime plan: user pays once, gets 5 cards online forever.
+CARD_LIFETIME_PRICE       = config('CARD_LIFETIME_PRICE', default=5000, cast=int)     # BDT
+CARD_LIFETIME_CARD_LIMIT  = config('CARD_LIFETIME_CARD_LIMIT', default=5, cast=int)
 # No separate reactivation fee — Meta / international SaaS pattern:
 # cancel or lapse, then resubscribe at the same yearly rate.
 CARD_REACTIVATION_FEE     = 0
