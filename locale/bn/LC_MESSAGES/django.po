@@ -1334,3 +1334,67 @@ msgstr "প্ল্যান"
 
 msgid "Every card on your account stays online forever. No renewals, no reminders."
 msgstr "আপনার সব কার্ড চিরকাল অনলাইন থাকবে। কোনো নবায়ন নেই, রিমাইন্ডার নেই।"
+
+# ============ Publish modal + create page updates ============
+msgid "Home"
+msgstr "হোম"
+
+msgid "Publish"
+msgstr "প্রকাশ করুন"
+
+msgid "Publish your card"
+msgstr "আপনার কার্ড প্রকাশ করুন"
+
+msgid "One last step — set a login for your studio and your card goes live. Without this, your card can't be made public."
+msgstr "শেষ ধাপ — স্টুডিওর জন্য একটা লগইন সেট করুন, আপনার কার্ড লাইভ হবে। এটা ছাড়া কার্ড পাবলিক করা যাবে না।"
+
+msgid "Your card details are ready — click Publish below"
+msgstr "আপনার কার্ডের তথ্য প্রস্তুত — নিচে Publish ক্লিক করুন"
+
+msgid "Pick a username → that becomes your public URL"
+msgstr "একটা ইউজারনেম নিন → এটাই আপনার পাবলিক URL হবে"
+
+msgid "Choose a password → use it to sign in later"
+msgstr "পাসওয়ার্ড নিন → পরে সাইন ইন করতে ব্যবহার হবে"
+
+msgid "Publish card"
+msgstr "কার্ড প্রকাশ করুন"
+
+msgid "One last step"
+msgstr "শেষ ধাপ"
+
+msgid "Set a username and password. Your card goes live at the URL below and you'll sign in with these details later."
+msgstr "একটা ইউজারনেম ও পাসওয়ার্ড দিন। আপনার কার্ড নিচের URL-এ লাইভ হবে এবং পরে এই তথ্য দিয়েই সাইন ইন করবেন।"
+
+msgid "Pick a memorable handle"
+msgstr "মনে রাখার মতো একটা হ্যান্ডেল নিন"
+
+msgid "3-30 characters, letters, numbers, dot, dash, underscore only."
+msgstr "৩-৩০ অক্ষর, শুধু অক্ষর, সংখ্যা, ডট, ড্যাশ, আন্ডারস্কোর।"
+
+msgid "At least 8 characters"
+msgstr "কমপক্ষে ৮ অক্ষর"
+
+msgid "Save this — you'll use it to log in later."
+msgstr "এটা রাখুন — পরে লগইন করতে ব্যবহার করবেন।"
+
+msgid "Not yet"
+msgstr "এখন না"
+
+msgid "Publish now"
+msgstr "এখনই প্রকাশ করুন"
+
+msgid "3-30 chars, letters/numbers/. - _ only."
+msgstr "৩-৩০ অক্ষর, শুধু অক্ষর/সংখ্যা/. - _।"
+
+msgid "Enter a valid email address."
+msgstr "একটা বৈধ ইমেইল ঠিকানা দিন।"
+
+msgid "At least 8 characters."
+msgstr "কমপক্ষে ৮ অক্ষর।"
+
+msgid "Admin"
+msgstr "অ্যাডমিন"
+
+msgid "Close"
+msgstr "বন্ধ করুন"

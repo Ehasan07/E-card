@@ -29,8 +29,25 @@
                 <i data-lucide="moon" data-mc-theme-icon="moon"></i>
                 <i data-lucide="sun" data-mc-theme-icon="sun" style="display:none;"></i>
             </button>
-            <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
-            <a href="#" data-open-onboard class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
+            {% if request.user.is_authenticated %}
+                {% if request.user.is_superuser or request.user.is_staff %}
+                    <a href="{% url 'admin_dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                        <i data-lucide="shield"></i>
+                        {% trans "Admin" %}
+                    </a>
+                {% else %}
+                    <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--outline mc-btn--sm">
+                        <i data-lucide="layout-dashboard"></i>
+                        {% trans "Dashboard" %}
+                    </a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="mc-btn mc-btn--ghost mc-btn--sm" title="{% trans 'Sign out' %}">
+                    <i data-lucide="log-out"></i>
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="mc-btn mc-btn--outline mc-btn--sm">{% trans "Log in" %}</a>
+                <a href="#" data-open-onboard class="mc-btn mc-btn--primary mc-btn--sm">{% trans "Start free" %}</a>
+            {% endif %}
         </div>
     </div>
 </nav>

@@ -67,12 +67,6 @@
                 <div class="ed-journey__fill" data-journey-fill></div>
             </div>
             <ol class="ed-journey__steps">
-                {% if show_signup_block %}
-                    <li class="ed-journey__step" data-journey-step="signup" data-anchor="signup">
-                        <span class="ed-journey__dot"><i data-lucide="user-plus"></i></span>
-                        <span class="ed-journey__label">{% trans "Account" %}</span>
-                    </li>
-                {% endif %}
                 <li class="ed-journey__step" data-journey-step="basics" data-anchor="basics">
                     <span class="ed-journey__dot">1</span>
                     <span class="ed-journey__label">{% trans "Basics" %}</span>
@@ -89,6 +83,12 @@
                     <span class="ed-journey__dot">4</span>
                     <span class="ed-journey__label">{% trans "Social" %}</span>
                 </li>
+                {% if show_signup_block %}
+                    <li class="ed-journey__step" data-journey-step="publish" data-anchor="publish">
+                        <span class="ed-journey__dot"><i data-lucide="lock"></i></span>
+                        <span class="ed-journey__label">{% trans "Publish" %}</span>
+                    </li>
+                {% endif %}
             </ol>
         </div>
 
@@ -104,46 +104,15 @@
                         </div>
                     {% endif %}
 
+                    {# Signup block is now a modal that opens on Save Card
+                       for anonymous users. See pubModal at the bottom of
+                       this template. The hidden fields below carry the
+                       modal's inputs into the same form POST — prefixed
+                       to avoid colliding with the card's own `email`. #}
                     {% if show_signup_block %}
-                    {# ---- Section: Account (only for anonymous flow) ---- #}
-                    <section class="ed-section ed-signup" id="signup" data-journey-anchor="signup">
-                        <header class="ed-section__head">
-                            <span class="ed-step"><i data-lucide="user-plus"></i></span>
-                            <h2>{% trans "Your account" %}</h2>
-                            <span class="ed-signup__hint mc-text-muted">
-                                {% trans "Fill this once — we'll auto-create your studio." %}
-                            </span>
-                        </header>
-                        <div class="ed-row">
-                            <label class="mc-label">
-                                <span><i data-lucide="at-sign"></i> {% trans "Username" %} *</span>
-                                {{ signup_form.username }}
-                                {% if signup_form.username.errors %}
-                                    <span class="mc-field-error">{{ signup_form.username.errors|striptags }}</span>
-                                {% endif %}
-                            </label>
-                            <label class="mc-label">
-                                <span><i data-lucide="mail"></i> {% trans "Email" %} *</span>
-                                {{ signup_form.email }}
-                                {% if signup_form.email.errors %}
-                                    <span class="mc-field-error">{{ signup_form.email.errors|striptags }}</span>
-                                {% endif %}
-                            </label>
-                        </div>
-                        <label class="mc-label">
-                            <span><i data-lucide="key-round"></i> {% trans "Password" %} *</span>
-                            {{ signup_form.password }}
-                            {% if signup_form.password.errors %}
-                                <span class="mc-field-error">{{ signup_form.password.errors|striptags }}</span>
-                            {% else %}
-                                <span class="mc-field-hint">{% trans "At least 8 characters — pick something you'll remember." %}</span>
-                            {% endif %}
-                        </label>
-                        <p class="ed-signup__foot mc-text-muted">
-                            {% trans "Already have an account?" %}
-                            <a href="{% url 'login' %}" class="mc-text-accent">{% trans "Sign in →" %}</a>
-                        </p>
-                    </section>
+                    <input type="hidden" name="signup_username" id="signup-username-hidden">
+                    <input type="hidden" name="signup_email"    id="signup-email-hidden">
+                    <input type="hidden" name="signup_password" id="signup-password-hidden">
                     {% endif %}
 
                     {% if card %}
@@ -440,13 +409,44 @@
                         </div>
                     </section>
 
+                    {% if show_signup_block %}
+                    {# ---- Publish anchor (for the journey stepper) ---- #}
+                    <section class="ed-section ed-publish" id="publish" data-journey-anchor="publish">
+                        <header class="ed-section__head">
+                            <span class="ed-step"><i data-lucide="lock"></i></span>
+                            <h2>{% trans "Publish your card" %}</h2>
+                        </header>
+                        <div class="ed-publish__body">
+                            <p class="mc-text-muted">
+                                {% trans "One last step — set a login for your studio and your card goes live. Without this, your card can't be made public." %}
+                            </p>
+                            <ul class="ed-publish__list mc-text-muted">
+                                <li><i data-lucide="check"></i> {% trans "Your card details are ready — click Publish below" %}</li>
+                                <li><i data-lucide="check"></i> {% trans "Pick a username → that becomes your public URL" %}</li>
+                                <li><i data-lucide="check"></i> {% trans "Choose a password → use it to sign in later" %}</li>
+                            </ul>
+                        </div>
+                    </section>
+                    {% endif %}
+
                     <footer class="ed-actions">
-                        <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--ghost">
-                            <i data-lucide="arrow-left"></i> {% trans "Cancel" %}
-                        </a>
-                        <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg">
-                            <i data-lucide="save"></i>
-                            {{ builder_variant.submit_label|default:_("Save card") }}
+                        {% if request.user.is_authenticated %}
+                            <a href="{% url 'dashboard' %}" class="mc-btn mc-btn--ghost">
+                                <i data-lucide="arrow-left"></i> {% trans "Cancel" %}
+                            </a>
+                        {% else %}
+                            <a href="{% url 'index' %}" class="mc-btn mc-btn--ghost">
+                                <i data-lucide="arrow-left"></i> {% trans "Home" %}
+                            </a>
+                        {% endif %}
+                        <button type="submit" class="mc-btn mc-btn--primary mc-btn--lg" id="edSaveBtn" data-needs-signup="{% if show_signup_block %}1{% else %}0{% endif %}">
+                            {% if show_signup_block %}
+                                <i data-lucide="rocket"></i>
+                                {% trans "Publish card" %}
+                            {% else %}
+                                <i data-lucide="save"></i>
+                                {{ builder_variant.submit_label|default:_("Save card") }}
+                            {% endif %}
                         </button>
                     </footer>
                 </form>
@@ -809,8 +809,8 @@
 }
 
 /* ===== Editor page ===== */
-.ed-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-6) 0 var(--mc-s-9); overflow: hidden; }
-.ed-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.ed-page { position: relative; min-height: calc(100vh - 72px); padding: var(--mc-s-6) 0 var(--mc-s-9); }
+.ed-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 .ed-container { position: relative; z-index: 1; }
 
 .ed-hero { margin-bottom: var(--mc-s-6); display: flex; flex-direction: column; gap: var(--mc-s-3); }
@@ -1992,4 +1992,235 @@
     if (order.length) setActive(order[0]);
 })();
 </script>
+
+{% if show_signup_block %}
+{# ==================================================================
+   Publish modal — collects the username / email / password AFTER the
+   user has filled out the card. Anonymous flow only.
+   ================================================================== #}
+<div class="pub-modal" id="pubModal" role="dialog" aria-modal="true" aria-labelledby="pubTitle" aria-hidden="true">
+    <div class="pub-modal__scrim" data-pub-close></div>
+    <div class="pub-modal__box">
+        <button type="button" class="pub-modal__x" data-pub-close aria-label="{% trans 'Close' %}">
+            <i data-lucide="x"></i>
+        </button>
+        <div class="pub-modal__head">
+            <span class="pub-modal__badge">
+                <i data-lucide="rocket"></i>
+                {% trans "One last step" %}
+            </span>
+            <h2 id="pubTitle">{% trans "Publish your card" %}</h2>
+            <p class="mc-text-muted">
+                {% trans "Set a username and password. Your card goes live at the URL below and you'll sign in with these details later." %}
+            </p>
+        </div>
+
+        <div class="pub-modal__body">
+            <label class="mc-label">
+                <span><i data-lucide="at-sign"></i> {% trans "Username" %} *</span>
+                <input type="text" id="pubUsername" placeholder="{% trans 'Pick a memorable handle' %}"
+                       maxlength="30" autocomplete="username" pattern="[a-zA-Z0-9_.-]{3,30}"
+                       required>
+                <span class="pub-url-preview" id="pubUrlPreview">
+                    <i data-lucide="link-2"></i>
+                    <span class="pub-url-preview__base">mycard.dupno.com/card/</span><span class="pub-url-preview__slug" id="pubUrlSlug">yourname</span>
+                </span>
+                <span class="mc-field-hint">{% trans "3-30 characters, letters, numbers, dot, dash, underscore only." %}</span>
+                <span class="mc-field-error" id="pubUsernameErr" hidden></span>
+            </label>
+
+            <label class="mc-label">
+                <span><i data-lucide="mail"></i> {% trans "Email" %} *</span>
+                <input type="email" id="pubEmail" placeholder="you@example.com" autocomplete="email" required>
+                <span class="mc-field-error" id="pubEmailErr" hidden></span>
+            </label>
+
+            <label class="mc-label">
+                <span><i data-lucide="key-round"></i> {% trans "Password" %} *</span>
+                <input type="password" id="pubPassword" placeholder="{% trans 'At least 8 characters' %}"
+                       minlength="8" autocomplete="new-password" required>
+                <span class="mc-field-hint">{% trans "Save this — you'll use it to log in later." %}</span>
+                <span class="mc-field-error" id="pubPasswordErr" hidden></span>
+            </label>
+        </div>
+
+        <div class="pub-modal__actions">
+            <button type="button" class="mc-btn mc-btn--ghost" data-pub-close>
+                {% trans "Not yet" %}
+            </button>
+            <button type="button" class="mc-btn mc-btn--primary" id="pubConfirm">
+                <i data-lucide="rocket"></i>
+                {% trans "Publish now" %}
+            </button>
+        </div>
+
+        <p class="pub-modal__foot mc-text-muted">
+            {% trans "Already have an account?" %}
+            <a href="{% url 'login' %}" class="mc-text-accent">{% trans "Sign in →" %}</a>
+        </p>
+    </div>
+</div>
+
+<style>
+.pub-modal { position:fixed; inset:0; z-index:2500; display:none; }
+.pub-modal.is-open { display:block; }
+.pub-modal__scrim {
+    position:absolute; inset:0;
+    background:radial-gradient(60% 60% at 50% 40%,
+        color-mix(in oklab, var(--mc-bg-0) 82%, transparent),
+        color-mix(in oklab, var(--mc-bg-0) 94%, transparent));
+    backdrop-filter:blur(8px);
+    animation: pubFadeIn .22s ease-out both;
+}
+.pub-modal__box {
+    position:relative; margin:6vh auto 0; max-width:520px;
+    background:var(--mc-bg-1); border:1px solid var(--mc-border-hi);
+    border-radius:20px; padding:2rem 1.75rem 1.5rem; color:var(--mc-text-hi);
+    box-shadow: 0 40px 80px -20px color-mix(in oklab, var(--mc-text-hi) 30%, transparent);
+    animation: pubPop .28s cubic-bezier(.2,.9,.3,1.2) both;
+    max-height: 90vh; overflow-y: auto;
+}
+.pub-modal__x {
+    position:absolute; top:14px; right:14px; width:32px; height:32px;
+    border:1px solid var(--mc-border-hi); background:transparent;
+    color:var(--mc-text-md); border-radius:10px; cursor:pointer;
+    display:grid; place-items:center;
+}
+.pub-modal__head { text-align:center; margin-bottom:1.25rem; }
+.pub-modal__badge {
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.3rem .75rem; border-radius:999px;
+    background: color-mix(in oklab, var(--mc-accent) 15%, transparent);
+    color: var(--mc-accent-strong);
+    font-size: .75rem; font-weight: 700; letter-spacing: .04em;
+    margin-bottom: .5rem;
+}
+.pub-modal__badge i { width: 13px; height: 13px; }
+.pub-modal__head h2 { margin:.35rem 0 .4rem; font-size:1.4rem; color:var(--mc-text-hi); }
+.pub-modal__body { display:flex; flex-direction:column; gap:.9rem; margin-bottom:1.25rem; }
+.pub-modal__body input {
+    width: 100%; padding: .55rem .8rem;
+    border: 1px solid var(--mc-border-hi);
+    background: var(--mc-bg-2);
+    border-radius: 8px; color: var(--mc-text-hi); font-size: .95rem;
+}
+.pub-modal__body input:focus {
+    outline: 2px solid var(--mc-accent-glow); outline-offset: 1px;
+    border-color: var(--mc-accent);
+}
+.pub-url-preview {
+    display: flex; align-items: center; gap: .35rem;
+    margin-top: .4rem; padding: .5rem .75rem;
+    background: color-mix(in oklab, var(--mc-accent) 8%, var(--mc-bg-2));
+    border: 1px solid color-mix(in oklab, var(--mc-accent) 25%, var(--mc-border));
+    border-radius: 8px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: .82rem;
+    color: var(--mc-text-md);
+    word-break: break-all;
+}
+.pub-url-preview i { width: 14px; height: 14px; color: var(--mc-accent-strong); flex-shrink: 0; }
+.pub-url-preview__slug {
+    color: var(--mc-accent-strong);
+    font-weight: 700;
+}
+.pub-modal__actions { display: flex; gap: .5rem; justify-content: flex-end; }
+.pub-modal__foot { text-align:center; margin: 1rem 0 0; font-size:.8rem; }
+
+@keyframes pubFadeIn { from { opacity:0; } to { opacity:1; } }
+@keyframes pubPop {
+    from { transform: translateY(-16px) scale(.95); opacity: 0; }
+    to   { transform: none; opacity: 1; }
+}
+
+/* Publish anchor section on the form */
+.ed-publish {
+    background: color-mix(in oklab, var(--mc-accent) 8%, var(--mc-bg-2));
+    border: 1px dashed color-mix(in oklab, var(--mc-accent) 40%, var(--mc-border-hi));
+    border-radius: 14px;
+    padding: 1.25rem 1.35rem;
+}
+.ed-publish__list { list-style: none; padding: 0; margin: .5rem 0 0; display: flex; flex-direction: column; gap: .35rem; }
+.ed-publish__list li { display: flex; align-items: center; gap: .5rem; font-size: .88rem; }
+.ed-publish__list i { width: 14px; height: 14px; color: var(--mc-accent-strong); }
+</style>
+
+<script>
+(function () {
+    var modal   = document.getElementById('pubModal');
+    var saveBtn = document.getElementById('edSaveBtn');
+    var form    = document.getElementById('card-builder-form');
+    if (!modal || !saveBtn || !form) return;
+    var needsSignup = saveBtn.getAttribute('data-needs-signup') === '1';
+    if (!needsSignup) return;
+
+    var closers      = modal.querySelectorAll('[data-pub-close]');
+    var pubUsername  = document.getElementById('pubUsername');
+    var pubEmail     = document.getElementById('pubEmail');
+    var pubPassword  = document.getElementById('pubPassword');
+    var pubUrlSlug   = document.getElementById('pubUrlSlug');
+    var pubConfirm   = document.getElementById('pubConfirm');
+    var pubUserErr   = document.getElementById('pubUsernameErr');
+    var pubEmailErr  = document.getElementById('pubEmailErr');
+    var pubPassErr   = document.getElementById('pubPasswordErr');
+
+    var hUser  = document.getElementById('signup-username-hidden');
+    var hEmail = document.getElementById('signup-email-hidden');
+    var hPass  = document.getElementById('signup-password-hidden');
+
+    function open()  { modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; setTimeout(function(){ pubUsername.focus(); }, 50); }
+    function close() { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+    closers.forEach(function(c) { c.addEventListener('click', close); });
+    document.addEventListener('keydown', function(e) { if (e.key==='Escape' && modal.classList.contains('is-open')) close(); });
+
+    /* Prefill email from card email field once user opens the modal. */
+    function prefillEmail() {
+        var cardEmail = form.querySelector('[name="email"]');
+        if (cardEmail && cardEmail.value && !pubEmail.value) pubEmail.value = cardEmail.value;
+    }
+
+    /* Save button intercept — only open modal if hidden values missing. */
+    saveBtn.addEventListener('click', function(e) {
+        if (hUser.value && hEmail.value && hPass.value) return; // already collected
+        e.preventDefault();
+        prefillEmail();
+        open();
+    });
+
+    /* Live URL preview under username. */
+    function slugifyLive(str) {
+        return String(str || '').toLowerCase()
+            .replace(/[^a-z0-9._-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .slice(0, 30) || 'yourname';
+    }
+    pubUsername.addEventListener('input', function() {
+        pubUrlSlug.textContent = slugifyLive(pubUsername.value);
+    });
+
+    function showErr(el, msg) { el.textContent = msg; el.hidden = false; }
+    function clearErr(el) { el.hidden = true; }
+
+    pubConfirm.addEventListener('click', function() {
+        clearErr(pubUserErr); clearErr(pubEmailErr); clearErr(pubPassErr);
+        var u = pubUsername.value.trim().toLowerCase();
+        var e = pubEmail.value.trim().toLowerCase();
+        var p = pubPassword.value;
+        var ok = true;
+        if (!/^[a-z0-9._-]{3,30}$/.test(u)) { showErr(pubUserErr, '{% trans "3-30 chars, letters/numbers/. - _ only." %}'); ok=false; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { showErr(pubEmailErr, '{% trans "Enter a valid email address." %}'); ok=false; }
+        if (p.length < 8) { showErr(pubPassErr, '{% trans "At least 8 characters." %}'); ok=false; }
+        if (!ok) return;
+
+        hUser.value  = u;
+        hEmail.value = e;
+        hPass.value  = p;
+        close();
+        /* Now submit the form for real. */
+        form.submit();
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}

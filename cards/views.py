@@ -375,7 +375,11 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             next_url = (request.GET.get('next') or request.POST.get('next') or '').strip()
-            return redirect(next_url or 'dashboard')
+            if next_url:
+                return redirect(next_url)
+            if user.is_superuser or user.is_staff:
+                return redirect('admin_dashboard')
+            return redirect('dashboard')
     else:
         form = AuthenticationForm()
     return render(request, 'cards/login.html', {'form': form})
@@ -386,6 +390,10 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
+    # Admins never see the customer dashboard — bounce them to the
+    # admin control surface regardless of how they landed here.
+    if request.user.is_superuser or request.user.is_staff:
+        return redirect('admin_dashboard')
     change_log_qs = CardChangeLog.objects.order_by('-created_at')
     cards_qs = (
         Card.objects.filter(user=request.user)
@@ -531,13 +539,28 @@ def start_free(request, card_type):
 
 
 def _handle_anonymous_onboard(request, card_type: str):
-    """Anonymous variant of the card builder. Renders create_card.html
-    with the signup block visible and creates user + card together."""
+    """Anonymous variant of the card builder.
+
+    The signup fields (username / email / password) live in a modal at
+    the end of the template and land in the POST under the `signup_*`
+    prefix so they don't collide with the card's own `email` field.
+    We rebuild a UserForm from those values before validating."""
     variant = CARD_VARIANT_CONFIG.get(card_type, CARD_VARIANT_CONFIG[Card.TYPE_PERSONAL])
     form_class = CARD_FORM_BY_TYPE.get(card_type, CardForm)
 
-    signup_form = UserForm(request.POST or None)
     form = form_class(request.POST or None, request.FILES or None)
+
+    # Reconstruct a signup form from the signup_* POST keys so UserForm's
+    # existing username-taken / email-taken / password-strength checks
+    # still apply.
+    signup_post = None
+    if request.method == 'POST':
+        signup_post = {
+            'username': (request.POST.get('signup_username') or '').strip(),
+            'email':    (request.POST.get('signup_email') or '').strip(),
+            'password': request.POST.get('signup_password') or '',
+        }
+    signup_form = UserForm(signup_post) if signup_post is not None else UserForm()
 
     if request.method == 'POST':
         card_ok = form.is_valid()
@@ -578,7 +601,14 @@ def _handle_anonymous_onboard(request, card_type: str):
                 logger.exception("Anonymous onboard failed: %s", exc)
                 messages.error(request, 'We could not save your card right now. Please try again.')
         else:
-            messages.error(request, 'Fix the highlighted details so we can create your card.')
+            # Surface the specific problem so the user knows why the
+            # publish modal didn't accept their credentials.
+            if not signup_ok:
+                first = next(iter(signup_form.errors.values()), None)
+                msg = str(first[0]) if first else 'Please check your username, email, or password.'
+                messages.error(request, msg)
+            elif not card_ok:
+                messages.error(request, 'Fix the highlighted details on your card before publishing.')
 
     context = {
         'form': form,
