@@ -1528,6 +1528,94 @@
     .ed-journey__label { display: none; }
     .ed-journey__steps { gap: .25rem; }
 }
+
+/* ============================================================
+   Mobile responsive polish for the whole builder (< 900px)
+   ============================================================ */
+@media (max-width: 900px) {
+    /* Page paddings — reclaim horizontal space */
+    .ed-page { padding: var(--mc-s-4) 0 var(--mc-s-8); }
+    .ed-container { padding-left: .85rem; padding-right: .85rem; }
+
+    /* Hero — tighter type, tighter spacing */
+    .ed-hero { margin-bottom: var(--mc-s-4); }
+    .ed-hero__title { font-size: clamp(1.35rem, 5.5vw, 1.75rem); line-height: 1.2; }
+    .ed-hero__lede { font-size: .9rem; margin-top: .3rem; }
+    .ed-quota { font-size: .68rem; padding: .28rem .55rem; margin-top: var(--mc-s-2); }
+
+    /* Form shell — thin card, tight padding */
+    .ed-form-shell {
+        padding: 1.1rem 1rem 1.4rem;
+        border-radius: 14px;
+    }
+    .ed-form { gap: var(--mc-s-5); }
+    .ed-section { gap: .75rem; }
+    .ed-section__head { padding-bottom: .55rem; gap: .55rem; flex-wrap: wrap; }
+    .ed-section__head h2 { font-size: 1rem; }
+    .ed-step { width: 28px; height: 28px; font-size: .85rem; box-shadow: 0 0 0 3px var(--mc-accent-halo); }
+
+    /* Preview stops sticking on mobile — it now flows inline below
+       the form so tall forms don't compete with a floating card. */
+    .ed-preview-sticky {
+        position: static;
+        top: auto;
+    }
+    .ed-preview-shell { margin-top: 1rem; }
+    .ed-preview-head { flex-wrap: wrap; }
+    .ed-preview-head h2 { font-size: 1rem; }
+
+    /* Actions row */
+    .ed-actions {
+        flex-direction: column-reverse; /* Publish button on top when stacked */
+        gap: .5rem;
+        padding-top: var(--mc-s-4);
+    }
+    .ed-actions .mc-btn { width: 100%; justify-content: center; }
+
+    /* Inputs — iOS respects 16px min to avoid zoom-on-focus */
+    .ed-form input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="file"]):not([type="hidden"]),
+    .ed-form select,
+    .ed-form textarea {
+        font-size: 16px;
+    }
+
+    /* Publish anchor block */
+    .ed-publish { padding: 1rem 1rem 1.1rem; }
+    .ed-publish__list li { font-size: .82rem; }
+
+    /* Journey stepper — smaller dots, tighter chrome */
+    .ed-journey { top: 58px; padding: .65rem .7rem .55rem; border-radius: 12px; margin: .8rem 0 1rem; }
+    .ed-journey__dot { width: 22px; height: 22px; font-size: .7rem; }
+    .ed-journey__bar { height: 3px; margin-bottom: .55rem; }
+}
+
+/* Shrink phone-frame preview on mobile so the tall 9:18 ratio
+   doesn't push the actions row off-screen */
+@media (max-width: 900px) {
+    .ed-device { max-width: 280px; border-radius: 34px; padding: 8px 7px; }
+    .ed-device__notch { width: 76px; height: 18px; }
+    .ed-device__screen { border-radius: 26px; }
+    .ed-preview-card { padding: .8rem .7rem; border-radius: 16px; }
+}
+
+/* Ultra-narrow phones (<= 380px) */
+@media (max-width: 380px) {
+    .ed-form-shell { padding: .85rem .8rem 1.1rem; }
+    .ed-hero__title { font-size: 1.15rem; }
+    .ed-section__head h2 { font-size: .92rem; }
+    .ed-journey { padding: .5rem .5rem .45rem; }
+    .ed-journey__dot { width: 20px; height: 20px; font-size: .65rem; }
+    .ed-actions { padding-top: var(--mc-s-3); }
+
+    /* Phone frame smaller still */
+    .ed-device { max-width: 240px; }
+
+    /* Publish modal shrinks its padding on tiny screens */
+    .pub-modal__box { margin: 3vh .75rem 0; padding: 1.3rem 1rem 1.1rem; }
+    .pub-modal__head h2 { font-size: 1.15rem; }
+    .pub-modal__body input { font-size: 16px; }
+    .pub-url-preview { font-size: .72rem; padding: .4rem .55rem; }
+}
 </style>
 
 <script>
