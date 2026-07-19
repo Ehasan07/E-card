@@ -104,11 +104,13 @@
                         </div>
                     {% endif %}
 
-                    {# Signup block is now a modal that opens on Save Card
-                       for anonymous users. See pubModal at the bottom of
-                       this template. The hidden fields below carry the
-                       modal's inputs into the same form POST — prefixed
-                       to avoid colliding with the card's own `email`. #}
+                    {% comment %}
+                        Signup block is now a modal that opens on Save Card
+                        for anonymous users (pubModal at the bottom of this
+                        template). The hidden fields below carry the modal's
+                        inputs into the same form POST — prefixed to avoid
+                        colliding with the card's own `email`.
+                    {% endcomment %}
                     {% if show_signup_block %}
                     <input type="hidden" name="signup_username" id="signup-username-hidden">
                     <input type="hidden" name="signup_email"    id="signup-email-hidden">
@@ -2082,10 +2084,10 @@
 </script>
 
 {% if show_signup_block %}
-{# ==================================================================
-   Publish modal — collects the username / email / password AFTER the
-   user has filled out the card. Anonymous flow only.
-   ================================================================== #}
+{% comment %}
+    Publish modal — collects the username / email / password AFTER
+    the user has filled out the card. Anonymous flow only.
+{% endcomment %}
 <div class="pub-modal" id="pubModal" role="dialog" aria-modal="true" aria-labelledby="pubTitle" aria-hidden="true">
     <div class="pub-modal__scrim" data-pub-close></div>
     <div class="pub-modal__box">
