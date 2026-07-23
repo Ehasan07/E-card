@@ -3338,11 +3338,17 @@ def admin_offer_save(request, offer_id=None):
 
     offer.coupon_code = (request.POST.get('coupon_code') or '').strip().upper()[:30]
 
-    # Quick mode: duration_days starts now. Advanced overrides with
-    # explicit start/end datetimes.
-    starts_at = parse_dt(request.POST.get('starts_at'))
-    ends_at   = parse_dt(request.POST.get('ends_at'))
-    if not starts_at or not ends_at:
+    # Quick mode: duration_days starts NOW and is the default. Admin
+    # only gets scheduled/custom window if they explicitly opened the
+    # Advanced fold AND filled BOTH datetime pickers — signalled by
+    # `use_advanced_dates=1` hidden input.
+    use_advanced = request.POST.get('use_advanced_dates') == '1'
+    starts_at = None
+    ends_at = None
+    if use_advanced:
+        starts_at = parse_dt(request.POST.get('starts_at'))
+        ends_at   = parse_dt(request.POST.get('ends_at'))
+    if not (starts_at and ends_at):
         try:
             days = int(request.POST.get('duration_days') or '7')
         except (ValueError, TypeError):

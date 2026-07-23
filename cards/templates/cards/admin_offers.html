@@ -205,9 +205,10 @@
                 </label>
 
                 {# ---- Advanced (optional) ---- #}
-                <details class="of-advanced of-full">
-                    <summary><i data-lucide="settings-2"></i> Advanced — pick custom start/end times</summary>
+                <details class="of-advanced of-full" id="of-advanced">
+                    <summary><i data-lucide="settings-2"></i> Advanced — pick custom start/end times (optional)</summary>
                     <div class="of-form__grid" style="margin-top:.5rem;">
+                        <input type="hidden" name="use_advanced_dates" id="of-use-advanced" value="0">
                         <label class="of-label">
                             <span>Custom starts at</span>
                             <input type="datetime-local" name="starts_at" id="of-starts-at">
@@ -217,7 +218,7 @@
                             <input type="datetime-local" name="ends_at" id="of-ends-at">
                         </label>
                         <span class="mc-field-hint of-full">
-                            Fill these only if you want a scheduled or a non-standard window. Otherwise leave blank and duration will be used.
+                            Fill these <strong>only</strong> if you need a scheduled or non-standard window. Leave blank and Duration (above) will apply from now.
                         </span>
                     </div>
                 </details>
@@ -537,6 +538,22 @@
         updateEndsPreview();
     });
 
+    /* Advanced fold — mark the hidden flag when opened AND either
+       datetime picker is filled. Save uses the flag to decide which
+       set of dates wins. */
+    var advDetails = document.getElementById('of-advanced');
+    var advFlag    = document.getElementById('of-use-advanced');
+    var advStart   = document.getElementById('of-starts-at');
+    var advEnd     = document.getElementById('of-ends-at');
+    function refreshAdvancedFlag() {
+        var opened = advDetails && advDetails.open;
+        var filled = advStart.value && advEnd.value;
+        advFlag.value = (opened && filled) ? '1' : '0';
+    }
+    if (advDetails) advDetails.addEventListener('toggle', refreshAdvancedFlag);
+    if (advStart)   advStart.addEventListener('input',    refreshAdvancedFlag);
+    if (advEnd)     advEnd.addEventListener('input',      refreshAdvancedFlag);
+
     function resetToCreate() {
         titleEl.textContent = 'New offer';
         form.action = '{% url "admin_offer_create" %}';
@@ -550,6 +567,11 @@
         document.getElementById('of-show-dashboard').checked = true;
         document.getElementById('of-show-popup').checked = false;
         document.getElementById('of-is-active').checked = true;
+        /* Close Advanced + zero its inputs so duration wins by default */
+        if (advDetails) advDetails.open = false;
+        if (advStart)   advStart.value = '';
+        if (advEnd)     advEnd.value = '';
+        if (advFlag)    advFlag.value = '0';
     }
 
     function fillForm(o) {
@@ -563,8 +585,12 @@
         document.getElementById('of-discount-type').value = o.discount_type;
         document.getElementById('of-discount-value').value = o.discount_value;
         document.getElementById('of-coupon-code').value = o.coupon_code || '';
-        document.getElementById('of-starts-at').value = o.starts_at;
-        document.getElementById('of-ends-at').value = o.ends_at;
+        /* Don't prefill advanced datetime — duration wins by default.
+           Admin can still open Advanced and re-enter dates if needed. */
+        document.getElementById('of-starts-at').value = '';
+        document.getElementById('of-ends-at').value = '';
+        if (advDetails) advDetails.open = false;
+        if (advFlag)    advFlag.value = '0';
         selectIcon(o.icon || 'sparkles');
         var known = ['brand','#e11d48','#f59e0b','#3b82f6','#7c3aed','#ec4899'];
         selectColor(known.indexOf(o.color) >= 0 ? o.color : (o.color || 'brand'));
