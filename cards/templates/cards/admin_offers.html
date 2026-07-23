@@ -185,26 +185,86 @@
                     <input type="text" name="coupon_code" id="of-coupon-code" maxlength="30" placeholder="Leave blank to auto-apply">
                 </label>
 
-                <label class="of-label">
-                    <span>Starts at *</span>
-                    <input type="datetime-local" name="starts_at" id="of-starts-at" required>
-                </label>
-                <label class="of-label">
-                    <span>Ends at *</span>
-                    <input type="datetime-local" name="ends_at" id="of-ends-at" required>
+                {# ---- Duration: quick mode is 'run for N days from now' ---- #}
+                <label class="of-label of-full">
+                    <span>Duration (days) *</span>
+                    <div class="of-duration">
+                        <input type="number" name="duration_days" id="of-duration-days"
+                               min="1" max="365" step="1" value="7" required>
+                        <div class="of-duration__presets">
+                            <button type="button" class="of-chip" data-duration="1">1 day</button>
+                            <button type="button" class="of-chip" data-duration="3">3 days</button>
+                            <button type="button" class="of-chip is-active" data-duration="7">7 days</button>
+                            <button type="button" class="of-chip" data-duration="14">14 days</button>
+                            <button type="button" class="of-chip" data-duration="30">30 days</button>
+                        </div>
+                        <span class="mc-field-hint of-duration__hint" id="of-duration-hint">
+                            Starts <strong>now</strong>, ends <strong id="of-ends-preview">—</strong>.
+                        </span>
+                    </div>
                 </label>
 
-                <label class="of-label">
+                {# ---- Advanced (optional) ---- #}
+                <details class="of-advanced of-full">
+                    <summary><i data-lucide="settings-2"></i> Advanced — pick custom start/end times</summary>
+                    <div class="of-form__grid" style="margin-top:.5rem;">
+                        <label class="of-label">
+                            <span>Custom starts at</span>
+                            <input type="datetime-local" name="starts_at" id="of-starts-at">
+                        </label>
+                        <label class="of-label">
+                            <span>Custom ends at</span>
+                            <input type="datetime-local" name="ends_at" id="of-ends-at">
+                        </label>
+                        <span class="mc-field-hint of-full">
+                            Fill these only if you want a scheduled or a non-standard window. Otherwise leave blank and duration will be used.
+                        </span>
+                    </div>
+                </details>
+
+                {# ---- Icon: visual grid ---- #}
+                <label class="of-label of-full">
                     <span>Icon</span>
-                    <select name="icon" id="of-icon">
+                    <input type="hidden" name="icon" id="of-icon" value="sparkles">
+                    <div class="of-icon-grid" id="of-icon-grid">
                         {% for value, label in ICON_CHOICES %}
-                            <option value="{{ value }}">{{ label }}</option>
+                            <button type="button" class="of-icon-btn{% if value == 'sparkles' %} is-active{% endif %}" data-icon="{{ value }}" title="{{ label }}">
+                                <i data-lucide="{{ value }}"></i>
+                            </button>
                         {% endfor %}
-                    </select>
+                    </div>
                 </label>
-                <label class="of-label">
+
+                {# ---- Color: brand-first preset row + optional custom ---- #}
+                <label class="of-label of-full">
                     <span>Accent color</span>
-                    <input type="color" name="color" id="of-color" value="#7c3aed">
+                    <input type="hidden" name="color" id="of-color" value="brand">
+                    <div class="of-color-row" id="of-color-row">
+                        <button type="button" class="of-color-btn is-active" data-color="brand" title="Brand green">
+                            <span style="background: var(--mc-accent);"></span>
+                            <em>Brand</em>
+                        </button>
+                        <button type="button" class="of-color-btn" data-color="#e11d48" title="Rose (weekend)">
+                            <span style="background:#e11d48;"></span>
+                            <em>Rose</em>
+                        </button>
+                        <button type="button" class="of-color-btn" data-color="#f59e0b" title="Amber (limited)">
+                            <span style="background:#f59e0b;"></span>
+                            <em>Amber</em>
+                        </button>
+                        <button type="button" class="of-color-btn" data-color="#3b82f6" title="Blue (info)">
+                            <span style="background:#3b82f6;"></span>
+                            <em>Blue</em>
+                        </button>
+                        <button type="button" class="of-color-btn" data-color="#7c3aed" title="Violet (premium)">
+                            <span style="background:#7c3aed;"></span>
+                            <em>Violet</em>
+                        </button>
+                        <button type="button" class="of-color-btn" data-color="#ec4899" title="Pink (romance)">
+                            <span style="background:#ec4899;"></span>
+                            <em>Pink</em>
+                        </button>
+                    </div>
                 </label>
             </div>
 
@@ -335,6 +395,82 @@
 
 .of-modal__actions { display:flex; justify-content:flex-end; gap:.5rem; }
 
+/* Duration presets */
+.of-duration { display: flex; flex-direction: column; gap: .5rem; }
+.of-duration input[type="number"] { max-width: 130px; }
+.of-duration__presets { display: flex; flex-wrap: wrap; gap: .35rem; }
+.of-chip {
+    padding: .35rem .7rem; border-radius: 999px;
+    background: var(--mc-bg-2); border: 1px solid var(--mc-border-hi);
+    color: var(--mc-text-md); cursor: pointer; font-size: .78rem; font-weight: 600;
+    font-family: inherit; transition: all .15s ease;
+}
+.of-chip:hover { border-color: var(--mc-accent); color: var(--mc-text-hi); }
+.of-chip.is-active {
+    background: color-mix(in oklab, var(--mc-accent) 20%, var(--mc-bg-2));
+    color: var(--mc-accent-strong); border-color: var(--mc-accent);
+}
+.of-duration__hint { font-size: .75rem; }
+.of-duration__hint strong { color: var(--mc-accent-strong); }
+
+/* Advanced fold */
+.of-advanced summary {
+    cursor: pointer; padding: .5rem .75rem;
+    background: var(--mc-bg-2); border: 1px solid var(--mc-border-hi);
+    border-radius: 8px; font-size: .82rem; font-weight: 600;
+    color: var(--mc-text-md);
+    display: flex; align-items: center; gap: .4rem;
+    list-style: none;
+}
+.of-advanced summary::-webkit-details-marker { display: none; }
+.of-advanced summary i { width: 14px; height: 14px; }
+.of-advanced[open] summary { color: var(--mc-text-hi); }
+
+/* Icon grid */
+.of-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+    gap: .4rem;
+}
+.of-icon-btn {
+    padding: .55rem;
+    background: var(--mc-bg-2); border: 1px solid var(--mc-border-hi);
+    border-radius: 10px; color: var(--mc-text-md); cursor: pointer;
+    display: grid; place-items: center;
+    transition: all .15s ease;
+}
+.of-icon-btn:hover { transform: translateY(-1px); border-color: var(--mc-accent); color: var(--mc-text-hi); }
+.of-icon-btn.is-active {
+    background: color-mix(in oklab, var(--mc-accent) 25%, var(--mc-bg-2));
+    border-color: var(--mc-accent); color: var(--mc-accent-strong);
+    box-shadow: 0 6px 16px -8px var(--mc-accent-glow);
+}
+.of-icon-btn i { width: 20px; height: 20px; }
+
+/* Color row */
+.of-color-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(84px, 1fr));
+    gap: .4rem;
+}
+.of-color-btn {
+    padding: .5rem .4rem;
+    background: var(--mc-bg-2); border: 1px solid var(--mc-border-hi);
+    border-radius: 10px; color: var(--mc-text-md); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: .35rem;
+    transition: all .15s ease; font-family: inherit;
+}
+.of-color-btn span {
+    width: 24px; height: 24px; border-radius: 50%;
+    box-shadow: 0 0 0 2px var(--mc-bg-1), 0 4px 10px -4px rgba(0,0,0,.35);
+}
+.of-color-btn em { font-style: normal; font-size: .72rem; font-weight: 700; }
+.of-color-btn:hover { transform: translateY(-1px); border-color: var(--mc-accent); color: var(--mc-text-hi); }
+.of-color-btn.is-active {
+    border-color: var(--mc-accent); color: var(--mc-accent-strong);
+    background: color-mix(in oklab, var(--mc-accent) 15%, var(--mc-bg-2));
+}
+
 @keyframes ofFade { from { opacity:0; } to { opacity:1; } }
 @keyframes ofPop { from { transform: translateY(-16px) scale(.96); opacity:0; } to { transform:none; opacity:1; } }
 </style>
@@ -348,14 +484,68 @@
     var titleEl  = document.getElementById('offerModalTitle');
     var editBtns = document.querySelectorAll('[data-edit-offer]');
 
-    function open() { modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+    var iconHidden    = document.getElementById('of-icon');
+    var colorHidden   = document.getElementById('of-color');
+    var iconButtons   = document.querySelectorAll('.of-icon-btn');
+    var colorButtons  = document.querySelectorAll('.of-color-btn');
+    var durationInput = document.getElementById('of-duration-days');
+    var durationChips = document.querySelectorAll('.of-chip[data-duration]');
+    var endsPreview   = document.getElementById('of-ends-preview');
+
+    function open()  { modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; if (window.lucide) window.lucide.createIcons(); }
     function close() { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+
+    function setActive(nodes, matcher) {
+        nodes.forEach(function (n) { n.classList.toggle('is-active', matcher(n)); });
+    }
+
+    function selectIcon(icon) {
+        iconHidden.value = icon;
+        setActive(iconButtons, function (b) { return b.getAttribute('data-icon') === icon; });
+    }
+    function selectColor(color) {
+        colorHidden.value = color;
+        setActive(colorButtons, function (b) { return b.getAttribute('data-color') === color; });
+    }
+
+    iconButtons.forEach(function (b) {
+        b.addEventListener('click', function () { selectIcon(b.getAttribute('data-icon')); });
+    });
+    colorButtons.forEach(function (b) {
+        b.addEventListener('click', function () { selectColor(b.getAttribute('data-color')); });
+    });
+
+    /* Duration presets → syncs number input + preview */
+    function updateEndsPreview() {
+        var days = parseInt(durationInput.value, 10) || 0;
+        if (!days) { endsPreview.textContent = '—'; return; }
+        var d = new Date(Date.now() + days * 86400000);
+        endsPreview.textContent = d.toLocaleDateString(undefined, {
+            year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    }
+    durationChips.forEach(function (c) {
+        c.addEventListener('click', function () {
+            var days = c.getAttribute('data-duration');
+            durationInput.value = days;
+            setActive(durationChips, function (b) { return b.getAttribute('data-duration') === days; });
+            updateEndsPreview();
+        });
+    });
+    if (durationInput) durationInput.addEventListener('input', function () {
+        setActive(durationChips, function () { return false; });
+        updateEndsPreview();
+    });
 
     function resetToCreate() {
         titleEl.textContent = 'New offer';
         form.action = '{% url "admin_offer_create" %}';
         form.reset();
-        document.getElementById('of-color').value = '#7c3aed';
+        durationInput.value = 7;
+        setActive(durationChips, function (b) { return b.getAttribute('data-duration') === '7'; });
+        updateEndsPreview();
+        selectIcon('sparkles');
+        selectColor('brand');
         document.getElementById('of-show-landing').checked = true;
         document.getElementById('of-show-dashboard').checked = true;
         document.getElementById('of-show-popup').checked = false;
@@ -375,18 +565,28 @@
         document.getElementById('of-coupon-code').value = o.coupon_code || '';
         document.getElementById('of-starts-at').value = o.starts_at;
         document.getElementById('of-ends-at').value = o.ends_at;
-        document.getElementById('of-icon').value = o.icon;
-        document.getElementById('of-color').value = o.color;
+        selectIcon(o.icon || 'sparkles');
+        var known = ['brand','#e11d48','#f59e0b','#3b82f6','#7c3aed','#ec4899'];
+        selectColor(known.indexOf(o.color) >= 0 ? o.color : (o.color || 'brand'));
         document.getElementById('of-show-landing').checked = !!o.show_on_landing;
         document.getElementById('of-show-dashboard').checked = !!o.show_on_dashboard;
         document.getElementById('of-show-popup').checked = !!o.show_as_popup;
         document.getElementById('of-is-active').checked = !!o.is_active;
+        /* Duration input inferred from ends - starts */
+        try {
+            var start = new Date(o.starts_at);
+            var end = new Date(o.ends_at);
+            var d = Math.max(1, Math.round((end - start) / 86400000));
+            durationInput.value = d;
+            setActive(durationChips, function (b) { return parseInt(b.getAttribute('data-duration'), 10) === d; });
+            updateEndsPreview();
+        } catch (e) {}
     }
 
-    if (openBtn) openBtn.addEventListener('click', function() { resetToCreate(); open(); });
-    closers.forEach(function(c) { c.addEventListener('click', close); });
-    editBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
+    if (openBtn) openBtn.addEventListener('click', function () { resetToCreate(); open(); });
+    closers.forEach(function (c) { c.addEventListener('click', close); });
+    editBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
             try {
                 var data = JSON.parse(btn.getAttribute('data-offer'));
                 fillForm(data);
@@ -394,7 +594,9 @@
             } catch (e) { console.error(e); }
         });
     });
-    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+
+    updateEndsPreview();
 })();
 </script>
 {% endblock %}

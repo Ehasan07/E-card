@@ -3338,16 +3338,32 @@ def admin_offer_save(request, offer_id=None):
 
     offer.coupon_code = (request.POST.get('coupon_code') or '').strip().upper()[:30]
 
+    # Quick mode: duration_days starts now. Advanced overrides with
+    # explicit start/end datetimes.
     starts_at = parse_dt(request.POST.get('starts_at'))
     ends_at   = parse_dt(request.POST.get('ends_at'))
-    if not starts_at or not ends_at or ends_at <= starts_at:
-        messages.error(request, 'Invalid start / end times.')
+    if not starts_at or not ends_at:
+        try:
+            days = int(request.POST.get('duration_days') or '7')
+        except (ValueError, TypeError):
+            days = 7
+        days = max(1, min(365, days))
+        starts_at = timezone.now()
+        ends_at = starts_at + timezone.timedelta(days=days)
+    if ends_at <= starts_at:
+        messages.error(request, 'End time must be after the start time.')
         return redirect('admin_offers')
     offer.starts_at = starts_at
     offer.ends_at = ends_at
 
     offer.icon = request.POST.get('icon') or 'sparkles'
-    offer.color = (request.POST.get('color') or '#7c3aed').strip()[:7]
+    raw_color = (request.POST.get('color') or 'brand').strip()
+    # 'brand' sentinel maps to the site's mint accent — the banner
+    # already tints itself from this hex.
+    if raw_color == 'brand':
+        offer.color = '#00a867'
+    else:
+        offer.color = raw_color[:7] if raw_color.startswith('#') else '#00a867'
 
     offer.show_on_landing   = bool(request.POST.get('show_on_landing'))
     offer.show_on_dashboard = bool(request.POST.get('show_on_dashboard'))
