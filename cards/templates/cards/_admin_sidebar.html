@@ -48,6 +48,12 @@ Expected `active` values:
             <i data-lucide="wallet"></i>
             <span>Payments</span>
         </a>
+        <a href="{% url 'admin_offers' %}"
+           class="dash-sidebar__link{% if active == 'offers' %} is-active{% endif %}"
+           {% if active == 'offers' %}aria-current="page"{% endif %}>
+            <i data-lucide="tag"></i>
+            <span>Offers</span>
+        </a>
         <a href="{% url 'admin_dashboard' %}#ad-feedback-panel"
            class="dash-sidebar__link{% if active == 'feedback' %} is-active{% endif %}">
             <i data-lucide="message-square"></i>

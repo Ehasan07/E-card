@@ -63,6 +63,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'cards.context_processors.user_plan',
                 'cards.context_processors.sidebar',
+                'cards.context_processors.live_offers',
             ],
         },
     },

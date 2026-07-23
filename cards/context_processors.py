@@ -63,3 +63,40 @@ def sidebar(request):
         'sidebar_unread_notifications': unread_notifications,
         'pending_request_count': pending,
     }
+
+
+def live_offers(request):
+    """Expose currently-live offers to every template.
+
+    - `landing_offer`: single best offer to render as a banner on the
+      public landing page (`.show_on_landing=True`).
+    - `dashboard_offer`: single best offer to show on a free user's
+      dashboard (`.show_on_dashboard=True`).
+    - `dashboard_popup_offer`: single best offer to fire as a modal
+      once per session (`.show_as_popup=True`).
+    """
+    from django.utils import timezone
+    from .models import Offer
+
+    now = timezone.now()
+    live_qs = (
+        Offer.objects
+        .filter(is_active=True, starts_at__lte=now, ends_at__gte=now)
+        .order_by('-discount_value')
+    )
+
+    landing_offer = live_qs.filter(show_on_landing=True).first()
+    dashboard_offer = None
+    dashboard_popup_offer = None
+    user = getattr(request, 'user', None)
+    if user and user.is_authenticated:
+        tier = user_plan_tier(user)
+        if tier == TIER_FREE:
+            dashboard_offer = live_qs.filter(show_on_dashboard=True).first()
+            dashboard_popup_offer = live_qs.filter(show_as_popup=True).first()
+
+    return {
+        'landing_offer': landing_offer,
+        'dashboard_offer': dashboard_offer,
+        'dashboard_popup_offer': dashboard_popup_offer,
+    }

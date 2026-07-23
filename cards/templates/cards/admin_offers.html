@@ -1,0 +1,400 @@
+{% extends 'cards/base.html' %}
+{% load i18n %}
+
+{% block title %}Offers — MY-Card Control{% endblock %}
+{% block page_icon %}tag{% endblock %}
+{% block page_label %}Admin{% endblock %}
+
+{% block content %}
+<div class="dash-shell dash-shell--admin" data-dash-shell>
+    {% include 'cards/_admin_sidebar.html' with active='offers' %}
+    <div class="dash-scrim" data-dash-scrim aria-hidden="true"></div>
+    <main class="dash-main">
+        <header class="dash-topbar">
+            <button type="button" class="dash-menu-toggle" data-dash-open aria-label="Open menu">
+                <i data-lucide="menu"></i>
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="dash-topbar__logo">
+                <span class="mc-nav__logo-mark mc-nav__logo-mark--admin"></span>
+                MY-Card CONTROL
+            </a>
+            <span></span>
+        </header>
+
+<div class="of-page">
+    <div class="mc-container of-container">
+
+        <header class="of-hero">
+            <div>
+                <span class="mc-badge mc-badge--accent">
+                    <span class="mc-badge__dot"></span>
+                    Offers &amp; promos
+                </span>
+                <h1>Offer manager</h1>
+                <p class="mc-text-muted">
+                    Create live discount campaigns with a start/end window. Live offers auto-apply on the pricing page and payment flow; expired offers are rejected at checkout.
+                </p>
+            </div>
+            <button type="button" class="of-btn of-btn--primary" data-open-offer-form>
+                <i data-lucide="plus"></i> New offer
+            </button>
+        </header>
+
+        <div class="of-stats">
+            <div class="of-stat of-stat--live">
+                <span class="of-stat__label">Live</span>
+                <span class="of-stat__value">{{ stats.live }}</span>
+            </div>
+            <div class="of-stat of-stat--scheduled">
+                <span class="of-stat__label">Scheduled</span>
+                <span class="of-stat__value">{{ stats.scheduled }}</span>
+            </div>
+            <div class="of-stat of-stat--expired">
+                <span class="of-stat__label">Expired</span>
+                <span class="of-stat__value">{{ stats.expired }}</span>
+            </div>
+            <div class="of-stat">
+                <span class="of-stat__label">Total</span>
+                <span class="of-stat__value">{{ stats.total }}</span>
+            </div>
+        </div>
+
+        <section class="of-list">
+            {% for offer in offers %}
+                <article class="of-card of-card--{{ offer.status }}" style="--of-accent: {{ offer.color }};">
+                    <div class="of-card__band"></div>
+                    <div class="of-card__head">
+                        <div class="of-card__icon"><i data-lucide="{{ offer.icon }}"></i></div>
+                        <div class="of-card__title">
+                            <h3>{{ offer.title }}</h3>
+                            {% if offer.title_bn %}<span class="of-card__title-bn">{{ offer.title_bn }}</span>{% endif %}
+                        </div>
+                        <span class="of-status of-status--{{ offer.status }}">
+                            {% if offer.status == 'live' %}<span class="of-status__dot"></span>{% endif %}
+                            {{ offer.status|upper }}
+                        </span>
+                    </div>
+                    <p class="of-card__desc">{{ offer.description|truncatechars:180 }}</p>
+                    <ul class="of-card__meta">
+                        <li><i data-lucide="tag"></i> <strong>{{ offer.display_label }}</strong></li>
+                        <li><i data-lucide="target"></i> {{ offer.get_applies_to_display }}</li>
+                        {% if offer.coupon_code %}
+                            <li><i data-lucide="ticket"></i> <code>{{ offer.coupon_code }}</code></li>
+                        {% else %}
+                            <li><i data-lucide="zap"></i> Auto-apply</li>
+                        {% endif %}
+                        <li><i data-lucide="calendar"></i> {{ offer.starts_at|date:"Y-m-d H:i" }} → {{ offer.ends_at|date:"Y-m-d H:i" }}</li>
+                    </ul>
+                    <footer class="of-card__foot">
+                        <div class="of-card__where">
+                            {% if offer.show_on_landing %}<span title="Landing banner"><i data-lucide="globe"></i> Landing</span>{% endif %}
+                            {% if offer.show_on_dashboard %}<span title="Free dashboard banner"><i data-lucide="layout-dashboard"></i> Dashboard</span>{% endif %}
+                            {% if offer.show_as_popup %}<span title="Free dashboard popup"><i data-lucide="bell"></i> Popup</span>{% endif %}
+                        </div>
+                        <div class="of-card__actions">
+                            <button type="button" class="of-btn of-btn--ghost of-btn--sm"
+                                    data-edit-offer
+                                    data-offer='{"id":{{ offer.id }},"title":"{{ offer.title|escapejs }}","title_bn":"{{ offer.title_bn|escapejs }}","description":"{{ offer.description|escapejs }}","description_bn":"{{ offer.description_bn|escapejs }}","applies_to":"{{ offer.applies_to }}","discount_type":"{{ offer.discount_type }}","discount_value":"{{ offer.discount_value }}","coupon_code":"{{ offer.coupon_code|escapejs }}","starts_at":"{{ offer.starts_at|date:'Y-m-d\\TH:i' }}","ends_at":"{{ offer.ends_at|date:'Y-m-d\\TH:i' }}","icon":"{{ offer.icon }}","color":"{{ offer.color }}","show_on_landing":{% if offer.show_on_landing %}true{% else %}false{% endif %},"show_on_dashboard":{% if offer.show_on_dashboard %}true{% else %}false{% endif %},"show_as_popup":{% if offer.show_as_popup %}true{% else %}false{% endif %},"is_active":{% if offer.is_active %}true{% else %}false{% endif %}}'>
+                                <i data-lucide="pencil"></i> Edit
+                            </button>
+                            <form method="post" action="{% url 'admin_offer_toggle' offer.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="of-btn of-btn--ghost of-btn--sm">
+                                    <i data-lucide="{% if offer.is_active %}pause{% else %}play{% endif %}"></i>
+                                    {% if offer.is_active %}Pause{% else %}Enable{% endif %}
+                                </button>
+                            </form>
+                            <form method="post" action="{% url 'admin_offer_delete' offer.id %}" style="display:inline;"
+                                  onsubmit="return confirm('Delete offer &quot;{{ offer.title|escapejs }}&quot;?');">
+                                {% csrf_token %}
+                                <button type="submit" class="of-btn of-btn--danger of-btn--sm">
+                                    <i data-lucide="trash-2"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </footer>
+                </article>
+            {% empty %}
+                <div class="of-empty">
+                    <i data-lucide="tag"></i>
+                    <h3>No offers yet</h3>
+                    <p class="mc-text-muted">Click <strong>New offer</strong> above to create your first discount campaign.</p>
+                </div>
+            {% endfor %}
+        </section>
+
+    </div>
+</div>
+
+{# ================== Offer form modal ================== #}
+<div class="of-modal" id="offerModal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="of-modal__scrim" data-close-offer></div>
+    <div class="of-modal__box">
+        <button type="button" class="of-modal__x" data-close-offer aria-label="Close">
+            <i data-lucide="x"></i>
+        </button>
+        <header class="of-modal__head">
+            <h2 id="offerModalTitle">New offer</h2>
+            <p class="mc-text-muted">Craft an offer with a live window. Users see it on landing / free dashboard, and the discount auto-applies at checkout while it's live.</p>
+        </header>
+
+        <form method="post" action="{% url 'admin_offer_create' %}" id="offerForm" class="of-form">
+            {% csrf_token %}
+            <input type="hidden" name="_offer_id" id="offer-id">
+
+            <div class="of-form__grid">
+                <label class="of-label of-full">
+                    <span>Title (English) *</span>
+                    <input type="text" name="title" id="of-title" required maxlength="140" placeholder="e.g. Ramadan Blast — 50% Off Pro">
+                </label>
+                <label class="of-label of-full">
+                    <span>Title (বাংলা)</span>
+                    <input type="text" name="title_bn" id="of-title-bn" maxlength="140" placeholder="e.g. রমজান অফার — প্রোতে ৫০% ছাড়">
+                </label>
+                <label class="of-label of-full">
+                    <span>Description (English) *</span>
+                    <textarea name="description" id="of-description" required rows="2" placeholder="Short pitch shown on the banner"></textarea>
+                </label>
+                <label class="of-label of-full">
+                    <span>Description (বাংলা)</span>
+                    <textarea name="description_bn" id="of-description-bn" rows="2" placeholder="ব্যানারে দেখানোর জন্য সংক্ষিপ্ত বর্ণনা"></textarea>
+                </label>
+
+                <label class="of-label">
+                    <span>Applies to *</span>
+                    <select name="applies_to" id="of-applies-to">
+                        {% for value, label in APPLIES_CHOICES %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="of-label">
+                    <span>Discount type *</span>
+                    <select name="discount_type" id="of-discount-type">
+                        {% for value, label in DISCOUNT_CHOICES %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="of-label">
+                    <span>Discount value *</span>
+                    <input type="number" name="discount_value" id="of-discount-value" step="0.01" min="0" required>
+                </label>
+                <label class="of-label">
+                    <span>Coupon code <em>(optional)</em></span>
+                    <input type="text" name="coupon_code" id="of-coupon-code" maxlength="30" placeholder="Leave blank to auto-apply">
+                </label>
+
+                <label class="of-label">
+                    <span>Starts at *</span>
+                    <input type="datetime-local" name="starts_at" id="of-starts-at" required>
+                </label>
+                <label class="of-label">
+                    <span>Ends at *</span>
+                    <input type="datetime-local" name="ends_at" id="of-ends-at" required>
+                </label>
+
+                <label class="of-label">
+                    <span>Icon</span>
+                    <select name="icon" id="of-icon">
+                        {% for value, label in ICON_CHOICES %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label class="of-label">
+                    <span>Accent color</span>
+                    <input type="color" name="color" id="of-color" value="#7c3aed">
+                </label>
+            </div>
+
+            <fieldset class="of-toggles">
+                <legend>Where to show</legend>
+                <label><input type="checkbox" name="show_on_landing" id="of-show-landing" checked> Landing banner (all visitors)</label>
+                <label><input type="checkbox" name="show_on_dashboard" id="of-show-dashboard" checked> Free-user dashboard banner</label>
+                <label><input type="checkbox" name="show_as_popup" id="of-show-popup"> Free-user dashboard popup (once)</label>
+                <label><input type="checkbox" name="is_active" id="of-is-active" checked> Active</label>
+            </fieldset>
+
+            <footer class="of-modal__actions">
+                <button type="button" class="of-btn of-btn--ghost" data-close-offer>Cancel</button>
+                <button type="submit" class="of-btn of-btn--primary">
+                    <i data-lucide="save"></i> Save offer
+                </button>
+            </footer>
+        </form>
+    </div>
+</div>
+
+    </main>
+</div>
+
+<style>
+.of-page { min-height:calc(100vh - 60px); padding:2rem 1rem 3rem; }
+.of-container { max-width:1200px; margin:0 auto; }
+
+.of-hero { display:flex; flex-wrap:wrap; gap:1.25rem; justify-content:space-between; align-items:flex-start; margin-bottom:1.5rem; }
+.of-hero h1 { margin:.35rem 0; font-size:1.75rem; color:var(--mc-text-hi); }
+.of-hero p { max-width:640px; font-size:.9rem; }
+
+.of-btn { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem .9rem; border-radius:8px; text-decoration:none; font-size:.85rem; font-weight:600; border:1px solid transparent; cursor:pointer; font-family: inherit; }
+.of-btn i { width:14px; height:14px; }
+.of-btn--primary { background: linear-gradient(135deg, var(--mc-accent-strong), var(--mc-accent)); color: var(--mc-text-inv); box-shadow: 0 8px 22px -10px var(--mc-accent-glow); }
+.of-btn--primary:hover { transform: translateY(-1px); }
+.of-btn--ghost { border-color:var(--mc-border-hi); color:var(--mc-text-hi); background:transparent; }
+.of-btn--ghost:hover { background:var(--mc-bg-3); }
+.of-btn--danger { border-color:rgba(239,68,68,.4); color:#ef4444; background:transparent; }
+.of-btn--danger:hover { background:rgba(239,68,68,.1); }
+.of-btn--sm { padding:.35rem .7rem; font-size:.75rem; }
+
+.of-stats { display:grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:.85rem; margin-bottom:1.4rem; }
+.of-stat { padding: .85rem 1rem; background:var(--mc-bg-2); border:1px solid var(--mc-border-hi); border-radius:12px; display:flex; flex-direction:column; gap:.15rem; }
+.of-stat__label { text-transform:uppercase; font-size:.7rem; letter-spacing:.08em; color:var(--mc-text-md); font-weight:700; }
+.of-stat__value { font-size:1.75rem; font-weight:800; color:var(--mc-text-hi); font-family: ui-monospace, "SF Mono", monospace; }
+.of-stat--live .of-stat__value { color:#10b981; }
+.of-stat--scheduled .of-stat__value { color:#3b82f6; }
+.of-stat--expired .of-stat__value { color:var(--mc-text-md); }
+
+.of-list { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (min-width: 720px) { .of-list { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1080px) { .of-list { grid-template-columns: repeat(3, 1fr); } }
+
+.of-card {
+    position: relative;
+    background: var(--mc-bg-2);
+    border: 1px solid var(--mc-border-hi);
+    border-radius: 14px;
+    padding: 1.1rem 1.15rem 1rem;
+    overflow: hidden;
+    display: flex; flex-direction: column; gap: .7rem;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.of-card:hover { transform: translateY(-2px); border-color: var(--of-accent); box-shadow: 0 12px 30px -14px color-mix(in oklab, var(--of-accent) 40%, transparent); }
+.of-card__band { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--of-accent); }
+.of-card--expired { opacity: .55; }
+
+.of-card__head { display: flex; align-items: center; gap: .6rem; }
+.of-card__icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: grid; place-items: center; flex-shrink: 0;
+    background: color-mix(in oklab, var(--of-accent) 20%, transparent);
+    color: var(--of-accent);
+}
+.of-card__icon i { width: 20px; height: 20px; }
+.of-card__title { flex: 1; min-width: 0; }
+.of-card__title h3 { margin: 0; font-size: 1rem; color: var(--mc-text-hi); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.of-card__title-bn { font-size: .78rem; color: var(--mc-text-md); }
+
+.of-status { padding: .18rem .55rem; border-radius: 999px; font-size: .68rem; font-weight: 800; letter-spacing: .05em; flex-shrink: 0; display: inline-flex; align-items: center; gap: .3rem; }
+.of-status--live      { background: rgba(16,185,129,.18); color: #059669; }
+.of-status--scheduled { background: rgba(59,130,246,.18); color: #2563eb; }
+.of-status--expired   { background: var(--mc-bg-3); color: var(--mc-text-md); }
+.of-status--disabled  { background: var(--mc-bg-3); color: var(--mc-text-md); }
+.of-status__dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: ofPulse 1.6s ease-in-out infinite; }
+@keyframes ofPulse { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+
+.of-card__desc { margin: 0; font-size: .85rem; color: var(--mc-text-md); line-height: 1.45; }
+.of-card__meta { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: .35rem; font-size: .78rem; color: var(--mc-text-md); }
+.of-card__meta li { display: flex; align-items: center; gap: .4rem; }
+.of-card__meta i { width: 12px; height: 12px; color: var(--of-accent); }
+.of-card__meta code { background: var(--mc-bg-3); padding: 1px 5px; border-radius: 4px; font-size: .7rem; }
+
+.of-card__foot { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding-top: .7rem; border-top: 1px solid var(--mc-border); flex-wrap: wrap; }
+.of-card__where { display: flex; gap: .5rem; flex-wrap: wrap; }
+.of-card__where span { display: inline-flex; align-items: center; gap: .25rem; font-size: .68rem; color: var(--mc-text-md); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.of-card__where i { width: 11px; height: 11px; }
+.of-card__actions { display: flex; gap: .35rem; }
+
+.of-empty { grid-column: 1 / -1; text-align: center; padding: 3rem 1rem; background: var(--mc-bg-2); border: 1px dashed var(--mc-border-hi); border-radius: 14px; color: var(--mc-text-md); }
+.of-empty i { width: 40px; height: 40px; color: var(--mc-text-md); margin-bottom: .5rem; }
+.of-empty h3 { color: var(--mc-text-hi); margin: 0 0 .3rem; }
+
+/* Modal */
+.of-modal { position:fixed; inset:0; z-index:2500; display:none; }
+.of-modal.is-open { display:block; }
+.of-modal__scrim { position:absolute; inset:0; background:color-mix(in oklab, var(--mc-bg-0) 88%, transparent); backdrop-filter:blur(8px); animation: ofFade .22s ease-out both; }
+.of-modal__box { position:relative; margin:4vh auto 0; max-width:720px; background:var(--mc-bg-1); border:1px solid var(--mc-border-hi); border-radius:18px; padding:1.75rem 1.5rem 1.25rem; color:var(--mc-text-hi); box-shadow: 0 40px 80px -20px color-mix(in oklab, var(--mc-text-hi) 30%, transparent); animation: ofPop .28s cubic-bezier(.2,.9,.3,1.2) both; max-height: 92vh; overflow-y: auto; }
+.of-modal__x { position:absolute; top:14px; right:14px; width:32px; height:32px; border:1px solid var(--mc-border-hi); background:transparent; color:var(--mc-text-md); border-radius:10px; cursor:pointer; display:grid; place-items:center; }
+.of-modal__head { margin-bottom:1.25rem; }
+.of-modal__head h2 { margin:.35rem 0 .4rem; font-size:1.35rem; }
+
+.of-form__grid { display:grid; grid-template-columns: 1fr 1fr; gap:.85rem; margin-bottom:1rem; }
+@media (max-width: 640px) { .of-form__grid { grid-template-columns: 1fr; } }
+.of-full { grid-column: 1 / -1; }
+.of-label { display:flex; flex-direction:column; gap:.35rem; font-size:.78rem; font-weight:600; color: var(--mc-text-hi); }
+.of-label > span { color: var(--mc-text-hi); font-weight: 700; }
+.of-label em { color: var(--mc-text-md); font-style: normal; font-weight: 500; }
+.of-label input, .of-label select, .of-label textarea { width:100%; padding:.55rem .75rem; border:1px solid var(--mc-border-hi); background:var(--mc-bg-2); color:var(--mc-text-hi); border-radius:8px; font-family:inherit; font-size:.9rem; }
+.of-label input[type="color"] { padding: 3px; height: 40px; cursor: pointer; }
+.of-label input:focus, .of-label select:focus, .of-label textarea:focus { outline: 2px solid var(--mc-accent-glow); outline-offset: 1px; border-color: var(--mc-accent); }
+
+.of-toggles { border: 1px solid var(--mc-border-hi); border-radius: 10px; padding: .75rem 1rem; display: flex; flex-direction: column; gap: .5rem; margin-bottom: 1.25rem; }
+.of-toggles legend { padding: 0 .35rem; font-size: .8rem; color: var(--mc-text-md); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.of-toggles label { display: flex; gap: .5rem; align-items: center; font-size: .87rem; color: var(--mc-text-hi); cursor: pointer; }
+.of-toggles input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--mc-accent); }
+
+.of-modal__actions { display:flex; justify-content:flex-end; gap:.5rem; }
+
+@keyframes ofFade { from { opacity:0; } to { opacity:1; } }
+@keyframes ofPop { from { transform: translateY(-16px) scale(.96); opacity:0; } to { transform:none; opacity:1; } }
+</style>
+
+<script>
+(function () {
+    var modal    = document.getElementById('offerModal');
+    var openBtn  = document.querySelector('[data-open-offer-form]');
+    var closers  = modal.querySelectorAll('[data-close-offer]');
+    var form     = document.getElementById('offerForm');
+    var titleEl  = document.getElementById('offerModalTitle');
+    var editBtns = document.querySelectorAll('[data-edit-offer]');
+
+    function open() { modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; }
+    function close() { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+
+    function resetToCreate() {
+        titleEl.textContent = 'New offer';
+        form.action = '{% url "admin_offer_create" %}';
+        form.reset();
+        document.getElementById('of-color').value = '#7c3aed';
+        document.getElementById('of-show-landing').checked = true;
+        document.getElementById('of-show-dashboard').checked = true;
+        document.getElementById('of-show-popup').checked = false;
+        document.getElementById('of-is-active').checked = true;
+    }
+
+    function fillForm(o) {
+        titleEl.textContent = 'Edit offer';
+        form.action = '/my-admin/offers/' + o.id + '/save/';
+        document.getElementById('of-title').value = o.title || '';
+        document.getElementById('of-title-bn').value = o.title_bn || '';
+        document.getElementById('of-description').value = o.description || '';
+        document.getElementById('of-description-bn').value = o.description_bn || '';
+        document.getElementById('of-applies-to').value = o.applies_to;
+        document.getElementById('of-discount-type').value = o.discount_type;
+        document.getElementById('of-discount-value').value = o.discount_value;
+        document.getElementById('of-coupon-code').value = o.coupon_code || '';
+        document.getElementById('of-starts-at').value = o.starts_at;
+        document.getElementById('of-ends-at').value = o.ends_at;
+        document.getElementById('of-icon').value = o.icon;
+        document.getElementById('of-color').value = o.color;
+        document.getElementById('of-show-landing').checked = !!o.show_on_landing;
+        document.getElementById('of-show-dashboard').checked = !!o.show_on_dashboard;
+        document.getElementById('of-show-popup').checked = !!o.show_as_popup;
+        document.getElementById('of-is-active').checked = !!o.is_active;
+    }
+
+    if (openBtn) openBtn.addEventListener('click', function() { resetToCreate(); open(); });
+    closers.forEach(function(c) { c.addEventListener('click', close); });
+    editBtns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            try {
+                var data = JSON.parse(btn.getAttribute('data-offer'));
+                fillForm(data);
+                open();
+            } catch (e) { console.error(e); }
+        });
+    });
+    document.addEventListener('keydown', function(e) { if (e.key === 'Escape' && modal.classList.contains('is-open')) close(); });
+})();
+</script>
+{% endblock %}

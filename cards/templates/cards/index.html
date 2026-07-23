@@ -87,6 +87,12 @@
                 <li><i data-lucide="check-circle-2"></i> {% trans "QR + link ready" %}</li>
                 <li><i data-lucide="check-circle-2"></i> {% trans "bKash & Stripe supported" %}</li>
             </ul>
+
+            {% if landing_offer %}
+            <div class="mc-fade-up mc-fade-up--d5" style="margin-top: var(--mc-s-5);">
+                {% include 'cards/_offer_banner.html' with offer=landing_offer %}
+            </div>
+            {% endif %}
         </div>
 
         <div class="lp-hero__preview mc-fade-up mc-fade-up--d2">

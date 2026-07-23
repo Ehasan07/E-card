@@ -49,6 +49,7 @@ from .models import (
     LeadCapture,
     CardTheme,
     Payment,
+    Offer,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import AuthenticationForm, SetPasswordForm
@@ -2730,11 +2731,25 @@ def bkash_initiate(request, plan=None):
     is_pro_upgrade = plan == 'pro'
     is_lifetime = plan == 'lifetime'
     if is_lifetime:
-        amount = settings.CARD_LIFETIME_PRICE
+        base_amount = settings.CARD_LIFETIME_PRICE
     elif is_pro_upgrade:
-        amount = settings.CARD_YEARLY_PRICE_PRO
+        base_amount = settings.CARD_YEARLY_PRICE_PRO
     else:
-        amount = _yearly_price_for(request.user)
+        base_amount = _yearly_price_for(request.user)
+
+    # ---- Apply offer (coupon or auto) ------------------------------
+    coupon_code = (request.POST.get('coupon') or request.GET.get('coupon') or '').strip()
+    offer = _lookup_offer_for(plan_slug=plan or 'free', coupon_code=coupon_code, user=request.user)
+    discount_amount = 0
+    if coupon_code and offer is None:
+        # User typed an explicit coupon and it didn't match → tell them.
+        messages.error(request, f'Coupon "{coupon_code}" is not valid or has expired.')
+        return redirect('pricing')
+    amount = base_amount
+    if offer is not None:
+        final, discount = offer.compute_discounted(base_amount)
+        amount = final
+        discount_amount = discount
     yearly = amount  # kept for downstream naming compatibility
 
     subscription_request_id = bkash.new_subscription_request_id()
@@ -2754,7 +2769,15 @@ def bkash_initiate(request, plan=None):
         currency='BDT',
         status=Payment.STATUS_PENDING,
         bkash_subscription_request_id=subscription_request_id,
-        raw_payload={'plan': plan, 'amount': amount, 'lifetime': is_lifetime},
+        raw_payload={
+            'plan': plan,
+            'base_amount': float(base_amount),
+            'amount': float(amount),
+            'lifetime': is_lifetime,
+            'offer_id': offer.id if offer else None,
+            'coupon': coupon_code,
+            'discount': float(discount_amount),
+        },
     )
 
     # --- MOCK MODE ---
@@ -3213,3 +3236,152 @@ def _mark_subscription_cancelled(payment: Payment):
             'will go offline unless you resubscribe.'
         ),
     )
+
+
+# ============================================================================
+# Offers (admin-managed promos)
+# ============================================================================
+
+def _lookup_offer_for(plan_slug: str, coupon_code: str = '', user=None):
+    """Return the best live offer for a plan.
+
+    Priority:
+    1. Explicit coupon match (must be live + apply to this plan).
+    2. Any live auto-apply offer (no coupon_code) that targets this plan.
+    Returns None if nothing applies.
+    """
+    from django.utils import timezone
+    now = timezone.now()
+    qs = Offer.objects.filter(
+        is_active=True,
+        starts_at__lte=now,
+        ends_at__gte=now,
+    )
+    if coupon_code:
+        offer = qs.filter(coupon_code__iexact=coupon_code.strip()).first()
+        if offer and offer.applies_to_plan(plan_slug):
+            return offer
+        return None
+    # Auto-apply: coupon_code blank, best discount first
+    for offer in qs.filter(coupon_code='').order_by('-discount_value'):
+        if offer.applies_to_plan(plan_slug):
+            return offer
+    return None
+
+
+def _admin_required(user):
+    return user.is_authenticated and (user.is_superuser or user.is_staff)
+
+
+@login_required
+def admin_offers(request):
+    if not _admin_required(request.user):
+        return redirect('dashboard')
+
+    offers = Offer.objects.all()
+    live_count      = sum(1 for o in offers if o.status == 'live')
+    scheduled_count = sum(1 for o in offers if o.status == 'scheduled')
+    expired_count   = sum(1 for o in offers if o.status == 'expired')
+
+    return render(request, 'cards/admin_offers.html', {
+        'active': 'offers',
+        'offers': offers,
+        'stats': {
+            'live': live_count,
+            'scheduled': scheduled_count,
+            'expired': expired_count,
+            'total': offers.count(),
+        },
+        'APPLIES_CHOICES': Offer.APPLIES_CHOICES,
+        'DISCOUNT_CHOICES': Offer.DISCOUNT_CHOICES,
+        'ICON_CHOICES': Offer.ICON_CHOICES,
+    })
+
+
+@login_required
+@require_POST
+def admin_offer_save(request, offer_id=None):
+    if not _admin_required(request.user):
+        return redirect('dashboard')
+
+    from datetime import datetime
+    from decimal import Decimal, InvalidOperation
+
+    def parse_dt(raw):
+        if not raw:
+            return None
+        try:
+            dt = datetime.fromisoformat(raw)
+            if timezone.is_naive(dt):
+                dt = timezone.make_aware(dt)
+            return dt
+        except (ValueError, TypeError):
+            return None
+
+    if offer_id:
+        offer = get_object_or_404(Offer, pk=offer_id)
+    else:
+        offer = Offer(created_by=request.user)
+
+    offer.title = (request.POST.get('title') or '').strip()[:140]
+    offer.title_bn = (request.POST.get('title_bn') or '').strip()[:140]
+    offer.description = (request.POST.get('description') or '').strip()
+    offer.description_bn = (request.POST.get('description_bn') or '').strip()
+
+    offer.applies_to = request.POST.get('applies_to') or Offer.APPLIES_ALL
+    offer.discount_type = request.POST.get('discount_type') or Offer.DISCOUNT_PERCENT
+
+    try:
+        offer.discount_value = Decimal(str(request.POST.get('discount_value') or '0'))
+    except (InvalidOperation, TypeError):
+        offer.discount_value = Decimal('0')
+
+    offer.coupon_code = (request.POST.get('coupon_code') or '').strip().upper()[:30]
+
+    starts_at = parse_dt(request.POST.get('starts_at'))
+    ends_at   = parse_dt(request.POST.get('ends_at'))
+    if not starts_at or not ends_at or ends_at <= starts_at:
+        messages.error(request, 'Invalid start / end times.')
+        return redirect('admin_offers')
+    offer.starts_at = starts_at
+    offer.ends_at = ends_at
+
+    offer.icon = request.POST.get('icon') or 'sparkles'
+    offer.color = (request.POST.get('color') or '#7c3aed').strip()[:7]
+
+    offer.show_on_landing   = bool(request.POST.get('show_on_landing'))
+    offer.show_on_dashboard = bool(request.POST.get('show_on_dashboard'))
+    offer.show_as_popup     = bool(request.POST.get('show_as_popup'))
+    offer.is_active         = bool(request.POST.get('is_active'))
+
+    if not offer.title or offer.discount_value < 0:
+        messages.error(request, 'Title and a non-negative discount value are required.')
+        return redirect('admin_offers')
+
+    offer.save()
+    messages.success(request, f'Offer "{offer.title}" saved.')
+    return redirect('admin_offers')
+
+
+@login_required
+@require_POST
+def admin_offer_toggle(request, offer_id):
+    if not _admin_required(request.user):
+        return redirect('dashboard')
+    offer = get_object_or_404(Offer, pk=offer_id)
+    offer.is_active = not offer.is_active
+    offer.save(update_fields=['is_active'])
+    messages.success(request, f'Offer "{offer.title}" {"enabled" if offer.is_active else "disabled"}.')
+    return redirect('admin_offers')
+
+
+@login_required
+@require_POST
+def admin_offer_delete(request, offer_id):
+    if not _admin_required(request.user):
+        return redirect('dashboard')
+    offer = get_object_or_404(Offer, pk=offer_id)
+    title = offer.title
+    offer.delete()
+    messages.success(request, f'Offer "{title}" deleted.')
+    return redirect('admin_offers')

@@ -531,3 +531,141 @@ class UserNotification(models.Model):
 
     def __str__(self):
         return f"{self.get_kind_display()} → {self.user.username}"
+
+
+class Offer(models.Model):
+    """Admin-managed promotional offers with a live window.
+
+    Every offer targets a plan (or all plans), applies a discount
+    (percent or flat BDT), and only counts inside its start/end
+    window. Payment flow rejects an expired code with a clear error
+    instead of silently charging the base amount.
+    """
+
+    APPLIES_ALL          = 'all'
+    APPLIES_PRO          = 'pro'
+    APPLIES_LIFETIME     = 'lifetime'
+    APPLIES_FREE_RENEWAL = 'free_renewal'
+    APPLIES_CHOICES = [
+        (APPLIES_ALL,          'All paid plans'),
+        (APPLIES_PRO,          'Pro yearly only'),
+        (APPLIES_LIFETIME,     'Lifetime only'),
+        (APPLIES_FREE_RENEWAL, 'Free-plan yearly renewal only'),
+    ]
+
+    DISCOUNT_PERCENT = 'percent'
+    DISCOUNT_AMOUNT  = 'amount'
+    DISCOUNT_CHOICES = [
+        (DISCOUNT_PERCENT, 'Percent off'),
+        (DISCOUNT_AMOUNT,  'Flat amount off (BDT)'),
+    ]
+
+    ICON_CHOICES = [
+        ('sparkles', 'Sparkles'),
+        ('gift', 'Gift'),
+        ('flame', 'Flame'),
+        ('percent', 'Percent'),
+        ('badge-check', 'Badge check'),
+        ('star', 'Star'),
+        ('zap', 'Zap'),
+        ('trophy', 'Trophy'),
+        ('party-popper', 'Party popper'),
+        ('rocket', 'Rocket'),
+    ]
+
+    title           = models.CharField(max_length=140)
+    title_bn        = models.CharField(max_length=140, blank=True,
+                                       help_text='Bangla title (optional)')
+    description     = models.TextField()
+    description_bn  = models.TextField(blank=True,
+                                       help_text='Bangla description (optional)')
+
+    applies_to      = models.CharField(max_length=20, choices=APPLIES_CHOICES,
+                                       default=APPLIES_ALL)
+    discount_type   = models.CharField(max_length=10, choices=DISCOUNT_CHOICES,
+                                       default=DISCOUNT_PERCENT)
+    discount_value  = models.DecimalField(max_digits=8, decimal_places=2,
+                                          help_text='Percent (0-100) or flat BDT')
+
+    coupon_code     = models.CharField(max_length=30, blank=True, db_index=True,
+                                       help_text='Optional — leave blank for auto-apply banner')
+
+    starts_at       = models.DateTimeField()
+    ends_at         = models.DateTimeField()
+
+    icon            = models.CharField(max_length=24, choices=ICON_CHOICES,
+                                       default='sparkles')
+    color           = models.CharField(max_length=7, default='#7c3aed',
+                                       help_text='Hex color for the badge')
+
+    show_on_landing   = models.BooleanField(default=True)
+    show_on_dashboard = models.BooleanField(default=True,
+                                            help_text='Show a banner on free-user dashboards')
+    show_as_popup     = models.BooleanField(default=False,
+                                            help_text='Show once as a popup on the free-user dashboard')
+
+    is_active       = models.BooleanField(default=True)
+
+    created_by      = models.ForeignKey(User, on_delete=models.SET_NULL, null=True,
+                                        related_name='offers_created')
+    created_at      = models.DateTimeField(auto_now_add=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-starts_at', '-created_at']
+        indexes = [
+            models.Index(fields=['is_active', 'starts_at', 'ends_at']),
+            models.Index(fields=['coupon_code']),
+        ]
+
+    def __str__(self):
+        return f'{self.title} ({self.get_applies_to_display()})'
+
+    def is_live(self, at=None):
+        from django.utils import timezone
+        now = at or timezone.now()
+        return bool(self.is_active and self.starts_at <= now <= self.ends_at)
+
+    def applies_to_plan(self, plan_slug: str) -> bool:
+        """Whether this offer can be applied to a given plan slug."""
+        if not self.is_live():
+            return False
+        if self.applies_to == self.APPLIES_ALL:
+            return plan_slug in ('pro', 'lifetime', 'free')
+        if self.applies_to == self.APPLIES_FREE_RENEWAL:
+            return plan_slug == 'free'
+        return plan_slug == self.applies_to
+
+    def compute_discounted(self, base_amount) -> tuple:
+        """Return (final_amount, discount_amount) for a BDT base price."""
+        from decimal import Decimal
+        base = Decimal(str(base_amount))
+        if self.discount_type == self.DISCOUNT_PERCENT:
+            pct = min(Decimal('100'), max(Decimal('0'), Decimal(self.discount_value)))
+            discount = (base * pct / Decimal('100')).quantize(Decimal('0.01'))
+        else:
+            discount = min(base, Decimal(self.discount_value))
+        final = max(Decimal('0'), base - discount)
+        return final, discount
+
+    @property
+    def status(self) -> str:
+        """Machine-friendly status string for admin UI."""
+        from django.utils import timezone
+        now = timezone.now()
+        if not self.is_active:
+            return 'disabled'
+        if now < self.starts_at:
+            return 'scheduled'
+        if now > self.ends_at:
+            return 'expired'
+        return 'live'
+
+    @property
+    def display_label(self) -> str:
+        """'20% off' or '৳500 off' — for banner text."""
+        if self.discount_type == self.DISCOUNT_PERCENT:
+            v = int(self.discount_value) if float(self.discount_value).is_integer() else self.discount_value
+            return f'{v}% OFF'
+        v = int(self.discount_value) if float(self.discount_value).is_integer() else self.discount_value
+        return f'৳{v} OFF'

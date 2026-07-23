@@ -1398,3 +1398,22 @@ msgstr "অ্যাডমিন"
 
 msgid "Close"
 msgstr "বন্ধ করুন"
+
+# ============ Offer banner + popup ============
+msgid "Coupon code"
+msgstr "কুপন কোড"
+
+msgid "Auto-applies at checkout"
+msgstr "চেকআউটে অটো-এপ্লাই হবে"
+
+msgid "Ends in"
+msgstr "শেষ হবে"
+
+msgid "Ended"
+msgstr "শেষ হয়ে গেছে"
+
+msgid "Claim now"
+msgstr "এখনই নিন"
+
+msgid "Maybe later"
+msgstr "পরে দেখব"

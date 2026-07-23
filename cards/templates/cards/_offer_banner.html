@@ -1,0 +1,137 @@
+{% load i18n %}
+{% comment %}
+    Reusable live-offer banner. Pass `offer` in the include tag.
+    Uses the offer's own color as an accent (--of-accent).
+    Language: if bn title/desc exists AND current lang is bn, use them.
+{% endcomment %}
+{% if offer %}
+<div class="mc-offer-banner mc-fade-up" style="--of-accent: {{ offer.color }};" role="region" aria-label="Offer">
+    <div class="mc-offer-banner__bg"></div>
+    <div class="mc-offer-banner__icon">
+        <i data-lucide="{{ offer.icon }}"></i>
+    </div>
+    <div class="mc-offer-banner__body">
+        <div class="mc-offer-banner__head">
+            <span class="mc-offer-banner__pill">{{ offer.display_label }}</span>
+            <h3 class="mc-offer-banner__title">
+                {% if LANGUAGE_CODE == 'bn' and offer.title_bn %}{{ offer.title_bn }}{% else %}{{ offer.title }}{% endif %}
+            </h3>
+        </div>
+        <p class="mc-offer-banner__desc">
+            {% if CURRENT_LANG == 'bn' and offer.description_bn %}{{ offer.description_bn }}{% else %}{{ offer.description }}{% endif %}
+        </p>
+        <div class="mc-offer-banner__meta">
+            {% if offer.coupon_code %}
+                <span class="mc-offer-banner__code" title="{% trans 'Coupon code' %}">
+                    <i data-lucide="ticket"></i> <code>{{ offer.coupon_code }}</code>
+                </span>
+            {% else %}
+                <span class="mc-offer-banner__code">
+                    <i data-lucide="zap"></i> {% trans "Auto-applies at checkout" %}
+                </span>
+            {% endif %}
+            <span class="mc-offer-banner__timer" data-offer-countdown="{{ offer.ends_at|date:'c' }}">
+                <i data-lucide="clock"></i>
+                <span>{% trans "Ends in" %} <strong data-countdown-out>—</strong></span>
+            </span>
+        </div>
+    </div>
+    <a href="{% url 'pricing' %}{% if offer.coupon_code %}?coupon={{ offer.coupon_code }}{% endif %}"
+       class="mc-offer-banner__cta">
+        <i data-lucide="arrow-right"></i>
+        {% trans "Claim now" %}
+    </a>
+</div>
+
+<style>
+.mc-offer-banner {
+    position: relative;
+    display: flex; align-items: center; gap: 1rem;
+    padding: 1rem 1.15rem;
+    border-radius: 14px;
+    background: linear-gradient(135deg,
+        color-mix(in oklab, var(--of-accent) 22%, var(--mc-bg-1)),
+        color-mix(in oklab, var(--of-accent) 8%,  var(--mc-bg-1)));
+    border: 1px solid color-mix(in oklab, var(--of-accent) 40%, var(--mc-border-hi));
+    overflow: hidden;
+    animation: obGlow 4s ease-in-out infinite alternate;
+}
+@keyframes obGlow {
+    from { box-shadow: 0 0 0 0 color-mix(in oklab, var(--of-accent) 0%, transparent); }
+    to   { box-shadow: 0 0 40px -8px color-mix(in oklab, var(--of-accent) 55%, transparent); }
+}
+.mc-offer-banner__bg {
+    position: absolute; inset: -40% -20% auto auto; width: 220px; height: 220px;
+    background: radial-gradient(circle, color-mix(in oklab, var(--of-accent) 40%, transparent), transparent 60%);
+    pointer-events: none; filter: blur(8px);
+}
+.mc-offer-banner__icon {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: grid; place-items: center; flex-shrink: 0;
+    background: color-mix(in oklab, var(--of-accent) 40%, transparent);
+    color: var(--mc-text-inv, #fff);
+    animation: obBob 2.6s ease-in-out infinite;
+    position: relative; z-index: 1;
+}
+.mc-offer-banner__icon i { width: 22px; height: 22px; color: #fff; }
+@keyframes obBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+.mc-offer-banner__body { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.mc-offer-banner__head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .25rem; }
+.mc-offer-banner__pill {
+    background: var(--of-accent); color: #fff;
+    padding: .15rem .55rem; border-radius: 999px;
+    font-size: .68rem; font-weight: 800; letter-spacing: .05em;
+    box-shadow: 0 4px 12px -4px color-mix(in oklab, var(--of-accent) 60%, transparent);
+    animation: obPop 3s ease-in-out infinite;
+}
+@keyframes obPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+.mc-offer-banner__title { margin: 0; font-size: 1rem; color: var(--mc-text-hi); font-weight: 800; }
+.mc-offer-banner__desc { margin: .15rem 0 .5rem; font-size: .8rem; color: var(--mc-text-md); line-height: 1.45; }
+
+.mc-offer-banner__meta { display: flex; gap: .8rem; flex-wrap: wrap; font-size: .72rem; color: var(--mc-text-md); }
+.mc-offer-banner__meta > * { display: inline-flex; align-items: center; gap: .3rem; }
+.mc-offer-banner__meta i { width: 12px; height: 12px; color: var(--of-accent); }
+.mc-offer-banner__code code { background: var(--mc-bg-3); padding: 1px 6px; border-radius: 4px; font-size: .72rem; color: var(--mc-text-hi); font-weight: 700; letter-spacing: .04em; }
+.mc-offer-banner__timer strong { color: var(--mc-text-hi); font-weight: 700; }
+
+.mc-offer-banner__cta {
+    display: inline-flex; align-items: center; gap: .35rem; flex-shrink: 0;
+    padding: .55rem .95rem; border-radius: 10px;
+    background: var(--of-accent); color: #fff !important;
+    text-decoration: none; font-weight: 700; font-size: .82rem;
+    box-shadow: 0 8px 22px -8px color-mix(in oklab, var(--of-accent) 60%, transparent);
+    transition: transform .18s ease;
+    position: relative; z-index: 1;
+}
+.mc-offer-banner__cta:hover { transform: translateY(-2px); }
+.mc-offer-banner__cta i { width: 14px; height: 14px; }
+
+@media (max-width: 640px) {
+    .mc-offer-banner { flex-direction: column; align-items: flex-start; padding: 1rem; }
+    .mc-offer-banner__cta { width: 100%; justify-content: center; }
+}
+</style>
+
+<script>
+/* Countdown timer for the banner. Reads ISO date from the element. */
+(function () {
+    var el = document.querySelector('[data-offer-countdown="{{ offer.ends_at|date:'c' }}"]');
+    if (!el) return;
+    var out = el.querySelector('[data-countdown-out]');
+    var endsAt = new Date('{{ offer.ends_at|date:"c" }}').getTime();
+    function tick() {
+        var diff = endsAt - Date.now();
+        if (diff <= 0) { out.textContent = '{% trans "Ended" %}'; return; }
+        var d = Math.floor(diff / 86400000);
+        var h = Math.floor((diff % 86400000) / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        if (d > 0) out.textContent = d + 'd ' + h + 'h';
+        else if (h > 0) out.textContent = h + 'h ' + m + 'm';
+        else out.textContent = m + 'm';
+    }
+    tick();
+    setInterval(tick, 30000);
+})();
+</script>
+{% endif %}

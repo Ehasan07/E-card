@@ -57,6 +57,94 @@
             </div>
         </header>
 
+        {% if dashboard_offer %}
+        <section class="dash-offer-slot mc-fade-up mc-fade-up--d1">
+            {% include 'cards/_offer_banner.html' with offer=dashboard_offer %}
+        </section>
+        {% endif %}
+
+        {% if dashboard_popup_offer %}
+        <div class="dash-offer-popup" id="offerPopup" data-offer-id="{{ dashboard_popup_offer.id }}" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="dash-offer-popup__scrim" data-popup-close></div>
+            <div class="dash-offer-popup__box" style="--of-accent: {{ dashboard_popup_offer.color }};">
+                <button type="button" class="dash-offer-popup__x" data-popup-close aria-label="{% trans 'Close' %}">
+                    <i data-lucide="x"></i>
+                </button>
+                <div class="dash-offer-popup__icon">
+                    <i data-lucide="{{ dashboard_popup_offer.icon }}"></i>
+                </div>
+                <span class="dash-offer-popup__pill">{{ dashboard_popup_offer.display_label }}</span>
+                <h2>{% if LANGUAGE_CODE == "bn" and dashboard_popup_offer.title_bn %}{{ dashboard_popup_offer.title_bn }}{% else %}{{ dashboard_popup_offer.title }}{% endif %}</h2>
+                <p class="mc-text-muted">
+                    {% if LANGUAGE_CODE == "bn" and dashboard_popup_offer.description_bn %}{{ dashboard_popup_offer.description_bn }}{% else %}{{ dashboard_popup_offer.description }}{% endif %}
+                </p>
+                {% if dashboard_popup_offer.coupon_code %}
+                    <div class="dash-offer-popup__code">
+                        <span class="mc-caption">{% trans "Coupon code" %}</span>
+                        <code>{{ dashboard_popup_offer.coupon_code }}</code>
+                    </div>
+                {% endif %}
+                <div class="dash-offer-popup__actions">
+                    <button type="button" class="mc-btn mc-btn--ghost" data-popup-close>{% trans "Maybe later" %}</button>
+                    <a href="{% url 'pricing' %}{% if dashboard_popup_offer.coupon_code %}?coupon={{ dashboard_popup_offer.coupon_code }}{% endif %}"
+                       class="mc-btn mc-btn--primary">
+                        <i data-lucide="arrow-right"></i>
+                        {% trans "Claim now" %}
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <style>
+        .dash-offer-slot { margin-bottom: var(--mc-s-5); }
+        .dash-offer-popup { position: fixed; inset: 0; z-index: 2500; display: none; }
+        .dash-offer-popup.is-open { display: block; }
+        .dash-offer-popup__scrim { position: absolute; inset: 0; background: color-mix(in oklab, var(--mc-bg-0) 85%, transparent); backdrop-filter: blur(8px); animation: obFadeIn .22s ease-out both; }
+        .dash-offer-popup__box { position: relative; margin: 12vh auto 0; max-width: 460px; padding: 2rem 1.75rem 1.5rem; text-align: center; background: var(--mc-bg-1); border: 1px solid color-mix(in oklab, var(--of-accent) 30%, var(--mc-border-hi)); border-radius: 18px; box-shadow: 0 40px 80px -20px color-mix(in oklab, var(--of-accent) 40%, transparent); animation: obPop .28s cubic-bezier(.2,.9,.3,1.2) both; }
+        .dash-offer-popup__x { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border: 1px solid var(--mc-border-hi); background: transparent; color: var(--mc-text-md); border-radius: 10px; cursor: pointer; display: grid; place-items: center; }
+        .dash-offer-popup__icon { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; margin: 0 auto .8rem; background: linear-gradient(135deg, var(--of-accent), color-mix(in oklab, var(--of-accent) 60%, black)); color: #fff; box-shadow: 0 12px 30px -8px color-mix(in oklab, var(--of-accent) 60%, transparent); }
+        .dash-offer-popup__icon i { width: 28px; height: 28px; }
+        .dash-offer-popup__pill { display: inline-block; padding: .2rem .7rem; border-radius: 999px; background: var(--of-accent); color: #fff; font-size: .72rem; font-weight: 800; letter-spacing: .06em; margin-bottom: .75rem; }
+        .dash-offer-popup__box h2 { margin: .5rem 0 .4rem; font-size: 1.35rem; color: var(--mc-text-hi); }
+        .dash-offer-popup__code { margin: 1rem 0; padding: .55rem .85rem; background: var(--mc-bg-2); border-radius: 10px; display: inline-block; }
+        .dash-offer-popup__code code { font-size: 1rem; font-weight: 700; letter-spacing: .1em; color: var(--of-accent); }
+        .dash-offer-popup__actions { display: flex; gap: .5rem; justify-content: center; margin-top: 1.25rem; flex-wrap: wrap; }
+        @keyframes obFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes obPop { from { transform: translateY(-16px) scale(.95); opacity: 0; } to { transform: none; opacity: 1; } }
+        </style>
+
+        <script>
+        (function () {
+            var popup = document.getElementById('offerPopup');
+            if (!popup) return;
+            var offerId = popup.getAttribute('data-offer-id');
+            var storageKey = 'offer_popup_seen_' + offerId;
+            if (sessionStorage.getItem(storageKey)) return;
+            /* Show once per session, after a beat. */
+            setTimeout(function () {
+                popup.classList.add('is-open');
+                popup.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+                sessionStorage.setItem(storageKey, '1');
+                if (window.lucide) window.lucide.createIcons();
+            }, 900);
+            popup.querySelectorAll('[data-popup-close]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    popup.classList.remove('is-open');
+                    popup.setAttribute('aria-hidden', 'true');
+                    document.body.style.overflow = '';
+                });
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && popup.classList.contains('is-open')) {
+                    popup.classList.remove('is-open');
+                    document.body.style.overflow = '';
+                }
+            });
+        })();
+        </script>
+        {% endif %}
+
         {# ===== Metric tiles (bento) ===== #}
         <section class="dash-metrics mc-fade-up mc-fade-up--d1">
             <div class="mc-metric">
